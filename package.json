@@ -1,0 +1,14 @@
+{
+  "name": "device-mcp-server",
+  "private": true,
+  "scripts": {
+    "db:up": "docker compose -f docker-compose.yml -f compose.local.yml up -d postgres",
+    "up": "docker compose -f docker-compose.yml -f compose.local.yml up -d --build",
+    "dev:server": "pnpm --filter server dev",
+    "dev:panel": "pnpm --filter panel dev",
+    "build:panel": "pnpm --filter panel generate",
+    "build:daemon": "cd daemon && bun run build.ts",
+    "typecheck": "pnpm --filter server typecheck && pnpm --filter panel typecheck"
+  },
+  "packageManager": "pnpm@10.34.8"
+}

@@ -1,0 +1,8 @@
+# Nur lokal: Ports auf den Rechner legen. Coolify nutzt diese Datei nicht.
+services:
+  server:
+    ports:
+      - "3000:3000"
+  postgres:
+    ports:
+      - "5433:5432"

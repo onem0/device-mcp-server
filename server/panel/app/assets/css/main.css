@@ -1,0 +1,362 @@
+/* device-mcp Panel: Werkbank mit Beschriftungsband. */
+
+:root {
+  --ground: #eceee9;
+  --card: #f7f8f5;
+  --raised: #fcfcfa;
+  --ink: #151515;
+  --mute: #585d55;
+  --line: #d5d8d0;
+  --line-strong: #b4b8af;
+
+  --tape-white: #fbfbf7;
+  --tape-black: #1b1b1b;
+  --tape-yellow: #f4d21f;
+
+  --ok: #1f8f4e;
+  --err: #b3301d;
+  --err-soft: #f6e2dc;
+
+  --sans: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Drei Schriftgrade. Rang über Gewicht und Versalien. */
+  --fs-s: 0.8125rem;
+  --fs-m: 0.9375rem;
+  --fs-l: 1.375rem;
+
+  --radius: 10px;
+  --shadow-card: 0 1px 2px rgba(21, 21, 21, 0.06), 0 2px 8px rgba(21, 21, 21, 0.04);
+  --shadow-dialog: 0 24px 60px rgba(21, 21, 21, 0.28), 0 4px 12px rgba(21, 21, 21, 0.12);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color-scheme: light;
+  accent-color: var(--ink);
+  caret-color: var(--ink);
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--ground);
+  color: var(--ink);
+  font: 400 var(--fs-m) / 1.5 var(--sans);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--tape-white);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+h1,
+h2,
+h3,
+p,
+dl,
+dd {
+  margin: 0;
+}
+
+code,
+.mono {
+  font-family: var(--mono);
+  font-size: var(--fs-s);
+}
+
+/* Kleine Versalien-Überschrift: Rang über Gewicht und Versalien, nicht über Größe. */
+.caps {
+  font-size: var(--fs-s);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.muted {
+  color: var(--mute);
+}
+
+/* --- Beschriftungsband ------------------------------------------------ */
+
+.tape {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-height: 2.25rem;
+  padding: 0.25rem 0.9rem 0.2rem;
+  border-radius: 4px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 45%),
+    var(--tape-white);
+  box-shadow:
+    0 1px 1.5px rgba(21, 21, 21, 0.22),
+    0 2px 6px rgba(21, 21, 21, 0.06),
+    inset 0 0 0 1px rgba(21, 21, 21, 0.06);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: var(--fs-l);
+  font-weight: 800;
+  font-stretch: 68%;
+  line-height: 1.1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.tape--black {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 45%),
+    var(--tape-black);
+  color: var(--tape-white);
+}
+
+.tape--yellow {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 45%),
+    var(--tape-yellow);
+}
+
+.tape--small {
+  min-height: 1.9rem;
+  font-size: var(--fs-m);
+  padding-inline: 0.75rem;
+}
+
+/* Entwertet, nicht entfernt. */
+.tape--struck {
+  color: var(--mute);
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+/* --- Bedienelemente --------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 6px;
+  background: var(--ink);
+  color: #fff;
+  font: 700 var(--fs-m) / 1 var(--sans);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
+}
+
+.btn:hover {
+  background: #2d2d2d;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn--quiet {
+  background: transparent;
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.btn--quiet:hover {
+  background: rgba(21, 21, 21, 0.05);
+}
+
+.btn--danger {
+  background: var(--err);
+}
+
+.btn--danger:hover {
+  background: #962817;
+}
+
+/* Textaktion ohne Rahmen, z. B. in den Gerätekarten. */
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.25rem;
+  padding: 0 0.6rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--mute);
+  font: 600 var(--fs-s) / 1 var(--sans);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.action:hover {
+  background: rgba(21, 21, 21, 0.06);
+  color: var(--ink);
+}
+
+.action--danger:hover {
+  background: var(--err-soft);
+  color: var(--err);
+}
+
+.action svg,
+.btn svg {
+  flex: none;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.field label {
+  font-size: var(--fs-s);
+  font-weight: 700;
+}
+
+.input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 0.85rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+  font: 400 var(--fs-m) / 1 var(--sans);
+}
+
+.input::placeholder {
+  color: #7a7f76;
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 0;
+  border-color: var(--ink);
+}
+
+.hint {
+  color: var(--mute);
+  font-size: var(--fs-s);
+}
+
+.error {
+  color: var(--err);
+  font-size: var(--fs-s);
+  font-weight: 600;
+}
+
+.banner {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: var(--err-soft);
+  color: var(--err);
+  font-weight: 600;
+}
+
+/* --- Flächen ------------------------------------------------------------ */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}
+
+/* --- Dialoge ------------------------------------------------------------ */
+
+dialog.sheet {
+  width: min(36rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: var(--raised);
+  color: var(--ink);
+  box-shadow: var(--shadow-dialog);
+  overflow: visible;
+}
+
+/* Über dem Token-Dialog steht das gelbe Band, dafür oben immer Platz lassen. */
+dialog.sheet.sheet--tape {
+  top: 4.5rem;
+  max-height: calc(100dvh - 5.5rem);
+}
+
+dialog.sheet::backdrop {
+  background: rgba(21, 21, 21, 0.45);
+}
+
+.sheet__body {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.75rem;
+  max-height: calc(100dvh - 2rem);
+  overflow: auto;
+}
+
+.sheet__title {
+  font-size: var(--fs-l);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.sheet__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+dialog.sheet.sheet--tape .sheet__body {
+  max-height: calc(100dvh - 10rem);
+}

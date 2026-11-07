@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+**/.output
+**/.nuxt
+**/.data
+**/.env
+**/*.log
+.git
+README.md
+**/.impeccable

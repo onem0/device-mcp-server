@@ -1,0 +1,63 @@
+<script setup lang="ts">
+import type { Device } from '~/utils/types'
+
+const props = defineProps<{ device: Device }>()
+const now = useNow()
+
+const state = computed(() => {
+  const d = props.device
+  if (!d.enabled) return { key: 'disabled', label: 'deaktiviert', detail: d.lastSeenAt ? `zuletzt ${ago(d.lastSeenAt, now.value)}` : 'nie verbunden' }
+  if (d.online) return { key: 'online', label: 'online', detail: d.connectedAt ? `verbunden ${since(d.connectedAt, now.value)}` : '' }
+  if (!d.lastSeenAt) return { key: 'never', label: 'wartet auf den Daemon', detail: 'noch nie verbunden' }
+  return { key: 'offline', label: 'offline', detail: `zuletzt gesehen ${ago(d.lastSeenAt, now.value)}` }
+})
+</script>
+
+<template>
+  <span class="status" :class="`status--${state.key}`">
+    <i class="status__dot" aria-hidden="true" />
+    <strong>{{ state.label }}</strong>
+    <span v-if="state.detail" class="status__detail muted">{{ state.detail }}</span>
+  </span>
+</template>
+
+<style scoped>
+.status {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.45rem;
+  font-size: var(--fs-m);
+}
+.status strong {
+  font-weight: 700;
+}
+.status__detail::before {
+  content: '· ';
+}
+@media (max-width: 720px) {
+  .status__detail {
+    flex-basis: 100%;
+    padding-left: 1.05rem;
+  }
+  .status__detail::before {
+    content: none;
+  }
+}
+.status__dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--ok);
+  box-shadow: 0 0 0 3px rgba(31, 143, 78, 0.16);
+}
+.status--offline .status__dot,
+.status--never .status__dot,
+.status--disabled .status__dot {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px #8a8f86;
+}
+.status--disabled strong {
+  color: var(--mute);
+}
+</style>

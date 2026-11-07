@@ -1,0 +1,16 @@
+node_modules
+dist
+.output
+.nuxt
+.data
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+# Impeccable: Arbeitsdateien der Design-Runden, nur Brief, Config und design.json gehören ins Repo
+**/.impeccable/review
+**/.impeccable/mocks
+**/.impeccable/questions
+**/.impeccable/build
+**/.impeccable/hook.cache.json
