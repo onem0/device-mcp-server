@@ -15,11 +15,11 @@ const optional = <T extends z.ZodType>(schema: T) => z.preprocess(blankAsUndefin
 const withDefault = <T extends z.ZodType>(schema: T, fallback: z.input<T>) =>
   z.preprocess(blankAsUndefined, schema.default(fallback as never))
 
-// true: jedem Proxy glauben (nur wenn der Server allein über den Proxy erreichbar ist),
-// Zahl: so vielen Hops vertrauen (Cloudflare + Traefik = 2), sonst eine Liste von IPs/CIDRs.
+// Zahl: so vielen Proxy-Hops vertrauen (Standard 1 = Traefik, hinter Cloudflare 2),
+// true: jedem Proxy glauben (nur wenn niemand den Server direkt erreicht), sonst eine Liste von IPs/CIDRs.
 const trustProxy = z.preprocess(
   (v) => {
-    if (v === undefined || v === '') return true
+    if (v === undefined || v === '') return 1
     if (v === 'true' || v === 'false') return v === 'true'
     if (typeof v === 'string' && /^\d+$/.test(v)) return Number(v)
     return v
@@ -38,6 +38,8 @@ const schema = z.object({
   MCP_TOKEN: z.string({ error: 'MCP_TOKEN fehlt.' }).min(32, 'MCP_TOKEN braucht mindestens 32 Zeichen (openssl rand -base64 32).'),
   PANEL_PASSWORD: z.string({ error: 'PANEL_PASSWORD fehlt.' }).min(12, 'PANEL_PASSWORD braucht mindestens 12 Zeichen.'),
   SESSION_TTL_HOURS: withDefault(z.coerce.number().int().positive(), 168),
+  // Obergrenze ab Anmeldung, auch wenn die Sitzung ständig genutzt wird.
+  SESSION_MAX_DAYS: withDefault(z.coerce.number().int().positive(), 30),
   HEARTBEAT_INTERVAL_SECONDS: withDefault(z.coerce.number().int().min(5).max(300), 15),
   HEARTBEAT_TIMEOUT_SECONDS: withDefault(z.coerce.number().int().min(10).max(900), 45),
   DAEMON_DIST_DIR: withDefault(z.string(), path.resolve(import.meta.dirname, '../../daemon/dist')),

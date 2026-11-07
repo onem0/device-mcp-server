@@ -7,6 +7,12 @@ import { ApiError } from '../../../services/errors.js'
 import { createSession } from '../../../services/sessions.js'
 import { safeEqual } from '../../../services/tokens.js'
 
+// Unabhängig von der IP: höchstens 30 Fehlversuche in 15 Minuten, danach kurz Ruhe.
+// Schützt das eine Passwort auch dann, wenn jemand die Client-IP fälschen kann.
+const FAIL_WINDOW_MS = 15 * 60_000
+const FAIL_MAX = 30
+let failures: number[] = []
+
 const route: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'POST',
@@ -19,7 +25,13 @@ const route: FastifyPluginAsyncZod = async (fastify) => {
       response: { 200: ok },
     },
     handler: async (request, reply) => {
+      const now = Date.now()
+      failures = failures.filter((t) => now - t < FAIL_WINDOW_MS)
+      if (failures.length >= FAIL_MAX) {
+        throw new ApiError(429, 'RATE_LIMITED', 'Zu viele Fehlversuche. Warte ein paar Minuten.')
+      }
       if (!safeEqual(request.body.password, env.PANEL_PASSWORD)) {
+        failures.push(now)
         request.log.warn({ ip: request.ip }, 'Falsches Panel-Passwort')
         throw new ApiError(401, 'INVALID_PASSWORD', 'Das Passwort stimmt nicht.')
       }

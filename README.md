@@ -59,7 +59,8 @@ Aktuell läuft der Server auf Coolify (Server „Contabo“, Projekt „Private�
    | `POSTGRES_USER`, `POSTGRES_DB` | nein | Standard `devicemcp` |
    | `SESSION_TTL_HOURS` | nein | Panel-Sitzung, Standard 168 (verlängert sich bei Nutzung) |
    | `HEARTBEAT_INTERVAL_SECONDS` / `HEARTBEAT_TIMEOUT_SECONDS` | nein | Standard 15 / 45 |
-   | `TRUST_PROXY` | nein | Wem die Client-IP geglaubt wird: `true` (Standard), oder Anzahl Proxy-Hops. Hinter Cloudflare + Traefik: `2` |
+   | `SESSION_MAX_DAYS` | nein | Spätestens nach so vielen Tagen neu anmelden, Standard 30 |
+   | `TRUST_PROXY` | nein | Anzahl Proxy-Hops, denen die Client-IP geglaubt wird. Standard `1` (Traefik), hinter Cloudflare `2` |
    | `LOG_LEVEL` | nein | Standard `info` |
 
 3. Beim Service **server** die Domain eintragen, mit dem Container-Port: `https://device.onemo.dev:3000`. Coolify erzeugt daraus die Traefik-Labels samt Let's-Encrypt-Zertifikat; der Port wird nicht öffentlich, er sagt Traefik nur, wohin es weiterleiten soll. Die Domain muss zu `PUBLIC_URL` passen.
@@ -158,7 +159,9 @@ Jobs überleben Verbindungsabbrüche: Der Daemon schreibt die Ausgabe auf die Pl
 
 - Wer den `MCP_TOKEN` hat, kann auf allen verbundenen Geräten Befehle ausführen. Behandle ihn wie einen SSH-Schlüssel ohne Passphrase. Der Vergleich läuft in konstanter Zeit, Fehler geben nur `401` ohne Details zurück.
 - Das Panel zeigt den MCP-Token nie an. Mit dem Panel-Passwort lassen sich Geräte verwalten, aber keine Befehle ausführen.
-- Geräte-Tokens und Panel-Sitzungen liegen nur als SHA-256-Hash in der Datenbank. Der Login ist auf 10 Versuche pro 15 Minuten und IP begrenzt, das Cookie ist `HttpOnly`, `Secure` und `SameSite=Strict`.
+- Geräte-Tokens und Panel-Sitzungen liegen nur als SHA-256-Hash in der Datenbank. Der Login ist auf 10 Versuche pro 15 Minuten und IP begrenzt, dazu auf 30 Fehlversuche pro 15 Minuten insgesamt. Das Cookie ist `HttpOnly`, `Secure` und `SameSite=Strict`.
+- Panel-Sitzungen verlängern sich bei Nutzung, enden aber spätestens nach `SESSION_MAX_DAYS`. Ein neues `PANEL_PASSWORD` meldet alle Sitzungen ab.
+- „Token neu“, Deaktivieren und Löschen trennen das Gerät sofort, auch wenn es sich im selben Moment verbindet.
 - Der Daemon läuft als normaler Benutzer. Was Claude darf, ist genau das, was dieser Benutzer darf.
 - Der Daemon baut die Verbindung selbst auf, auf den Geräten ist kein Port offen.
 

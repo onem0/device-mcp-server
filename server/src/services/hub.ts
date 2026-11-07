@@ -1,7 +1,7 @@
 import type { FastifyBaseLogger } from 'fastify'
 import type { WebSocket } from 'ws'
 import { env } from '../env.js'
-import { findDeviceByToken, saveDeviceInfo, touchLastSeen } from './devices.js'
+import { findDeviceById, findDeviceByToken, saveDeviceInfo, touchLastSeen } from './devices.js'
 import { runningJobs, saveJobResult } from './jobs.js'
 import { CloseCode, PROTOCOL_VERSION, type DaemonInfo, type DaemonMessage, type JobSummary, type ServerMessage } from './protocol.js'
 
@@ -193,6 +193,15 @@ export class DeviceHub {
       nextRequestId: 1,
     }
     this.conns.set(device.id, conn)
+
+    // Während der Token-Abfrage kann das Panel den Token erneuert, das Gerät deaktiviert oder gelöscht haben.
+    // disconnect() fand da noch keine Verbindung, deshalb jetzt gegen den aktuellen Stand prüfen.
+    const fresh = await findDeviceById(device.id)
+    if (!fresh || fresh.tokenHash !== device.tokenHash || !fresh.enabled) {
+      this.drop(conn, new DeviceOfflineError('Der Zugang des Geräts wurde gerade geändert.'))
+      socket.close(fresh && fresh.tokenHash === device.tokenHash ? CloseCode.Disabled : CloseCode.InvalidToken, 'credentials changed')
+      return null
+    }
     await saveDeviceInfo(device.id, msg.info, now)
 
     this.send(socket, {

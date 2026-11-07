@@ -1,0 +1,1 @@
+ALTER TABLE "panel_sessions" ADD COLUMN "password_fingerprint" text DEFAULT '' NOT NULL;

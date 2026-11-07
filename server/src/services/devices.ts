@@ -32,6 +32,11 @@ export async function findDeviceByRef(ref: string) {
   return byName ?? null
 }
 
+export async function findDeviceById(id: string) {
+  const [device] = await db.select().from(devices).where(eq(devices.id, id))
+  return device ?? null
+}
+
 export async function findDeviceByToken(token: string) {
   const [device] = await db.select().from(devices).where(eq(devices.tokenHash, hashToken(token)))
   return device ?? null
