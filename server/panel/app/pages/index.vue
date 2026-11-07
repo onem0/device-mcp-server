@@ -63,6 +63,7 @@ function onCreated(payload: DeviceWithToken) {
         @save="ops.rename(device, $event)"
         @cancel="ops.editingId.value = null"
         @toggle="ops.toggle(device)"
+        @read-only="ops.toggleReadOnly(device)"
         @regenerate="ops.ask('regenerate', device)"
         @remove="ops.ask('remove', device)"
       />

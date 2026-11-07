@@ -22,6 +22,7 @@ async function logout() {
       <NuxtLink to="/" class="top__mark" aria-label="device-mcp, zur Geräteübersicht"><LabelTape tone="black" small>device-mcp</LabelTape></NuxtLink>
       <nav class="top__nav" aria-label="Hauptnavigation">
         <NuxtLink to="/" :class="{ 'is-on': route.path === '/' || route.path.startsWith('/geraete') }">Geräte</NuxtLink>
+        <NuxtLink to="/protokoll" active-class="is-on">Protokoll</NuxtLink>
         <NuxtLink to="/verbindung" active-class="is-on">Verbindung</NuxtLink>
       </nav>
       <button type="button" class="action top__logout" :disabled="busy" @click="logout"><LogOut :size="16" aria-hidden="true" />Abmelden</button>

@@ -2,7 +2,7 @@
 import type { Device } from '~/utils/types'
 
 defineProps<{ device: Device; editing: boolean; busy: boolean; renameError: string | null }>()
-const emit = defineEmits<{ rename: []; save: [name: string]; cancel: []; toggle: []; regenerate: []; remove: [] }>()
+const emit = defineEmits<{ rename: []; save: [name: string]; cancel: []; toggle: []; readOnly: []; regenerate: []; remove: [] }>()
 </script>
 
 <template>
@@ -23,6 +23,7 @@ const emit = defineEmits<{ rename: []; save: [name: string]; cancel: []; toggle:
       show-log
       @rename="emit('rename')"
       @toggle="emit('toggle')"
+      @read-only="emit('readOnly')"
       @regenerate="emit('regenerate')"
       @remove="emit('remove')"
     />

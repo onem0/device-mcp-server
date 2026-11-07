@@ -15,6 +15,13 @@
       "when": 1794055628913,
       "tag": "0001_graceful_star_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794064162871,
+      "tag": "0002_brainy_sage",
+      "breakpoints": true
     }
   ]
 }

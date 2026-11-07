@@ -24,6 +24,14 @@ if command -v systemctl >/dev/null; then
   systemctl --user reset-failed device-mcp.service 2>/dev/null || true
 fi
 
+# Sessions, die Claude über session_start angelegt hat (Präfix mcp-). Eigene tmux-Sessions bleiben.
+if command -v tmux >/dev/null; then
+  for s in $(tmux list-sessions -F '#{session_name}' 2>/dev/null | grep '^mcp-' || true); do
+    step "Beende tmux-Session $s"
+    tmux kill-session -t "=$s" 2>/dev/null || true
+  done
+fi
+
 step "Entferne Binary, Konfiguration und Job-Logs"
 rm -f "$HOME/.local/bin/device-mcp" "$HOME/.local/bin/device-mcp-uninstall"
 rm -rf "$CONFIG_HOME/device-mcp" "$STATE_HOME/device-mcp"

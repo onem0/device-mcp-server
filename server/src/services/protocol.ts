@@ -85,6 +85,44 @@ export type ReadFileResult =
     }
   | { kind: 'image'; path: string; size: number; mimeType: string; data: string }
   | { kind: 'binary'; path: string; size: number; mimeType: string | null }
+  // read_file mit encoding=base64: ein Byte-Bereich der Datei.
+  | { kind: 'base64'; path: string; size: number; offset: number; length: number; data: string; hasMore: boolean }
+
+export interface EditFileResult {
+  path: string
+  replacements: number
+  inPlace: boolean
+  crlf: boolean
+  snippets: { fromLine: number; lines: string[] }[]
+}
+
+export interface SessionInfo {
+  name: string
+  created: string
+  command: string
+  dead: boolean
+  exitStatus: number | null
+  width: number
+  height: number
+  attached: boolean
+}
+
+export interface SessionStartResult {
+  name: string
+  cwd: string
+  cols: number
+  rows: number
+  detachedFromDaemon: boolean
+}
+
+export interface SessionScreen {
+  name: string
+  text: string
+  lines: number
+  dead: boolean
+  exitStatus: number | null
+  command: string
+}
 
 export interface WriteFileResult {
   path: string

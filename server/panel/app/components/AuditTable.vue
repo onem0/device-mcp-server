@@ -1,10 +1,29 @@
 <script setup lang="ts">
 import type { AuditEntry } from '~/utils/types'
 
-defineProps<{ entries: AuditEntry[] }>()
+defineProps<{ entries: AuditEntry[]; showDevice?: boolean }>()
 const expanded = ref(new Set<string>())
 
-const TOOLS: Record<string, string> = { run_command: 'Befehl', read_file: 'Lesen', write_file: 'Schreiben', kill_job: 'Abbruch' }
+const TOOLS: Record<string, string> = {
+  list_devices: 'Geräte',
+  run_command: 'Befehl',
+  job_status: 'Job-Status',
+  job_output: 'Job-Ausgabe',
+  job_wait: 'Warten',
+  kill_job: 'Abbruch',
+  read_file: 'Lesen',
+  write_file: 'Schreiben',
+  edit_file: 'Ändern',
+  session_start: 'Session',
+  session_send: 'Eingabe',
+  session_read: 'Bildschirm',
+  session_list: 'Sessions',
+  session_kill: 'Session-Ende',
+}
+
+// Argumente ohne das Gerät, das steht schon in der Zeile.
+const detailArgs = (e: AuditEntry) => Object.entries(e.args ?? {}).filter(([k]) => k !== 'device')
+const formatArg = (v: unknown) => (typeof v === 'string' ? v : JSON.stringify(v))
 
 function result(e: AuditEntry) {
   switch (e.status) {
@@ -29,7 +48,7 @@ function result(e: AuditEntry) {
   }
 }
 
-const isLong = (e: AuditEntry) => e.command.length > 160 || e.command.includes('\n')
+const isLong = (e: AuditEntry) => e.command.length > 160 || e.command.includes('\n') || detailArgs(e).length > 0
 
 function toggle(id: string) {
   const next = new Set(expanded.value)
@@ -44,6 +63,7 @@ function toggle(id: string) {
     <thead>
       <tr>
         <th scope="col">Zeit</th>
+        <th v-if="showDevice" scope="col">Gerät</th>
         <th scope="col">Tool</th>
         <th scope="col">Befehl</th>
         <th scope="col">Ergebnis</th>
@@ -53,12 +73,22 @@ function toggle(id: string) {
     <tbody>
       <tr v-for="e in entries" :key="e.id">
         <td class="audit__time mono"><time :datetime="e.createdAt" :title="dateTime(e.createdAt)">{{ day(e.createdAt) }} <span>{{ clock(e.createdAt) }}</span></time></td>
+        <td v-if="showDevice" class="audit__device" :class="{ 'is-empty': !e.deviceId }">
+          <NuxtLink v-if="e.deviceId && e.deviceName" :to="`/geraete/${e.deviceId}`" class="audit__tape"><LabelTape small>{{ e.deviceName }}</LabelTape></NuxtLink>
+          <span v-else class="muted">–</span>
+        </td>
         <td class="audit__tool" :title="e.tool">{{ TOOLS[e.tool] ?? e.tool }}</td>
         <td class="audit__cmd">
           <code :class="{ 'is-clamped': isLong(e) && !expanded.has(e.id) }">{{ e.command }}</code>
           <button v-if="isLong(e)" type="button" class="audit__more" :aria-expanded="expanded.has(e.id)" @click="toggle(e.id)">
-            {{ expanded.has(e.id) ? 'weniger' : 'ganz zeigen' }}
+            {{ expanded.has(e.id) ? 'weniger' : 'Details' }}
           </button>
+          <dl v-if="expanded.has(e.id) && detailArgs(e).length" class="audit__args">
+            <template v-for="[key, value] in detailArgs(e)" :key="key">
+              <dt>{{ key }}</dt>
+              <dd class="mono">{{ formatArg(value) }}</dd>
+            </template>
+          </dl>
           <p v-if="e.error" class="audit__err">{{ e.error }}</p>
           <p v-if="e.jobId" class="audit__job mono muted">job {{ e.jobId }}</p>
         </td>
@@ -132,6 +162,33 @@ td {
   text-underline-offset: 3px;
   cursor: pointer;
 }
+.audit__device {
+  white-space: nowrap;
+}
+.audit__tape {
+  display: inline-flex;
+  border-radius: 4px;
+  text-decoration: none;
+}
+.audit__args {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.2rem 0.75rem;
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  background: var(--ground);
+}
+.audit__args dt {
+  color: var(--mute);
+  font-size: var(--fs-s);
+  font-weight: 700;
+}
+.audit__args dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
 .audit__err {
   margin-top: 0.3rem;
   color: var(--err);
@@ -173,20 +230,26 @@ td {
     border: 0;
   }
   .audit__time {
-    grid-column: 1;
+    grid-area: 1 / 1;
   }
   .audit__tool {
-    grid-column: 2;
+    grid-area: 1 / 2;
     text-align: right;
   }
+  .audit__device {
+    grid-area: 2 / 1 / 3 / 3;
+  }
+  .audit__device.is-empty {
+    display: none;
+  }
   .audit__cmd {
-    grid-column: 1 / -1;
+    grid-area: 3 / 1 / 4 / 3;
   }
   .audit__res {
-    grid-column: 1;
+    grid-area: 4 / 1;
   }
   .num {
-    grid-column: 2;
+    grid-area: 4 / 2;
   }
 }
 </style>

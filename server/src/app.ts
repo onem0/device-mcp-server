@@ -13,7 +13,8 @@ const hops = (n: number) => (_address: string, index: number) => index < n
 
 export async function buildApp() {
   const app = Fastify({
-    logger: { level: env.LOG_LEVEL },
+    // Tokens und Sitzungs-Cookies nie ins Log, auch nicht bei geänderten Serializern.
+    logger: { level: env.LOG_LEVEL, redact: ['req.headers.authorization', 'req.headers.cookie', 'headers.authorization', 'headers.cookie'] },
     // Läuft hinter Traefik (Coolify), evtl. zusätzlich Cloudflare: Client-IP und Protokoll aus X-Forwarded-*.
     // Eine Hop-Zahl n heißt: den n nächsten Adressen in der Kette vertrauen (Index 0 ist der direkte Proxy).
     trustProxy: typeof env.TRUST_PROXY === 'number' ? hops(env.TRUST_PROXY) : env.TRUST_PROXY,

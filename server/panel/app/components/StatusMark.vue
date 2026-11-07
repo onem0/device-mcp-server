@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Lock } from '@lucide/vue'
 import type { Device } from '~/utils/types'
 
 const props = defineProps<{ device: Device }>()
@@ -18,6 +19,9 @@ const state = computed(() => {
     <i class="status__dot" aria-hidden="true" />
     <strong>{{ state.label }}</strong>
     <span v-if="state.detail" class="status__detail muted">{{ state.detail }}</span>
+    <span v-if="device.readOnly" class="status__ro" title="Claude kann lesen, aber keine Befehle ausführen, nichts schreiben und nichts in Sessions tippen.">
+      <Lock :size="14" aria-hidden="true" />nur lesen
+    </span>
   </span>
 </template>
 
@@ -35,6 +39,13 @@ const state = computed(() => {
 .status__detail::before {
   content: '· ';
 }
+.status__ro {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: 0.35rem;
+  font-weight: 700;
+}
 @media (max-width: 720px) {
   .status__detail {
     flex-basis: 100%;
@@ -42,6 +53,10 @@ const state = computed(() => {
   }
   .status__detail::before {
     content: none;
+  }
+  .status__ro {
+    flex-basis: 100%;
+    margin-left: 1.05rem;
   }
 }
 .status__dot {

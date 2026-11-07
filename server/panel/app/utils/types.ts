@@ -2,6 +2,7 @@ export interface Device {
   id: string
   name: string
   enabled: boolean
+  readOnly: boolean
   online: boolean
   connectedAt: string | null
   lastSeenAt: string | null
@@ -24,8 +25,11 @@ export interface DeviceWithToken {
 export interface AuditEntry {
   id: string
   createdAt: string
+  deviceId: string | null
+  deviceName: string | null
   tool: string
   command: string
+  args: Record<string, unknown> | null
   jobId: string | null
   status: string
   exitCode: number | null

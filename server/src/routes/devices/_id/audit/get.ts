@@ -20,7 +20,7 @@ const route: FastifyPluginAsyncZod = async (fastify) => {
     },
     handler: async (request) => {
       await getDevice(request.params.id)
-      const { entries, total } = await listAudit(request.params.id, request.query.limit, request.query.offset)
+      const { entries, total } = await listAudit({ deviceId: request.params.id }, request.query.limit, request.query.offset)
       return { entries: entries.map(toAuditEntry), total }
     },
   })

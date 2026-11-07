@@ -10,6 +10,8 @@ export const devices = pgTable(
     // SHA-256 des Geräte-Tokens. Der Token selbst wird nur einmal im Panel angezeigt.
     tokenHash: text('token_hash').notNull(),
     enabled: boolean('enabled').notNull().default(true),
+    // Nur lesen: run_command, write_file, edit_file sowie Session-Start und -Eingaben sind gesperrt.
+    readOnly: boolean('read_only').notNull().default(false),
     // Meldet der Daemon bei jeder Verbindung.
     hostname: text('hostname'),
     os: text('os'),

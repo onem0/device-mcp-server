@@ -1,13 +1,14 @@
 import { count, desc, eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { auditLog } from '../db/schema/index.js'
+import { auditLog, devices } from '../db/schema/index.js'
 
-export type AuditEntry = typeof auditLog.$inferSelect
+export type AuditEntry = typeof auditLog.$inferSelect & { deviceName: string | null }
 
 export async function logAudit(entry: {
-  deviceId: string
+  deviceId: string | null
   tool: string
   command: string
+  args?: Record<string, unknown>
   jobId?: string
   status: string
   exitCode?: number | null
@@ -27,24 +28,19 @@ export const finishAudit = (id: string, result: { status: string; exitCode?: num
     .set({ ...result, error: result.error?.slice(0, 2_000) ?? null })
     .where(eq(auditLog.id, id))
 
-// Misst Dauer und Ausgang eines kurzen Tool-Aufrufs (read_file, write_file, kill_job) und protokolliert ihn.
-export async function audited<T>(base: { deviceId: string; tool: string; command: string }, fn: () => Promise<T>): Promise<T> {
-  const started = Date.now()
-  const id = await logAudit({ ...base, status: 'running' })
-  try {
-    const result = await fn()
-    await finishAudit(id, { status: 'ok', durationMs: Date.now() - started })
-    return result
-  } catch (err) {
-    await finishAudit(id, { status: 'error', durationMs: Date.now() - started, error: (err as Error).message })
-    throw err
-  }
-}
-
-export async function listAudit(deviceId: string, limit: number, offset: number) {
-  const [entries, [total]] = await Promise.all([
-    db.select().from(auditLog).where(eq(auditLog.deviceId, deviceId)).orderBy(desc(auditLog.createdAt)).limit(limit).offset(offset),
-    db.select({ n: count() }).from(auditLog).where(eq(auditLog.deviceId, deviceId)),
+// Neueste zuerst. Ohne deviceId über alle Geräte (auch Aufrufe ohne Gerät wie list_devices).
+export async function listAudit(filter: { deviceId?: string }, limit: number, offset: number) {
+  const where = filter.deviceId ? eq(auditLog.deviceId, filter.deviceId) : undefined
+  const [rows, [total]] = await Promise.all([
+    db
+      .select({ entry: auditLog, deviceName: devices.name })
+      .from(auditLog)
+      .leftJoin(devices, eq(auditLog.deviceId, devices.id))
+      .where(where)
+      .orderBy(desc(auditLog.createdAt))
+      .limit(limit)
+      .offset(offset),
+    db.select({ n: count() }).from(auditLog).where(where),
   ])
-  return { entries, total: total?.n ?? 0 }
+  return { entries: rows.map((r) => ({ ...r.entry, deviceName: r.deviceName })) as AuditEntry[], total: total?.n ?? 0 }
 }

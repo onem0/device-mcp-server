@@ -75,6 +75,7 @@ const ops = useDeviceOps({ changed: loadDevice, removed: () => navigateTo('/') }
             :busy="ops.busyId.value === device.id"
             @rename="ops.startRename(device)"
             @toggle="ops.toggle(device)"
+            @read-only="ops.toggleReadOnly(device)"
             @regenerate="ops.ask('regenerate', device)"
             @remove="ops.ask('remove', device)"
           />

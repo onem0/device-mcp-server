@@ -8,7 +8,8 @@
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx src/scripts/migrate.ts"
+    "db:migrate": "tsx src/scripts/migrate.ts",
+    "test": "tsx --test 'src/**/*.test.ts'"
   },
   "dependencies": {
     "@fastify/autoload": "^6.5.1",

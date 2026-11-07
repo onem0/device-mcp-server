@@ -6,7 +6,7 @@ import { updateDevice } from '../../../services/devices.js'
 import { hub } from '../../../services/hub.js'
 import { CloseCode } from '../../../services/protocol.js'
 
-// Umbenennen und Aktivieren/Deaktivieren. Deaktivieren trennt die Verbindung sofort.
+// Umbenennen, Aktivieren/Deaktivieren und „nur lesen“. Deaktivieren trennt die Verbindung sofort.
 const route: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'PATCH',
@@ -15,8 +15,8 @@ const route: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['Geräte'],
       params: idParams,
       body: z
-        .object({ name: deviceName.optional(), enabled: z.boolean().optional() })
-        .refine((v) => v.name !== undefined || v.enabled !== undefined, 'Nichts zu ändern.'),
+        .object({ name: deviceName.optional(), enabled: z.boolean().optional(), readOnly: z.boolean().optional() })
+        .refine((v) => v.name !== undefined || v.enabled !== undefined || v.readOnly !== undefined, 'Nichts zu ändern.'),
       response: { 200: device },
     },
     handler: async (request) => {

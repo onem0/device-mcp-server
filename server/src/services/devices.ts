@@ -53,7 +53,7 @@ export async function createDevice(name: string) {
   }
 }
 
-export async function updateDevice(id: string, patch: { name?: string; enabled?: boolean }) {
+export async function updateDevice(id: string, patch: { name?: string; enabled?: boolean; readOnly?: boolean }) {
   await getDevice(id)
   try {
     const [device] = await db.update(devices).set(patch).where(eq(devices.id, id)).returning()
