@@ -159,7 +159,7 @@ Jobs überleben Verbindungsabbrüche: Der Daemon schreibt die Ausgabe auf die Pl
 
 - Wer den `MCP_TOKEN` hat, kann auf allen verbundenen Geräten Befehle ausführen. Behandle ihn wie einen SSH-Schlüssel ohne Passphrase. Der Vergleich läuft in konstanter Zeit, Fehler geben nur `401` ohne Details zurück.
 - Das Panel zeigt den MCP-Token nie an. Mit dem Panel-Passwort lassen sich Geräte verwalten, aber keine Befehle ausführen.
-- Geräte-Tokens und Panel-Sitzungen liegen nur als SHA-256-Hash in der Datenbank. Der Login ist auf 10 Versuche pro 15 Minuten und IP begrenzt, dazu auf 30 Fehlversuche pro 15 Minuten insgesamt. Das Cookie ist `HttpOnly`, `Secure` und `SameSite=Strict`.
+- Geräte-Tokens und Panel-Sitzungen liegen nur als SHA-256-Hash in der Datenbank. Der Login ist auf 10 Versuche pro 15 Minuten und IP begrenzt, ab 30 Fehlversuchen pro 15 Minuten insgesamt antworten falsche Versuche zusätzlich verzögert (das richtige Passwort wird nie gesperrt). Das Cookie ist `HttpOnly`, `Secure` und `SameSite=Strict`.
 - Panel-Sitzungen verlängern sich bei Nutzung, enden aber spätestens nach `SESSION_MAX_DAYS`. Ein neues `PANEL_PASSWORD` meldet alle Sitzungen ab.
 - „Token neu“, Deaktivieren und Löschen trennen das Gerät sofort, auch wenn es sich im selben Moment verbindet.
 - Der Daemon läuft als normaler Benutzer. Was Claude darf, ist genau das, was dieser Benutzer darf.

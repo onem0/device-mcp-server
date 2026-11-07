@@ -7,10 +7,11 @@ import { ApiError } from '../../../services/errors.js'
 import { createSession } from '../../../services/sessions.js'
 import { safeEqual } from '../../../services/tokens.js'
 
-// Unabhängig von der IP: höchstens 30 Fehlversuche in 15 Minuten, danach kurz Ruhe.
-// Schützt das eine Passwort auch dann, wenn jemand die Client-IP fälschen kann.
+// Unabhängig von der IP: Ab 30 Fehlversuchen in 15 Minuten antworten falsche Versuche erst nach 2 s.
+// Das bremst verteiltes Raten, sperrt aber nie das richtige Passwort aus (sonst könnte jeder den Login blockieren).
 const FAIL_WINDOW_MS = 15 * 60_000
-const FAIL_MAX = 30
+const FAIL_SLOWDOWN_AFTER = 30
+const FAIL_DELAY_MS = 2_000
 let failures: number[] = []
 
 const route: FastifyPluginAsyncZod = async (fastify) => {
@@ -25,13 +26,11 @@ const route: FastifyPluginAsyncZod = async (fastify) => {
       response: { 200: ok },
     },
     handler: async (request, reply) => {
-      const now = Date.now()
-      failures = failures.filter((t) => now - t < FAIL_WINDOW_MS)
-      if (failures.length >= FAIL_MAX) {
-        throw new ApiError(429, 'RATE_LIMITED', 'Zu viele Fehlversuche. Warte ein paar Minuten.')
-      }
       if (!safeEqual(request.body.password, env.PANEL_PASSWORD)) {
+        const now = Date.now()
+        failures = failures.filter((t) => now - t < FAIL_WINDOW_MS).slice(-1000)
         failures.push(now)
+        if (failures.length > FAIL_SLOWDOWN_AFTER) await new Promise((resolve) => setTimeout(resolve, FAIL_DELAY_MS))
         request.log.warn({ ip: request.ip }, 'Falsches Panel-Passwort')
         throw new ApiError(401, 'INVALID_PASSWORD', 'Das Passwort stimmt nicht.')
       }
