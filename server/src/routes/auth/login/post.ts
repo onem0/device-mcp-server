@@ -7,12 +7,35 @@ import { ApiError } from '../../../services/errors.js'
 import { createSession } from '../../../services/sessions.js'
 import { safeEqual } from '../../../services/tokens.js'
 
-// Unabhängig von der IP: Ab 30 Fehlversuchen in 15 Minuten antworten falsche Versuche erst nach 2 s.
-// Das bremst verteiltes Raten, sperrt aber nie das richtige Passwort aus (sonst könnte jeder den Login blockieren).
+// Unabhängig von der IP: Ab 30 Fehlversuchen in 15 Minuten laufen Passwortprüfungen nur noch nacheinander,
+// höchstens eine pro Sekunde. Das deckelt verteiltes Raten insgesamt, auch mit gefälschten IPs oder vielen
+// parallelen Anfragen. Das richtige Passwort kommt durch, sobald es an der Reihe ist; nur wenn die Schlange
+// voll ist, gibt es vorübergehend 429. MCP und Daemons sind davon nicht betroffen.
 const FAIL_WINDOW_MS = 15 * 60_000
-const FAIL_SLOWDOWN_AFTER = 30
-const FAIL_DELAY_MS = 2_000
+const SERIALIZE_AFTER = 30
+const SPACING_MS = 1_000
+const MAX_WAITING = 20
 let failures: number[] = []
+let gate: Promise<void> = Promise.resolve()
+let waiting = 0
+
+function underAttack() {
+  const now = Date.now()
+  failures = failures.filter((t) => now - t < FAIL_WINDOW_MS).slice(-1000)
+  return failures.length >= SERIALIZE_AFTER
+}
+
+async function waitForTurn() {
+  if (waiting >= MAX_WAITING) throw new ApiError(429, 'RATE_LIMITED', 'Gerade laufen zu viele Anmeldeversuche. Versuch es in ein paar Minuten erneut.')
+  waiting++
+  const turn = gate.then(() => new Promise<void>((resolve) => setTimeout(resolve, SPACING_MS)))
+  gate = turn
+  try {
+    await turn
+  } finally {
+    waiting--
+  }
+}
 
 const route: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
@@ -26,11 +49,9 @@ const route: FastifyPluginAsyncZod = async (fastify) => {
       response: { 200: ok },
     },
     handler: async (request, reply) => {
+      if (underAttack()) await waitForTurn()
       if (!safeEqual(request.body.password, env.PANEL_PASSWORD)) {
-        const now = Date.now()
-        failures = failures.filter((t) => now - t < FAIL_WINDOW_MS).slice(-1000)
-        failures.push(now)
-        if (failures.length > FAIL_SLOWDOWN_AFTER) await new Promise((resolve) => setTimeout(resolve, FAIL_DELAY_MS))
+        failures.push(Date.now())
         request.log.warn({ ip: request.ip }, 'Falsches Panel-Passwort')
         throw new ApiError(401, 'INVALID_PASSWORD', 'Das Passwort stimmt nicht.')
       }
