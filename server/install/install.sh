@@ -25,64 +25,64 @@ TOOLS_DIR="$HOME/.claude-tools"
 
 bold() { printf '\033[1m%s\033[0m\n' "$*"; }
 step() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
-warn() { printf '\033[1;33mHinweis:\033[0m %s\n' "$*" >&2; }
-fail() { printf '\033[1;31mFehler:\033[0m %s\n' "$*" >&2; exit 1; }
+warn() { printf '\033[1;33mNote:\033[0m %s\n' "$*" >&2; }
+fail() { printf '\033[1;31mError:\033[0m %s\n' "$*" >&2; exit 1; }
 
 # --- Voraussetzungen -------------------------------------------------------
 
-[ "$(uname -s)" = "Linux" ] || fail "Der Daemon läuft vorerst nur unter Linux."
+[ "$(uname -s)" = "Linux" ] || fail "The daemon only runs on Linux for now."
 if [ "$(id -u)" = "0" ] && [ "${DEVICE_MCP_ALLOW_ROOT:-}" != "1" ]; then
-  fail "Bitte als normaler Benutzer ausführen, nicht als root (der Daemon läuft als dieser Benutzer). Wer es trotzdem will: DEVICE_MCP_ALLOW_ROOT=1."
+  fail "Please run as a normal user, not as root (the daemon runs as this user). To do it anyway: DEVICE_MCP_ALLOW_ROOT=1."
 fi
-command -v curl >/dev/null || fail "curl fehlt."
-command -v gzip >/dev/null || fail "gzip fehlt."
-command -v systemctl >/dev/null || fail "systemd fehlt (systemctl nicht gefunden)."
-command -v bash >/dev/null || fail "bash fehlt."
+command -v curl >/dev/null || fail "curl is missing."
+command -v gzip >/dev/null || fail "gzip is missing."
+command -v systemctl >/dev/null || fail "systemd is missing (systemctl not found)."
+command -v bash >/dev/null || fail "bash is missing."
 case "$SERVER_URL" in
   http://*|https://*) ;;
-  *) fail "Server-URL '$SERVER_URL' ist ungültig. Setze DEVICE_MCP_SERVER=https://…" ;;
+  *) fail "Server URL '$SERVER_URL' is invalid. Set DEVICE_MCP_SERVER=https://…" ;;
 esac
-case "$SERVER_URL" in *'"'*|*'\'*) fail "Server-URL enthält ungültige Zeichen." ;; esac
+case "$SERVER_URL" in *'"'*|*'\'*) fail "Server URL contains invalid characters." ;; esac
 
 case "$(uname -m)" in
   x86_64|amd64) ARCH=x64 ;;
   aarch64|arm64) ARCH=arm64 ;;
-  *) fail "Architektur $(uname -m) wird nicht unterstützt (nur x86_64 und aarch64)." ;;
+  *) fail "Architecture $(uname -m) is not supported (only x86_64 and aarch64)." ;;
 esac
 
 if [ -z "$TOKEN" ] && [ -f "$CONFIG" ]; then
   TOKEN="$(sed -n 's/.*"token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$CONFIG" | head -n1)"
-  [ -n "$TOKEN" ] && step "Behalte den Token aus $CONFIG"
+  [ -n "$TOKEN" ] && step "Keeping the token from $CONFIG"
 fi
-[ -n "$TOKEN" ] || fail "Kein Geräte-Token. Aufruf: curl -fsSL $SERVER_URL/install.sh | DEVICE_MCP_TOKEN='dmcp_…' bash"
+[ -n "$TOKEN" ] || fail "No device token. Usage: curl -fsSL $SERVER_URL/install.sh | DEVICE_MCP_TOKEN='dmcp_…' bash"
 case "$TOKEN" in
-  *[!A-Za-z0-9_-]*) fail "Der Token enthält ungültige Zeichen. Kopiere ihn erneut aus dem Panel." ;;
+  *[!A-Za-z0-9_-]*) fail "The token contains invalid characters. Copy it again from the panel." ;;
 esac
 
 # systemctl --user braucht die Laufzeitumgebung der Benutzersitzung, auch per SSH oder su.
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=$XDG_RUNTIME_DIR/bus}"
 
-bold "device-mcp für $(id -un)@$(hostname) ($ARCH) einrichten, Server $SERVER_URL"
+bold "Setting up device-mcp for $(id -un)@$(hostname) ($ARCH), server $SERVER_URL"
 
 # --- Binary ----------------------------------------------------------------
 
-step "Lade den Daemon"
+step "Downloading the daemon"
 mkdir -p "$BIN_DIR"
 TMP_BIN="$(mktemp "$BIN_DIR/.device-mcp.XXXXXX")"
 trap 'rm -f "$TMP_BIN"' EXIT
 curl -fSL --progress-bar "$SERVER_URL/download/device-mcp-linux-$ARCH.gz" | gzip -dc > "$TMP_BIN" \
-  || fail "Download von $SERVER_URL/download/device-mcp-linux-$ARCH.gz fehlgeschlagen."
+  || fail "Download of $SERVER_URL/download/device-mcp-linux-$ARCH.gz failed."
 chmod 755 "$TMP_BIN"
-"$TMP_BIN" --version >/dev/null 2>&1 || fail "Das geladene Binary startet nicht auf diesem System."
+"$TMP_BIN" --version >/dev/null 2>&1 || fail "The downloaded binary does not run on this system."
 # mv ersetzt die Datei atomar, ein laufender Daemon behält bis zum Neustart die alte Version.
 mv -f "$TMP_BIN" "$BIN"
 trap - EXIT
-step "Daemon $("$BIN" --version) in $BIN"
+step "Daemon $("$BIN" --version) at $BIN"
 
 # --- Konfiguration ---------------------------------------------------------
 
-step "Schreibe $CONFIG"
+step "Writing $CONFIG"
 mkdir -p "$CONFIG_DIR"
 chmod 700 "$CONFIG_DIR"
 (
@@ -95,7 +95,7 @@ chmod 600 "$CONFIG"
 (
   umask 077
   {
-    echo "# Von install.sh geschrieben. Umgebung für den device-mcp-Service."
+    echo "# Written by install.sh. Environment for the device-mcp service."
     printf 'PATH=%s\n' "$BIN_DIR:$PATH"
     [ -n "${LANG:-}" ] && printf 'LANG=%s\n' "$LANG"
   } > "$ENV_FILE"
@@ -105,38 +105,38 @@ chmod 600 "$CONFIG"
 
 mkdir -p "$TOOLS_DIR"
 if [ ! -f "$TOOLS_DIR/README.md" ]; then
-  step "Lege $TOOLS_DIR/README.md an"
+  step "Creating $TOOLS_DIR/README.md"
   cat > "$TOOLS_DIR/README.md" <<README
-# Claude-Tools auf $(hostname)
+# Claude tools on $(hostname)
 
-Helfer-Scripts, die Claude auf diesem Gerät gebaut hat. Bevor Claude etwas Neues baut,
-liest es diese Datei. Jedes neue Script kommt in diesen Ordner und bekommt hier einen Eintrag.
+Helper scripts Claude has built on this device. Before Claude builds something new,
+it reads this file. Every new script goes into this directory and gets an entry here.
 
-- Benutzer: $(id -un)
+- User: $(id -un)
 - System: $( (. /etc/os-release 2>/dev/null && echo "${PRETTY_NAME:-Linux}") || echo Linux ), $(uname -m)
-- Angelegt: $(date -u +%Y-%m-%d)
+- Created: $(date -u +%Y-%m-%d)
 
 ## Scripts
 
-| Script | Zweck | Aufruf |
+| Script | Purpose | Usage |
 |---|---|---|
-| – | Noch keine Scripts. | – |
+| – | No scripts yet. | – |
 
-## Notizen
+## Notes
 
-Hinweise zum Gerät, die Claude beim nächsten Mal wissen sollte (Pfade, Dienste, Eigenheiten).
+Things about this device Claude should know next time (paths, services, quirks).
 README
 else
-  step "$TOOLS_DIR/README.md gibt es schon, bleibt unverändert"
+  step "$TOOLS_DIR/README.md already exists, leaving it unchanged"
 fi
 
 # --- systemd-User-Service --------------------------------------------------
 
-step "Richte den systemd-User-Service ein"
+step "Setting up the systemd user service"
 mkdir -p "$UNIT_DIR"
 cat > "$UNIT" <<'UNIT'
 [Unit]
-Description=device-mcp Daemon (Befehle und Dateien für Claude)
+Description=device-mcp daemon (commands and files for Claude)
 StartLimitIntervalSec=0
 
 [Service]
@@ -156,15 +156,15 @@ UNIT
 
 # Damit der Daemon nach einem Reboot ohne Anmeldung startet.
 if [ "$(loginctl show-user "$(id -un)" -p Linger --value 2>/dev/null || true)" != "yes" ]; then
-  step "Aktiviere Linger für $(id -un)"
+  step "Enabling linger for $(id -un)"
   if ! loginctl enable-linger "$(id -un)" 2>/dev/null; then
     if command -v sudo >/dev/null && sudo -n true 2>/dev/null; then
       sudo loginctl enable-linger "$(id -un)"
     elif command -v sudo >/dev/null && [ -r /dev/tty ]; then
-      echo "Für 'loginctl enable-linger' wird einmal dein sudo-Passwort gebraucht."
-      sudo loginctl enable-linger "$(id -un)" < /dev/tty || warn "Linger nicht aktiviert. Nach einem Reboot startet der Daemon erst bei deiner Anmeldung. Nachholen: sudo loginctl enable-linger $(id -un)"
+      echo "'loginctl enable-linger' needs your sudo password once."
+      sudo loginctl enable-linger "$(id -un)" < /dev/tty || warn "Linger not enabled. After a reboot the daemon only starts when you log in. Fix later: sudo loginctl enable-linger $(id -un)"
     else
-      warn "Linger nicht aktiviert. Nach einem Reboot startet der Daemon erst bei deiner Anmeldung. Nachholen: sudo loginctl enable-linger $(id -un)"
+      warn "Linger not enabled. After a reboot the daemon only starts when you log in. Fix later: sudo loginctl enable-linger $(id -un)"
     fi
   fi
 fi
@@ -174,29 +174,29 @@ for _ in $(seq 1 20); do
   [ -S "$XDG_RUNTIME_DIR/bus" ] && break
   sleep 0.5
 done
-systemctl --user daemon-reload || fail "systemctl --user geht nicht. Läuft eine Benutzersitzung? Ggf. per 'ssh' statt 'su' anmelden."
+systemctl --user daemon-reload || fail "systemctl --user does not work. Is a user session running? Log in via 'ssh' instead of 'su' if needed."
 systemctl --user enable device-mcp.service >/dev/null
 systemctl --user restart device-mcp.service
 
 # --- Uninstaller -----------------------------------------------------------
 
 curl -fsSL "$SERVER_URL/uninstall.sh" -o "$UNINSTALL_BIN" && chmod 755 "$UNINSTALL_BIN" \
-  || warn "Uninstaller nicht geladen. Deinstallieren geht auch mit: curl -fsSL $SERVER_URL/uninstall.sh | bash"
+  || warn "Could not download the uninstaller. You can also uninstall with: curl -fsSL $SERVER_URL/uninstall.sh | bash"
 
 # --- Kontrolle -------------------------------------------------------------
 
 sleep 2
 if systemctl --user is-active --quiet device-mcp.service; then
-  bold "Fertig. Der Daemon läuft."
+  bold "Done. The daemon is running."
 else
-  warn "Der Service läuft nicht. Log ansehen: journalctl --user -u device-mcp -n 50"
+  warn "The service is not running. Check the log: journalctl --user -u device-mcp -n 50"
 fi
 cat <<EOF
 
-  Status:        systemctl --user status device-mcp
-  Log:           journalctl --user -u device-mcp -f
-  Neu starten:   systemctl --user restart device-mcp
-  Deinstallieren: device-mcp-uninstall   (oder: curl -fsSL $SERVER_URL/uninstall.sh | bash)
+  Status:    systemctl --user status device-mcp
+  Log:       journalctl --user -u device-mcp -f
+  Restart:   systemctl --user restart device-mcp
+  Uninstall: device-mcp-uninstall   (or: curl -fsSL $SERVER_URL/uninstall.sh | bash)
 
-Im Panel sollte das Gerät jetzt online sein.
+The device should now be online in the panel.
 EOF

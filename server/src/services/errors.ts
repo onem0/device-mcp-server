@@ -8,7 +8,7 @@ export class ApiError extends Error {
   }
 }
 
-export const notFound = (what = 'Eintrag') => new ApiError(404, 'NOT_FOUND', `${what} wurde nicht gefunden.`)
+export const notFound = (what = 'Entry') => new ApiError(404, 'NOT_FOUND', `${what} not found.`)
 
 // Postgres meldet eine verletzte Unique-Bedingung mit 23505. Drizzle hängt den Treiberfehler an cause.
 export function isUniqueViolation(err: unknown): boolean {

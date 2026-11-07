@@ -7,10 +7,10 @@ const now = useNow()
 
 const state = computed(() => {
   const d = props.device
-  if (!d.enabled) return { key: 'disabled', label: 'deaktiviert', detail: d.lastSeenAt ? `zuletzt ${ago(d.lastSeenAt, now.value)}` : 'nie verbunden' }
-  if (d.online) return { key: 'online', label: 'online', detail: d.connectedAt ? `verbunden ${since(d.connectedAt, now.value)}` : '' }
-  if (!d.lastSeenAt) return { key: 'never', label: 'wartet auf den Daemon', detail: 'noch nie verbunden' }
-  return { key: 'offline', label: 'offline', detail: `zuletzt gesehen ${ago(d.lastSeenAt, now.value)}` }
+  if (!d.enabled) return { key: 'disabled', label: 'disabled', detail: d.lastSeenAt ? `last seen ${ago(d.lastSeenAt, now.value)}` : 'never connected' }
+  if (d.online) return { key: 'online', label: 'online', detail: d.connectedAt ? `connected for ${since(d.connectedAt, now.value)}` : '' }
+  if (!d.lastSeenAt) return { key: 'never', label: 'waiting for the daemon', detail: 'never connected' }
+  return { key: 'offline', label: 'offline', detail: `last seen ${ago(d.lastSeenAt, now.value)}` }
 })
 </script>
 
@@ -19,8 +19,8 @@ const state = computed(() => {
     <i class="status__dot" aria-hidden="true" />
     <strong>{{ state.label }}</strong>
     <span v-if="state.detail" class="status__detail muted">{{ state.detail }}</span>
-    <span v-if="device.readOnly" class="status__ro" title="Claude kann lesen, aber keine Befehle ausführen, nichts schreiben und nichts in Sessions tippen.">
-      <Lock :size="14" aria-hidden="true" />nur lesen
+    <span v-if="device.readOnly" class="status__ro" title="Claude can read, but cannot run commands, write anything or type into sessions.">
+      <Lock :size="14" aria-hidden="true" />read-only
     </span>
   </span>
 </template>

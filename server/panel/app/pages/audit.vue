@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AuditEntry, Device } from '~/utils/types'
 
-useHead({ title: 'Protokoll' })
+useHead({ title: 'Audit log' })
 
 const route = useRoute()
 const entries = ref<AuditEntry[]>([])
@@ -56,23 +56,23 @@ usePolling(load, 10000)
 <template>
   <div class="log">
     <div class="log__head">
-      <h1 class="caps">Protokoll · {{ total }} {{ total === 1 ? 'Eintrag' : 'Einträge' }}</h1>
+      <h1 class="caps">Audit log · {{ total }} {{ total === 1 ? 'entry' : 'entries' }}</h1>
       <div class="field log__filter">
-        <label for="log-device" class="sr-only">Gerät</label>
+        <label for="log-device" class="sr-only">Device</label>
         <select id="log-device" v-model="deviceFilter" class="input">
-          <option value="">Alle Geräte</option>
+          <option value="">All devices</option>
           <option v-for="d in devices" :key="d.id" :value="d.id">{{ d.name }}</option>
         </select>
       </div>
     </div>
-    <p class="hint log__intro">Jeder Aufruf von Claude über MCP, neueste zuerst: welches Tool, mit welchen Argumenten, mit welchem Ergebnis.</p>
+    <p class="hint log__intro">Every call Claude makes over MCP, newest first: which tool, with which arguments, with which result.</p>
     <p v-if="loadError" class="banner" role="alert">{{ loadError }}</p>
 
     <section class="card log__table">
-      <p v-if="!entries.length" class="hint">Noch keine Aufrufe{{ deviceFilter ? ' für dieses Gerät' : '' }}.</p>
+      <p v-if="!entries.length" class="hint">No calls yet{{ deviceFilter ? ' for this device' : '' }}.</p>
       <AuditTable v-else :entries="entries" :show-device="!deviceFilter" />
       <button v-if="entries.length < total" type="button" class="btn btn--quiet log__more" :disabled="loadingMore" @click="loadMore">
-        {{ loadingMore ? 'Lade …' : `Ältere laden (${total - entries.length} weitere)` }}
+        {{ loadingMore ? 'Loading …' : `Load older (${total - entries.length} more)` }}
       </button>
     </section>
   </div>

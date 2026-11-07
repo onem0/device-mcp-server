@@ -33,10 +33,10 @@ const schema = z.object({
   PORT: withDefault(z.coerce.number().int().min(1).max(65535), 3000),
   TRUST_PROXY: trustProxy,
   LOG_LEVEL: withDefault(z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']), 'info'),
-  DATABASE_URL: z.string({ error: 'DATABASE_URL fehlt.' }).min(1, 'DATABASE_URL fehlt.'),
-  PUBLIC_URL: optional(z.url({ error: 'PUBLIC_URL muss eine URL sein, z. B. https://mcp.example.com.' }).transform((v) => v.replace(/\/+$/, ''))),
-  MCP_TOKEN: z.string({ error: 'MCP_TOKEN fehlt.' }).min(32, 'MCP_TOKEN braucht mindestens 32 Zeichen (openssl rand -base64 32).'),
-  PANEL_PASSWORD: z.string({ error: 'PANEL_PASSWORD fehlt.' }).min(12, 'PANEL_PASSWORD braucht mindestens 12 Zeichen.'),
+  DATABASE_URL: z.string({ error: 'DATABASE_URL is missing.' }).min(1, 'DATABASE_URL is missing.'),
+  PUBLIC_URL: optional(z.url({ error: 'PUBLIC_URL must be a URL, e.g. https://mcp.example.com.' }).transform((v) => v.replace(/\/+$/, ''))),
+  MCP_TOKEN: z.string({ error: 'MCP_TOKEN is missing.' }).min(32, 'MCP_TOKEN needs at least 32 characters (openssl rand -base64 32).'),
+  PANEL_PASSWORD: z.string({ error: 'PANEL_PASSWORD is missing.' }).min(12, 'PANEL_PASSWORD needs at least 12 characters.'),
   SESSION_TTL_HOURS: withDefault(z.coerce.number().int().positive(), 168),
   // Obergrenze ab Anmeldung, auch wenn die Sitzung ständig genutzt wird.
   SESSION_MAX_DAYS: withDefault(z.coerce.number().int().positive(), 30),
@@ -48,13 +48,13 @@ const schema = z.object({
 
 const parsed = schema.safeParse(process.env)
 if (!parsed.success) {
-  console.error('Konfiguration unvollständig:')
+  console.error('Configuration incomplete:')
   for (const issue of parsed.error.issues) console.error(`  ${issue.path.join('.')}: ${issue.message}`)
   process.exit(1)
 }
 
 if (parsed.data.HEARTBEAT_TIMEOUT_SECONDS <= parsed.data.HEARTBEAT_INTERVAL_SECONDS) {
-  console.error('HEARTBEAT_TIMEOUT_SECONDS muss größer sein als HEARTBEAT_INTERVAL_SECONDS.')
+  console.error('HEARTBEAT_TIMEOUT_SECONDS must be greater than HEARTBEAT_INTERVAL_SECONDS.')
   process.exit(1)
 }
 

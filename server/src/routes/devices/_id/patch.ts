@@ -12,11 +12,11 @@ const route: FastifyPluginAsyncZod = async (fastify) => {
     method: 'PATCH',
     url: '/',
     schema: {
-      tags: ['Geräte'],
+      tags: ['Devices'],
       params: idParams,
       body: z
         .object({ name: deviceName.optional(), enabled: z.boolean().optional(), readOnly: z.boolean().optional() })
-        .refine((v) => v.name !== undefined || v.enabled !== undefined || v.readOnly !== undefined, 'Nichts zu ändern.'),
+        .refine((v) => v.name !== undefined || v.enabled !== undefined || v.readOnly !== undefined, 'Nothing to change.'),
       response: { 200: device },
     },
     handler: async (request) => {

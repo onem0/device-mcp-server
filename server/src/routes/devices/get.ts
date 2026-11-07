@@ -7,7 +7,7 @@ const route: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'GET',
     url: '/',
-    schema: { tags: ['Geräte'], response: { 200: z.array(device) } },
+    schema: { tags: ['Devices'], response: { 200: z.array(device) } },
     handler: async () => (await listDevices()).map(toDevice),
   })
 }

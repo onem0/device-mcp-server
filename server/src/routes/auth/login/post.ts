@@ -26,7 +26,7 @@ function underAttack() {
 }
 
 async function waitForTurn() {
-  if (waiting >= MAX_WAITING) throw new ApiError(429, 'RATE_LIMITED', 'Gerade laufen zu viele Anmeldeversuche. Versuch es in ein paar Minuten erneut.')
+  if (waiting >= MAX_WAITING) throw new ApiError(429, 'RATE_LIMITED', 'Too many login attempts right now. Try again in a few minutes.')
   waiting++
   const turn = gate.then(() => new Promise<void>((resolve) => setTimeout(resolve, SPACING_MS)))
   gate = turn
@@ -44,7 +44,7 @@ const route: FastifyPluginAsyncZod = async (fastify) => {
     // Pro IP höchstens 10 Versuche in 15 Minuten, erfolgreiche mitgezählt.
     config: { rateLimit: { max: 10, timeWindow: '15 minutes' } },
     schema: {
-      tags: ['Anmeldung'],
+      tags: ['Auth'],
       body: z.object({ password: z.string().min(1).max(1000) }),
       response: { 200: ok },
     },
@@ -52,8 +52,8 @@ const route: FastifyPluginAsyncZod = async (fastify) => {
       if (underAttack()) await waitForTurn()
       if (!safeEqual(request.body.password, env.PANEL_PASSWORD)) {
         failures.push(Date.now())
-        request.log.warn({ ip: request.ip }, 'Falsches Panel-Passwort')
-        throw new ApiError(401, 'INVALID_PASSWORD', 'Das Passwort stimmt nicht.')
+        request.log.warn({ ip: request.ip }, 'Wrong panel password')
+        throw new ApiError(401, 'INVALID_PASSWORD', 'Wrong password.')
       }
       const token = await createSession({ userAgent: request.headers['user-agent'], ip: request.ip })
       setSessionCookie(reply, token)

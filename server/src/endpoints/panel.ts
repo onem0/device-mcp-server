@@ -17,7 +17,7 @@ export default fp(async (fastify) => {
 
   const root = env.PANEL_DIST_DIR
   const hasPanel = existsSync(path.join(root, 'index.html'))
-  if (!hasPanel) fastify.log.warn({ root }, 'Kein gebautes Panel gefunden, nur API und MCP sind erreichbar')
+  if (!hasPanel) fastify.log.warn({ root }, 'No built panel found, only API and MCP are available')
 
   if (hasPanel) {
     await fastify.register(fastifyStatic, {
@@ -36,6 +36,6 @@ export default fp(async (fastify) => {
     if (hasPanel && !isApi && (request.method === 'GET' || request.method === 'HEAD')) {
       return reply.header('cache-control', 'no-cache').sendFile(spaShell)
     }
-    return reply.code(404).send({ error: { code: 'NOT_FOUND', message: 'Nicht gefunden.' } })
+    return reply.code(404).send({ error: { code: 'NOT_FOUND', message: 'Not found.' } })
   })
 })

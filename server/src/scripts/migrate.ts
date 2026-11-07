@@ -3,4 +3,4 @@ import { runMigrations } from '../db/migrate.js'
 
 await runMigrations()
 await pool.end()
-console.log('Migrationen ausgeführt.')
+console.log('Migrations applied.')

@@ -21,10 +21,10 @@ async function copy() {
     <span v-if="label" class="copy__label caps muted">{{ label }}</span>
     <div class="copy__row">
       <code class="copy__value" :class="{ 'copy__value--pre': pre }">{{ value }}</code>
-      <button type="button" class="copy__btn" :class="{ 'is-done': copied }" :aria-label="`${label ?? 'Wert'} kopieren`" @click="copy">
+      <button type="button" class="copy__btn" :class="{ 'is-done': copied }" :aria-label="`Copy ${label ?? 'value'}`" @click="copy">
         <Check v-if="copied" :size="16" aria-hidden="true" />
         <Copy v-else :size="16" aria-hidden="true" />
-        <span class="copy__btn-text">{{ copied ? 'Kopiert' : 'Kopieren' }}</span>
+        <span class="copy__btn-text">{{ copied ? 'Copied' : 'Copy' }}</span>
       </button>
     </div>
   </div>

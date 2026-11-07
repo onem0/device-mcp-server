@@ -29,7 +29,7 @@ Ein Werkzeug für genau einen Menschen und seine eigenen Maschinen, selbst gehos
 - Login nur mit einem Passwort aus der `.env`, Session-Cookie, Rate-Limit.
 - Geräte-Token und MCP-Token sind Geheimnisse: Der Geräte-Token erscheint genau einmal, der MCP-Token nie im Panel.
 - Daemon vorerst nur Linux (systemd-User-Service).
-- Oberfläche, Fehlermeldungen und Doku auf Deutsch, Code-Bezeichner Englisch.
+- Alle Strings im Programm auf Englisch (Panel, Tool-Beschreibungen und -Ausgaben, Fehlermeldungen, Logs, Install-Scripts). Code-Kommentare und READMEs auf Deutsch.
 - Stack: Nuxt-SPA (`ssr: false`), von Fastify ausgeliefert, Panel-API unter `/v1`.
 
 ## Brand Commitments

@@ -34,7 +34,7 @@ function submit() {
 
 <template>
   <form v-if="editing" class="rename" @submit.prevent="submit" @keydown.esc.prevent="emit('cancel')">
-    <label class="sr-only" :for="`rename-${device.id}`">Neuer Name für {{ device.name }}</label>
+    <label class="sr-only" :for="`rename-${device.id}`">New name for {{ device.name }}</label>
     <input
       :id="`rename-${device.id}`"
       ref="input"
@@ -46,11 +46,11 @@ function submit() {
       :disabled="busy"
       :aria-invalid="!!error"
     />
-    <button type="submit" class="btn" :disabled="busy">Speichern</button>
-    <button type="button" class="btn btn--quiet" :disabled="busy" @click="emit('cancel')">Abbrechen</button>
+    <button type="submit" class="btn" :disabled="busy">Save</button>
+    <button type="button" class="btn btn--quiet" :disabled="busy" @click="emit('cancel')">Cancel</button>
     <p v-if="error" class="error rename__error" role="alert">{{ error }}</p>
   </form>
-  <NuxtLink v-else-if="link" :to="`/geraete/${device.id}`" class="tape-link" :aria-label="`${device.name} öffnen`">
+  <NuxtLink v-else-if="link" :to="`/devices/${device.id}`" class="tape-link" :aria-label="`Open ${device.name}`">
     <LabelTape :key="device.name" :class="{ 'is-reprinted': reprinted }" :struck="!device.enabled">{{ device.name }}</LabelTape>
   </NuxtLink>
   <LabelTape v-else :key="device.name" :class="{ 'is-reprinted': reprinted }" :struck="!device.enabled">{{ device.name }}</LabelTape>

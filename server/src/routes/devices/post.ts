@@ -9,7 +9,7 @@ const route: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'POST',
     url: '/',
-    schema: { tags: ['Geräte'], body: z.object({ name: deviceName }), response: { 201: deviceWithToken } },
+    schema: { tags: ['Devices'], body: z.object({ name: deviceName }), response: { 201: deviceWithToken } },
     handler: async (request, reply) => {
       const { device, token } = await createDevice(request.body.name)
       reply.code(201).header('cache-control', 'no-store')

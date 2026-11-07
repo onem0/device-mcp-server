@@ -66,7 +66,7 @@ function close() {
 </script>
 
 <template>
-  <SheetDialog v-if="secret" class="sheet--tape" :open="secret !== null" :label="`Token für ${secret.payload.device.name}`" :guard="() => (close(), false)" @close="close">
+  <SheetDialog v-if="secret" class="sheet--tape" :open="secret !== null" :label="`Token for ${secret.payload.device.name}`" :guard="() => (close(), false)" @close="close">
     <div class="token" :class="{ 'is-cut': cutting }">
       <div class="token__exit">
         <div class="token__tape">
@@ -75,11 +75,11 @@ function close() {
         <div class="token__slot" aria-hidden="true" />
       </div>
       <div class="token__under">
-        <span class="token__hint">Geräte-Token, nur jetzt sichtbar.</span>
-        <button type="button" class="token__copy" :class="{ 'is-done': tokenCopied }" aria-label="Geräte-Token kopieren" @click="copyToken">
+        <span class="token__hint">Device token, visible only now.</span>
+        <button type="button" class="token__copy" :class="{ 'is-done': tokenCopied }" aria-label="Copy device token" @click="copyToken">
           <Check v-if="tokenCopied" :size="16" aria-hidden="true" />
           <Copy v-else :size="16" aria-hidden="true" />
-          <span>{{ tokenCopied ? 'Kopiert' : 'Kopieren' }}</span>
+          <span>{{ tokenCopied ? 'Copied' : 'Copy' }}</span>
         </button>
       </div>
     </div>
@@ -87,28 +87,28 @@ function close() {
     <div class="sheet__body token__body">
       <div class="token__head">
         <LabelTape small>{{ secret.payload.device.name }}</LabelTape>
-        <h2 class="sheet__title">{{ secret.mode === 'create' ? 'Gerät angelegt' : 'Neuer Token erzeugt' }}</h2>
+        <h2 class="sheet__title">{{ secret.mode === 'create' ? 'Device added' : 'New token created' }}</h2>
       </div>
 
-      <p v-if="secret.mode === 'regenerate'" class="hint">Der alte Token gilt nicht mehr, die Verbindung wurde getrennt. Führe den Befehl erneut auf dem Gerät aus, das aktualisiert nur die Konfiguration.</p>
+      <p v-if="secret.mode === 'regenerate'" class="hint">The old token no longer works and the connection was closed. Run the command on the device again; it only updates the config.</p>
 
-      <CopyField label="Auf dem Gerät ausführen (als normaler Benutzer)" :value="secret.payload.installCommand" @copied="copied = true" />
+      <CopyField label="Run on the device (as a normal user)" :value="secret.payload.installCommand" @copied="copied = true" />
 
       <div class="token__live" :class="{ 'is-on': connected }" role="status" aria-live="polite">
         <template v-if="connected && device">
           <Check :size="18" aria-hidden="true" />
-          <span><strong>Verbunden.</strong> {{ [device.os, device.arch].filter(Boolean).join(', ') }}<template v-if="device.username"> · {{ device.username }}@{{ device.hostname }}</template></span>
+          <span><strong>Connected.</strong> {{ [device.os, device.arch].filter(Boolean).join(', ') }}<template v-if="device.username"> · {{ device.username }}@{{ device.hostname }}</template></span>
         </template>
         <template v-else>
           <Loader :size="18" class="spin" aria-hidden="true" />
-          <span>Warte auf die erste Verbindung des Daemons …</span>
+          <span>Waiting for the daemon's first connection …</span>
         </template>
       </div>
 
-      <p v-if="warned && !copied && !connected" class="banner" role="alert">Du hast weder Befehl noch Token kopiert. Nach dem Schließen ist der Token weg und du musst einen neuen erzeugen.</p>
+      <p v-if="warned && !copied && !connected" class="banner" role="alert">You copied neither the command nor the token. Once you close this, the token is gone and you need to create a new one.</p>
 
       <div class="sheet__actions">
-        <button type="button" class="btn" @click="close">{{ warned && !copied && !connected ? 'Trotzdem schließen' : 'Fertig' }}</button>
+        <button type="button" class="btn" @click="close">{{ warned && !copied && !connected ? 'Close anyway' : 'Done' }}</button>
       </div>
     </div>
   </SheetDialog>

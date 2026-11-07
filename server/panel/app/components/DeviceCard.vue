@@ -13,8 +13,8 @@ const emit = defineEmits<{ rename: []; save: [name: string]; cancel: []; toggle:
     </div>
     <DeviceFacts :device="device" />
     <p v-if="!device.lastSeenAt && !device.os" class="device__never hint">
-      <template v-if="!device.enabled">Deaktiviert, bevor sich der Daemon je gemeldet hat. Claude erreicht das Gerät erst wieder, wenn du es aktivierst.</template>
-      <template v-else>Der Daemon hat sich noch nie gemeldet. Den Install-Befehl gab es nur beim Anlegen; ist er weg, erzeuge mit „Token neu“ einen neuen.</template>
+      <template v-if="!device.enabled">Disabled before the daemon ever connected. Claude can reach the device again once you enable it.</template>
+      <template v-else>The daemon has never connected. The install command was only shown when adding the device; if it is gone, create a new one with “New token”.</template>
     </p>
     <DeviceActions
       class="device__actions"

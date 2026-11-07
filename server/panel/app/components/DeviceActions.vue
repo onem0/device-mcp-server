@@ -7,25 +7,25 @@ const emit = defineEmits<{ rename: []; toggle: []; readOnly: []; regenerate: [];
 </script>
 
 <template>
-  <div class="actions" role="group" :aria-label="`Aktionen für ${device.name}`">
-    <NuxtLink v-if="showLog" :to="`/geraete/${device.id}`" class="action" title="Protokoll"><ScrollText :size="16" aria-hidden="true" /><span class="action__label">Protokoll</span></NuxtLink>
-    <button type="button" class="action" title="Umbenennen" :disabled="busy" @click="emit('rename')"><Pencil :size="16" aria-hidden="true" /><span class="action__label">Umbenennen</span></button>
-    <button type="button" class="action" title="Token neu erzeugen" :disabled="busy" @click="emit('regenerate')"><KeyRound :size="16" aria-hidden="true" /><span class="action__label">Token neu</span></button>
+  <div class="actions" role="group" :aria-label="`Actions for ${device.name}`">
+    <NuxtLink v-if="showLog" :to="`/devices/${device.id}`" class="action" title="Audit log"><ScrollText :size="16" aria-hidden="true" /><span class="action__label">Audit log</span></NuxtLink>
+    <button type="button" class="action" title="Rename" :disabled="busy" @click="emit('rename')"><Pencil :size="16" aria-hidden="true" /><span class="action__label">Rename</span></button>
+    <button type="button" class="action" title="Create a new token" :disabled="busy" @click="emit('regenerate')"><KeyRound :size="16" aria-hidden="true" /><span class="action__label">New token</span></button>
     <button
       type="button"
       class="action"
-      :title="device.readOnly ? 'Claude darf wieder schreiben und Befehle ausführen' : 'Nur lesen: keine Befehle, kein Schreiben, keine Session-Eingaben'"
+      :title="device.readOnly ? 'Let Claude write and run commands again' : 'Read-only: no commands, no writing, no session input'"
       :aria-pressed="device.readOnly"
       :disabled="busy"
       @click="emit('readOnly')"
     >
       <LockOpen v-if="device.readOnly" :size="16" aria-hidden="true" /><Lock v-else :size="16" aria-hidden="true" />
-      <span class="action__label">{{ device.readOnly ? 'Schreiben erlauben' : 'Nur lesen' }}</span>
+      <span class="action__label">{{ device.readOnly ? 'Allow writing' : 'Read-only' }}</span>
     </button>
-    <button type="button" class="action" :title="device.enabled ? 'Deaktivieren' : 'Aktivieren'" :disabled="busy" @click="emit('toggle')">
-      <Power :size="16" aria-hidden="true" /><span class="action__label action__label--keep">{{ device.enabled ? 'Deaktivieren' : 'Aktivieren' }}</span>
+    <button type="button" class="action" :title="device.enabled ? 'Disable' : 'Enable'" :disabled="busy" @click="emit('toggle')">
+      <Power :size="16" aria-hidden="true" /><span class="action__label action__label--keep">{{ device.enabled ? 'Disable' : 'Enable' }}</span>
     </button>
-    <button type="button" class="action action--danger" title="Löschen" :disabled="busy" @click="emit('remove')"><Trash2 :size="16" aria-hidden="true" /><span class="action__label">Löschen</span></button>
+    <button type="button" class="action action--danger" title="Delete" :disabled="busy" @click="emit('remove')"><Trash2 :size="16" aria-hidden="true" /><span class="action__label">Delete</span></button>
   </div>
 </template>
 

@@ -42,7 +42,7 @@ export default async function mcp(fastify: FastifyInstance) {
         await server.connect(transport)
         await transport.handleRequest(request.raw, reply.raw, request.body)
       } catch (err) {
-        request.log.error({ err }, 'MCP-Anfrage fehlgeschlagen')
+        request.log.error({ err }, 'MCP request failed')
         if (!reply.raw.headersSent) {
           reply.raw
             .writeHead(500, { 'content-type': 'application/json' })

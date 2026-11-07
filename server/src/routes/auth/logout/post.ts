@@ -7,7 +7,7 @@ const route: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'POST',
     url: '/',
-    schema: { tags: ['Anmeldung'], response: { 200: ok } },
+    schema: { tags: ['Auth'], response: { 200: ok } },
     handler: async (request, reply) => {
       const token = sessionToken(request)
       if (token) await deleteSession(token)

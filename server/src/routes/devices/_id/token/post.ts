@@ -11,7 +11,7 @@ const route: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'POST',
     url: '/',
-    schema: { tags: ['Geräte'], params: idParams, response: { 200: deviceWithToken } },
+    schema: { tags: ['Devices'], params: idParams, response: { 200: deviceWithToken } },
     handler: async (request, reply) => {
       const { device, token } = await regenerateToken(request.params.id)
       hub.disconnect(device.id, CloseCode.InvalidToken, 'token regenerated')

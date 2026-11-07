@@ -25,7 +25,7 @@ export const sessionToken = (request: FastifyRequest) => request.cookies[SESSION
 export async function requireSession(request: FastifyRequest) {
   const token = sessionToken(request)
   const session = token ? await resolveSession(token) : null
-  if (!session) throw new ApiError(401, 'UNAUTHENTICATED', 'Bitte melde dich an.')
+  if (!session) throw new ApiError(401, 'UNAUTHENTICATED', 'Please log in.')
 }
 
 export default fp(

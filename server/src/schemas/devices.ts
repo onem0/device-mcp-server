@@ -8,9 +8,9 @@ import { iso, isoOrNull } from './common.js'
 export const deviceName = z
   .string()
   .trim()
-  .min(1, 'Gib einen Namen ein.')
-  .max(64, 'Höchstens 64 Zeichen.')
-  .regex(/^[\p{L}\p{N}._-]+$/u, 'Erlaubt sind Buchstaben, Ziffern, Punkt, Binde- und Unterstrich, keine Leerzeichen.')
+  .min(1, 'Enter a name.')
+  .max(64, 'At most 64 characters.')
+  .regex(/^[\p{L}\p{N}._-]+$/u, 'Allowed are letters, digits, dot, hyphen and underscore, no spaces.')
 
 export const device = z.object({
   id: z.uuid(),

@@ -6,7 +6,7 @@ import { runningJobs, saveJobResult } from './jobs.js'
 import { CloseCode, PROTOCOL_VERSION, type DaemonInfo, type DaemonMessage, type JobSummary, type ServerMessage } from './protocol.js'
 
 export class DeviceOfflineError extends Error {
-  constructor(message = 'Das Gerät ist nicht verbunden.') {
+  constructor(message = 'The device is not connected.') {
     super(message)
   }
 }
@@ -85,7 +85,7 @@ export class DeviceHub {
   disconnect(deviceId: string, code: number, reason: string) {
     const conn = this.conns.get(deviceId)
     if (!conn) return
-    this.drop(conn, new DeviceOfflineError('Die Verbindung zum Gerät wurde getrennt.'))
+    this.drop(conn, new DeviceOfflineError('The connection to the device was closed.'))
     conn.socket.close(code, reason)
   }
 
@@ -100,7 +100,7 @@ export class DeviceHub {
       // Nacheinander abarbeiten, damit hello sicher vor allem anderen fertig ist.
       queue = queue
         .then(() => this.onMessage(socket, state, data.toString(), ip, helloTimer))
-        .catch((err) => this.log?.error({ err }, 'Daemon-Nachricht fehlgeschlagen'))
+        .catch((err) => this.log?.error({ err }, 'Daemon message failed'))
     })
 
     socket.on('close', (code) => {
@@ -108,12 +108,12 @@ export class DeviceHub {
       const conn = state.conn
       if (!conn) return
       if (this.conns.get(conn.deviceId) === conn) {
-        this.drop(conn, new DeviceOfflineError('Die Verbindung zum Gerät ist abgebrochen.'))
-        this.log?.info({ device: conn.name, code }, 'Gerät getrennt')
+        this.drop(conn, new DeviceOfflineError('The connection to the device was lost.'))
+        this.log?.info({ device: conn.name, code }, 'Device disconnected')
       }
     })
 
-    socket.on('error', (err) => this.log?.warn({ err }, 'WebSocket-Fehler'))
+    socket.on('error', (err) => this.log?.warn({ err }, 'WebSocket error'))
   }
 
   private async onMessage(socket: WebSocket, state: { conn: Connection | null }, raw: string, ip: string, helloTimer: NodeJS.Timeout) {
@@ -157,14 +157,14 @@ export class DeviceHub {
         return
       }
       default:
-        this.log?.warn({ type: (msg as { type?: string }).type }, 'Unbekannte Daemon-Nachricht')
+        this.log?.warn({ type: (msg as { type?: string }).type }, 'Unknown daemon message')
     }
   }
 
   private async onHello(socket: WebSocket, msg: Extract<DaemonMessage, { type: 'hello' }>, ip: string): Promise<Connection | null> {
     const device = await findDeviceByToken(msg.token)
     if (!device) {
-      this.log?.warn({ ip }, 'Daemon mit unbekanntem Token abgewiesen')
+      this.log?.warn({ ip }, 'Rejected daemon with unknown token')
       socket.close(CloseCode.InvalidToken, 'invalid token')
       return null
     }
@@ -176,7 +176,7 @@ export class DeviceHub {
 
     const previous = this.conns.get(device.id)
     if (previous) {
-      this.drop(previous, new DeviceOfflineError('Das Gerät hat sich neu verbunden.'))
+      this.drop(previous, new DeviceOfflineError('The device reconnected.'))
       previous.socket.close(CloseCode.Replaced, 'replaced by new connection')
     }
 
@@ -198,7 +198,7 @@ export class DeviceHub {
     // disconnect() fand da noch keine Verbindung, deshalb jetzt gegen den aktuellen Stand prüfen.
     const fresh = await findDeviceById(device.id)
     if (!fresh || fresh.tokenHash !== device.tokenHash || !fresh.enabled) {
-      this.drop(conn, new DeviceOfflineError('Der Zugang des Geräts wurde gerade geändert.'))
+      this.drop(conn, new DeviceOfflineError('The device credentials just changed.'))
       socket.close(fresh && fresh.tokenHash === device.tokenHash ? CloseCode.Disabled : CloseCode.InvalidToken, 'credentials changed')
       return null
     }
@@ -212,9 +212,9 @@ export class DeviceHub {
       heartbeatTimeoutMs: this.heartbeatTimeoutMs,
     })
     if (msg.protocol !== PROTOCOL_VERSION) {
-      this.log?.warn({ device: device.name, protocol: msg.protocol }, 'Daemon spricht eine andere Protokollversion')
+      this.log?.warn({ device: device.name, protocol: msg.protocol }, 'Daemon speaks a different protocol version')
     }
-    this.log?.info({ device: device.name, ip, version: msg.info.version }, 'Gerät verbunden')
+    this.log?.info({ device: device.name, ip, version: msg.info.version }, 'Device connected')
 
     await this.reconcile(device.id, Array.isArray(msg.jobs) ? msg.jobs : [])
     return conn
@@ -232,7 +232,7 @@ export class DeviceHub {
           status: 'lost',
           exitCode: null,
           signal: null,
-          error: 'Der Daemon kennt diesen Job nicht mehr, vermutlich wurde er neu gestartet.',
+          error: 'The daemon no longer knows this job, it was probably restarted.',
           finishedAt: new Date().toISOString(),
           durationMs: null,
         })
@@ -290,14 +290,14 @@ export class DeviceHub {
     return new Promise<T>((resolve, reject) => {
       const timer = setTimeout(() => {
         conn.pending.delete(id)
-        reject(new DaemonError(`Das Gerät hat nicht innerhalb von ${Math.round(timeoutMs / 1000)} s geantwortet.`, 'TIMEOUT'))
+        reject(new DaemonError(`The device did not answer within ${Math.round(timeoutMs / 1000)} s.`, 'TIMEOUT'))
       }, timeoutMs)
       conn.pending.set(id, { resolve: resolve as (v: unknown) => void, reject, timer })
       conn.socket.send(JSON.stringify({ type: 'request', id, method, params } satisfies ServerMessage), (err) => {
         if (!err) return
         clearTimeout(timer)
         conn.pending.delete(id)
-        reject(new DeviceOfflineError('Die Anfrage konnte nicht an das Gerät gesendet werden.'))
+        reject(new DeviceOfflineError('The request could not be sent to the device.'))
       })
     })
   }
@@ -309,15 +309,15 @@ export class DeviceHub {
       pending.reject(reason)
     }
     conn.pending.clear()
-    touchLastSeen(conn.deviceId, new Date(conn.lastHeartbeat)).catch((err) => this.log?.error({ err }, 'last_seen_at nicht gespeichert'))
+    touchLastSeen(conn.deviceId, new Date(conn.lastHeartbeat)).catch((err) => this.log?.error({ err }, 'Could not save last_seen_at'))
   }
 
   private sweep() {
     const now = Date.now()
     for (const conn of this.conns.values()) {
       if (now - conn.lastHeartbeat <= this.heartbeatTimeoutMs) continue
-      this.log?.warn({ device: conn.name }, 'Heartbeat ausgeblieben, Gerät gilt als offline')
-      this.drop(conn, new DeviceOfflineError('Das Gerät antwortet nicht mehr.'))
+      this.log?.warn({ device: conn.name }, 'Heartbeat missing, device is considered offline')
+      this.drop(conn, new DeviceOfflineError('The device stopped responding.'))
       conn.socket.terminate()
     }
   }

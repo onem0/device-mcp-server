@@ -23,11 +23,11 @@ export function compareVersions(a: string, b: string) {
 export const daemonTooOld = (version: string | null | undefined, min: string) => !version || compareVersions(version, min) < 0
 
 export function tooOldMessage(device: string, version: string | null | undefined, min: string, tool: string, baseUrl?: string) {
-  const update = baseUrl ? `curl -fsSL ${baseUrl}/install.sh | bash` : 'das Install-Script erneut ausführen'
+  const update = baseUrl ? `curl -fsSL ${baseUrl}/install.sh | bash` : 'run the install script again'
   return (
-    `Daemon-Version zu alt: „${device}“ hat ${version ?? 'eine unbekannte Version'}, für ${tool} ist mindestens ${min} nötig. ` +
-    `Bitte updaten: auf dem Gerät „${update}“ ausführen (behält den Token). Per run_command so, damit der Neustart des Daemons ` +
-    `das Update nicht abbricht: systemd-run --user --collect bash -c '${update}'`
+    `Daemon version too old: "${device}" has ${version ?? 'an unknown version'}, ${tool} needs at least ${min}. ` +
+    `Please update: run "${update}" on the device (keeps the token). Via run_command use this, so the daemon restart ` +
+    `does not abort the update: systemd-run --user --collect bash -c '${update}'`
   )
 }
 
@@ -39,7 +39,7 @@ const INTERNAL_KEYS = new Set(['requestInfo', 'authInfo', 'signal', 'sendNotific
 const CONTENT_KEYS = new Set(['content'])
 
 function trimString(value: string) {
-  return value.length > MAX_STRING ? `${value.slice(0, MAX_STRING)}… (+${value.length - MAX_STRING} Zeichen)` : value
+  return value.length > MAX_STRING ? `${value.slice(0, MAX_STRING)}… (+${value.length - MAX_STRING} chars)` : value
 }
 
 // Argumente fürs Audit-Log: lange Strings gekürzt, Dateiinhalte nur als Länge.
@@ -48,10 +48,10 @@ export function sanitizeArgs(args: unknown): Record<string, unknown> {
   const out: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(args as Record<string, unknown>)) {
     if (INTERNAL_KEYS.has(key)) continue
-    if (CONTENT_KEYS.has(key) && typeof value === 'string') out[key] = `<${value.length} Zeichen>`
+    if (CONTENT_KEYS.has(key) && typeof value === 'string') out[key] = `<${value.length} chars>`
     else if (typeof value === 'string') out[key] = trimString(value)
     else if (Array.isArray(value)) out[key] = value.slice(0, 50).map((v) => (typeof v === 'string' ? trimString(v) : v))
-    else if (value && typeof value === 'object') out[key] = '<Objekt>'
+    else if (value && typeof value === 'object') out[key] = '<object>'
     else out[key] = value
   }
   return out

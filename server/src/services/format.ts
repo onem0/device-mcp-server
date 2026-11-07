@@ -18,34 +18,35 @@ export function formatDuration(ms: number | null | undefined) {
 }
 
 export function formatAgo(date: Date | null | undefined, now = Date.now()) {
-  if (!date) return 'nie'
+  if (!date) return 'never'
   const s = Math.max(0, Math.round((now - date.getTime()) / 1000))
-  const rel = s < 60 ? `vor ${s} s` : s < 3600 ? `vor ${Math.round(s / 60)} min` : s < 86400 ? `vor ${Math.round(s / 3600)} h` : `vor ${Math.round(s / 86400)} Tagen`
+  const rel = s < 60 ? `${s} s ago` : s < 3600 ? `${Math.round(s / 60)} min ago` : s < 86400 ? `${Math.round(s / 3600)} h ago` : `${Math.round(s / 86400)} days ago`
   return `${date.toISOString().replace(/\.\d{3}Z$/, 'Z')} (${rel})`
 }
 
-const nf = new Intl.NumberFormat('de-DE')
+const nf = new Intl.NumberFormat('en-US')
 export const num = (n: number) => nf.format(n)
-export const lines = (n: number) => `${num(n)} ${n === 1 ? 'Zeile' : 'Zeilen'}`
+export const lines = (n: number) => `${num(n)} ${n === 1 ? 'line' : 'lines'}`
 // Zeilenbereich, 0-basiert und exklusiv übergeben, 1-basiert angezeigt.
-export const lineRange = (from: number, to: number) => (to - from === 1 ? `Zeile ${num(to)}` : `Zeilen ${num(from + 1)}–${num(to)}`)
+export const lineRange = (from: number, to: number) => (to - from === 1 ? `line ${num(to)}` : `lines ${num(from + 1)}–${num(to)}`)
+const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1)
 
 export function describeStatus(job: Pick<JobSummary, 'status' | 'exitCode' | 'signal' | 'durationMs' | 'timeoutMs' | 'error' | 'startedAt'>) {
   switch (job.status) {
     case 'running': {
       const ms = Date.now() - new Date(job.startedAt).getTime()
-      return `läuft seit ${formatDuration(ms)}`
+      return `running for ${formatDuration(ms)}`
     }
     case 'exited':
-      return `beendet mit exit_code ${job.exitCode} nach ${formatDuration(job.durationMs)}`
+      return `exited with exit_code ${job.exitCode} after ${formatDuration(job.durationMs)}`
     case 'killed':
-      return `abgebrochen (${job.signal ?? 'Signal'}) nach ${formatDuration(job.durationMs)}`
+      return `killed (${job.signal ?? 'signal'}) after ${formatDuration(job.durationMs)}`
     case 'timeout':
-      return `wegen Timeout abgebrochen nach ${formatDuration(job.durationMs)}`
+      return `killed by timeout after ${formatDuration(job.durationMs)}`
     case 'failed':
-      return `fehlgeschlagen: ${job.error ?? 'unbekannter Fehler'}`
+      return `failed: ${job.error ?? 'unknown error'}`
     case 'lost':
-      return `verloren: ${job.error ?? 'der Daemon kennt den Job nicht mehr'}`
+      return `lost: ${job.error ?? 'the daemon no longer knows this job'}`
   }
 }
 
@@ -53,14 +54,14 @@ export function formatJob(job: JobSummary) {
   const out = [
     `job_id: ${job.id}`,
     `Status: ${describeStatus(job)}`,
-    `Befehl: ${job.command}`,
+    `Command: ${job.command}`,
   ]
   if (job.cwd) out.push(`cwd: ${job.cwd}`)
-  out.push(`Gestartet: ${job.startedAt}`)
-  if (job.finishedAt) out.push(`Beendet: ${job.finishedAt}`)
+  out.push(`Started: ${job.startedAt}`)
+  if (job.finishedAt) out.push(`Finished: ${job.finishedAt}`)
   if (job.timeoutMs) out.push(`Timeout: ${Math.round(job.timeoutMs / 1000)} s`)
   if (job.outputLines >= 0) {
-    out.push(`Ausgabe: ${lines(job.outputLines)}, ${formatBytes(job.outputBytes)}${job.outputTruncated ? ' (Log voll, Rest verworfen)' : ''}`)
+    out.push(`Output: ${lines(job.outputLines)}, ${formatBytes(job.outputBytes)}${job.outputTruncated ? ' (log full, rest discarded)' : ''}`)
   }
   return out.join('\n')
 }
@@ -68,30 +69,30 @@ export function formatJob(job: JobSummary) {
 // Ergebnis eines run_command im Vordergrund: Kopf, ausgelassene Mitte, Ende.
 export function formatRunResult(job: JobSummary, out: OutputChunk | null) {
   const header = [`exit_code: ${job.exitCode ?? '–'}`, `Status: ${describeStatus(job)}`, `job_id: ${job.id}`]
-  if (!out) return `${header.join('\n')}\n\n(Ausgabe nicht abrufbar, versuche job_output)`
-  if (out.totalLines === 0) return `${header.join('\n')}\n\n(keine Ausgabe)`
+  if (!out) return `${header.join('\n')}\n\n(output not available, try job_output)`
+  if (out.totalLines === 0) return `${header.join('\n')}\n\n(no output)`
 
   const parts = [header.join('\n'), '']
   if (out.omittedLines) {
     parts.push(
-      `--- Ausgabe: ${lines(out.totalLines)}, gezeigt werden die ersten ${num(out.toLine)} und die letzten ${num(out.totalLines - (out.tailFromLine ?? 0))} ---`,
+      `--- Output: ${lines(out.totalLines)}, showing the first ${num(out.toLine)} and the last ${num(out.totalLines - (out.tailFromLine ?? 0))} ---`,
       out.text,
-      `\n[… ${lines(out.omittedLines)} ausgelassen (${lineRange(out.omittedFrom!, out.omittedFrom! + out.omittedLines)}). Abrufen mit job_output, job_id=${job.id}, offset=${out.omittedFrom}]\n`,
+      `\n[… ${lines(out.omittedLines)} omitted (${lineRange(out.omittedFrom!, out.omittedFrom! + out.omittedLines)}). Fetch with job_output, job_id=${job.id}, offset=${out.omittedFrom}]\n`,
       out.tailText ?? '',
     )
   } else {
-    parts.push(`--- Ausgabe: ${lines(out.totalLines)} ---`, out.text)
+    parts.push(`--- Output: ${lines(out.totalLines)} ---`, out.text)
   }
-  if (out.truncatedChars) parts.push('\n[Sehr lange Zeilen wurden gekürzt.]')
-  if (out.job.outputTruncated) parts.push('\n[Das Log hat die Höchstgröße erreicht, spätere Ausgabe wurde verworfen.]')
+  if (out.truncatedChars) parts.push('\n[Very long lines were truncated.]')
+  if (out.job.outputTruncated) parts.push('\n[The log reached its maximum size, later output was discarded.]')
   return parts.join('\n')
 }
 
 export function formatOutputChunk(out: OutputChunk) {
   const { job } = out
-  if (out.totalLines === 0) return `job_id: ${job.id} · ${describeStatus(job)}\n\n(keine Ausgabe${job.status === 'running' ? ' bisher' : ''})`
-  const head = `job_id: ${job.id} · ${describeStatus(job)}\n${lineRange(out.fromLine, out.toLine)} von ${num(out.totalLines)}`
-  const more = out.toLine < out.totalLines ? `\n\n[Weiter mit offset=${out.toLine}]` : ''
-  const cut = out.truncatedChars ? '\n[Sehr lange Zeilen oder zu viel Text wurden gekürzt.]' : ''
+  if (out.totalLines === 0) return `job_id: ${job.id} · ${describeStatus(job)}\n\n(no output${job.status === 'running' ? ' yet' : ''})`
+  const head = `job_id: ${job.id} · ${describeStatus(job)}\n${capitalize(lineRange(out.fromLine, out.toLine))} of ${num(out.totalLines)}`
+  const more = out.toLine < out.totalLines ? `\n\n[Continue with offset=${out.toLine}]` : ''
+  const cut = out.truncatedChars ? '\n[Very long lines or too much text were truncated.]' : ''
   return `${head}\n---\n${out.text}${more}${cut}`
 }

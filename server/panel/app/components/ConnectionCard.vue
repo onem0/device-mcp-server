@@ -6,16 +6,16 @@ const { info, error, claudeCodeCommand } = useServerInfo()
 
 <template>
   <section class="card conn" aria-labelledby="conn-title">
-    <h2 id="conn-title" class="caps">Verbindung</h2>
+    <h2 id="conn-title" class="caps">Connection</h2>
     <p v-if="error" class="error">{{ error }}</p>
     <template v-else-if="info">
-      <CopyField label="MCP-URL" :value="info.mcpUrl" />
-      <CopyField label="Request-Header" value="Authorization: Bearer <MCP_TOKEN>" />
+      <CopyField label="MCP URL" :value="info.mcpUrl" />
+      <CopyField label="Request header" value="Authorization: Bearer <MCP_TOKEN>" />
       <CopyField label="Claude Code" :value="claudeCodeCommand" pre />
-      <p class="hint">Der MCP-Token steht als <code>MCP_TOKEN</code> in der .env des Servers. Das Panel zeigt ihn nie an.</p>
-      <NuxtLink to="/verbindung" class="conn__more">Anleitung für claude.ai und Claude Code <ArrowRight :size="16" aria-hidden="true" /></NuxtLink>
+      <p class="hint">The MCP token is <code>MCP_TOKEN</code> in the server's .env. The panel never shows it.</p>
+      <NuxtLink to="/connect" class="conn__more">Setup for claude.ai and Claude Code <ArrowRight :size="16" aria-hidden="true" /></NuxtLink>
     </template>
-    <p v-else class="hint">Lade …</p>
+    <p v-else class="hint">Loading …</p>
   </section>
 </template>
 

@@ -8,7 +8,7 @@ const route: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'GET',
     url: '/',
-    schema: { tags: ['Anmeldung'], response: { 200: z.object({ authenticated: z.boolean() }) } },
+    schema: { tags: ['Auth'], response: { 200: z.object({ authenticated: z.boolean() }) } },
     handler: async (request) => {
       const token = sessionToken(request)
       return { authenticated: token ? (await resolveSession(token)) !== null : false }

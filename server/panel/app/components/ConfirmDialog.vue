@@ -10,8 +10,8 @@ const emit = defineEmits<{ confirm: []; close: [] }>()
       <div class="confirm__text"><slot /></div>
       <p v-if="error" class="banner" role="alert">{{ error }}</p>
       <div class="sheet__actions">
-        <button type="button" class="btn btn--quiet" :disabled="busy" @click="emit('close')">Abbrechen</button>
-        <button type="submit" class="btn" :class="{ 'btn--danger': danger }" :disabled="busy">{{ busy ? 'Einen Moment …' : confirmLabel }}</button>
+        <button type="button" class="btn btn--quiet" :disabled="busy" @click="emit('close')">Cancel</button>
+        <button type="submit" class="btn" :class="{ 'btn--danger': danger }" :disabled="busy">{{ busy ? 'One moment …' : confirmLabel }}</button>
       </div>
     </form>
   </SheetDialog>

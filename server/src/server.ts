@@ -7,7 +7,7 @@ const app = await buildApp()
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.once(signal, () => {
-    app.log.info({ signal }, 'Server wird beendet')
+    app.log.info({ signal }, 'Server shutting down')
     app.close().then(
       () => process.exit(0),
       () => process.exit(1),

@@ -5,20 +5,20 @@ defineProps<{ entries: AuditEntry[]; showDevice?: boolean }>()
 const expanded = ref(new Set<string>())
 
 const TOOLS: Record<string, string> = {
-  list_devices: 'Geräte',
-  run_command: 'Befehl',
-  job_status: 'Job-Status',
-  job_output: 'Job-Ausgabe',
-  job_wait: 'Warten',
-  kill_job: 'Abbruch',
-  read_file: 'Lesen',
-  write_file: 'Schreiben',
-  edit_file: 'Ändern',
+  list_devices: 'Devices',
+  run_command: 'Command',
+  job_status: 'Job status',
+  job_output: 'Job output',
+  job_wait: 'Wait',
+  kill_job: 'Kill',
+  read_file: 'Read',
+  write_file: 'Write',
+  edit_file: 'Edit',
   session_start: 'Session',
-  session_send: 'Eingabe',
-  session_read: 'Bildschirm',
+  session_send: 'Input',
+  session_read: 'Screen',
   session_list: 'Sessions',
-  session_kill: 'Session-Ende',
+  session_kill: 'Session end',
 }
 
 // Argumente ohne das Gerät, das steht schon in der Zeile.
@@ -28,21 +28,21 @@ const formatArg = (v: unknown) => (typeof v === 'string' ? v : JSON.stringify(v)
 function result(e: AuditEntry) {
   switch (e.status) {
     case 'running':
-      return { text: 'läuft', tone: 'run' }
+      return { text: 'running', tone: 'run' }
     case 'exited':
       return { text: `exit ${e.exitCode}`, tone: e.exitCode === 0 ? 'ok' : 'err' }
     case 'ok':
       return { text: 'ok', tone: 'ok' }
     case 'error':
-      return { text: 'Fehler', tone: 'err' }
+      return { text: 'Error', tone: 'err' }
     case 'killed':
-      return { text: 'abgebrochen', tone: 'mute' }
+      return { text: 'killed', tone: 'mute' }
     case 'timeout':
       return { text: 'Timeout', tone: 'err' }
     case 'failed':
-      return { text: 'fehlgeschlagen', tone: 'err' }
+      return { text: 'failed', tone: 'err' }
     case 'lost':
-      return { text: 'verloren', tone: 'mute' }
+      return { text: 'lost', tone: 'mute' }
     default:
       return { text: e.status, tone: 'mute' }
   }
@@ -62,26 +62,26 @@ function toggle(id: string) {
   <table class="audit">
     <thead>
       <tr>
-        <th scope="col">Zeit</th>
-        <th v-if="showDevice" scope="col">Gerät</th>
+        <th scope="col">Time</th>
+        <th v-if="showDevice" scope="col">Device</th>
         <th scope="col">Tool</th>
-        <th scope="col">Befehl</th>
-        <th scope="col">Ergebnis</th>
-        <th scope="col" class="num">Dauer</th>
+        <th scope="col">Command</th>
+        <th scope="col">Result</th>
+        <th scope="col" class="num">Duration</th>
       </tr>
     </thead>
     <tbody>
       <tr v-for="e in entries" :key="e.id">
         <td class="audit__time mono"><time :datetime="e.createdAt" :title="dateTime(e.createdAt)">{{ day(e.createdAt) }} <span>{{ clock(e.createdAt) }}</span></time></td>
         <td v-if="showDevice" class="audit__device" :class="{ 'is-empty': !e.deviceId }">
-          <NuxtLink v-if="e.deviceId && e.deviceName" :to="`/geraete/${e.deviceId}`" class="audit__tape"><LabelTape small>{{ e.deviceName }}</LabelTape></NuxtLink>
+          <NuxtLink v-if="e.deviceId && e.deviceName" :to="`/devices/${e.deviceId}`" class="audit__tape"><LabelTape small>{{ e.deviceName }}</LabelTape></NuxtLink>
           <span v-else class="muted">–</span>
         </td>
         <td class="audit__tool" :title="e.tool">{{ TOOLS[e.tool] ?? e.tool }}</td>
         <td class="audit__cmd">
           <code :class="{ 'is-clamped': isLong(e) && !expanded.has(e.id) }">{{ e.command }}</code>
           <button v-if="isLong(e)" type="button" class="audit__more" :aria-expanded="expanded.has(e.id)" @click="toggle(e.id)">
-            {{ expanded.has(e.id) ? 'weniger' : 'Details' }}
+            {{ expanded.has(e.id) ? 'Less' : 'Details' }}
           </button>
           <dl v-if="expanded.has(e.id) && detailArgs(e).length" class="audit__args">
             <template v-for="[key, value] in detailArgs(e)" :key="key">

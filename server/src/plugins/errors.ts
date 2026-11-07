@@ -10,19 +10,19 @@ export default fp(
           field: String(v.instancePath ?? '').replace(/^\//, ''),
           message: v.message,
         }))
-        return reply.code(400).send({ error: { code: 'VALIDATION', message: 'Bitte prüfe die Eingaben.', fields } })
+        return reply.code(400).send({ error: { code: 'VALIDATION', message: 'Please check your input.', fields } })
       }
       if (err instanceof ApiError) {
         return reply.code(err.statusCode).send({ error: { code: err.code, message: err.message } })
       }
       if (err.statusCode === 429) {
-        return reply.code(429).send({ error: { code: 'RATE_LIMITED', message: 'Zu viele Versuche. Warte ein paar Minuten.' } })
+        return reply.code(429).send({ error: { code: 'RATE_LIMITED', message: 'Too many attempts. Wait a few minutes.' } })
       }
       if (typeof err.statusCode === 'number' && err.statusCode >= 400 && err.statusCode < 500) {
         return reply.code(err.statusCode).send({ error: { code: err.code ?? 'BAD_REQUEST', message: err.message } })
       }
       request.log.error(err)
-      return reply.code(500).send({ error: { code: 'INTERNAL', message: 'Etwas ist schiefgelaufen. Versuch es erneut.' } })
+      return reply.code(500).send({ error: { code: 'INTERNAL', message: 'Something went wrong. Please try again.' } })
     })
   },
   { name: 'errors' },

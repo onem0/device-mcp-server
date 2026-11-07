@@ -10,14 +10,14 @@ export type Device = typeof devices.$inferSelect
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const newDeviceToken = () => newToken('dmcp_')
 
-const nameTaken = () => new ApiError(409, 'NAME_TAKEN', 'Ein Gerät mit diesem Namen gibt es schon.')
+const nameTaken = () => new ApiError(409, 'NAME_TAKEN', 'A device with this name already exists.')
 
 export const listDevices = () => db.select().from(devices).orderBy(asc(sql`lower(${devices.name})`))
 
 export async function getDevice(id: string) {
-  if (!UUID_RE.test(id)) throw notFound('Das Gerät')
+  if (!UUID_RE.test(id)) throw notFound('Device')
   const [device] = await db.select().from(devices).where(eq(devices.id, id))
-  if (!device) throw notFound('Das Gerät')
+  if (!device) throw notFound('Device')
   return device
 }
 

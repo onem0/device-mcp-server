@@ -13,7 +13,7 @@ export default defineNuxtConfig({
   ],
   app: {
     head: {
-      htmlAttrs: { lang: 'de' },
+      htmlAttrs: { lang: 'en' },
       titleTemplate: '%s · device-mcp',
       meta: [
         { name: 'robots', content: 'noindex' },

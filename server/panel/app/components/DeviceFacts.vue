@@ -7,17 +7,17 @@ const props = defineProps<{ device: Device; detailed?: boolean }>()
 const cells = computed(() => {
   const d = props.device
   const base = [
-    { label: 'Benutzer', value: d.username && d.hostname ? `${d.username}@${d.hostname}` : (d.hostname ?? '–') },
+    { label: 'User', value: d.username && d.hostname ? `${d.username}@${d.hostname}` : (d.hostname ?? '–') },
     { label: 'System', value: d.os ?? '–' },
-    { label: 'Architektur', value: [d.arch, d.kernel].filter(Boolean).join(' · ') || '–' },
+    { label: 'Architecture', value: [d.arch, d.kernel].filter(Boolean).join(' · ') || '–' },
     { label: 'Daemon', value: d.daemonVersion ?? '–' },
   ]
   if (!props.detailed) return base
   return [
     ...base,
     { label: 'Home', value: d.homeDir ?? '–' },
-    { label: 'Angelegt', value: day(d.createdAt) },
-    { label: 'Geräte-ID', value: d.id },
+    { label: 'Added', value: day(d.createdAt) },
+    { label: 'Device ID', value: d.id },
   ]
 })
 </script>

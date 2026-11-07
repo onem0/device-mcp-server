@@ -10,7 +10,7 @@ export default fp(
   async (fastify) => {
     await fastify.register(swagger, {
       openapi: {
-        info: { title: 'device-mcp Panel-API', version: VERSION },
+        info: { title: 'device-mcp panel API', version: VERSION },
         servers: [],
       },
       // Routen-Dateien registrieren url: '/', im Vertrag sollen die Pfade aber ohne Schrägstrich am Ende stehen.

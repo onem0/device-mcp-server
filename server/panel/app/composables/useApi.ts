@@ -25,9 +25,9 @@ export async function api<T>(path: string, options: { method?: 'GET' | 'POST' | 
       await navigateTo('/login')
     }
     // Bei Eingabefehlern ist die Meldung zum Feld genauer als die allgemeine.
-    const message = body?.fields?.[0]?.message ?? body?.message ?? (status === 0 ? 'Der Server ist nicht erreichbar.' : `Fehler ${status}.`)
+    const message = body?.fields?.[0]?.message ?? body?.message ?? (status === 0 ? 'The server cannot be reached.' : `Error ${status}.`)
     throw new ApiFailure(status, body?.code ?? 'UNKNOWN', message)
   }
 }
 
-export const failureText = (err: unknown) => (err instanceof Error ? err.message : 'Etwas ist schiefgelaufen.')
+export const failureText = (err: unknown) => (err instanceof Error ? err.message : 'Something went wrong.')

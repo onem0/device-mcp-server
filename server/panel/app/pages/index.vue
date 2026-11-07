@@ -2,7 +2,7 @@
 import { Plus } from '@lucide/vue'
 import type { Device, DeviceWithToken } from '~/utils/types'
 
-useHead({ title: 'Geräte' })
+useHead({ title: 'Devices' })
 
 const devices = ref<Device[]>([])
 const loaded = ref(false)
@@ -38,18 +38,18 @@ function onCreated(payload: DeviceWithToken) {
     <section class="overview__devices" aria-labelledby="devices-title">
       <div class="overview__head">
         <h1 id="devices-title" class="caps overview__title">
-          Geräte · {{ devices.length }}<span v-if="devices.length" class="muted"> · {{ online }} online</span>
+          Devices · {{ devices.length }}<span v-if="devices.length" class="muted"> · {{ online }} online</span>
         </h1>
-        <button type="button" class="btn" @click="addOpen = true"><Plus :size="18" aria-hidden="true" />Gerät hinzufügen</button>
+        <button type="button" class="btn" @click="addOpen = true"><Plus :size="18" aria-hidden="true" />Add device</button>
       </div>
 
       <p v-if="loadError" class="banner" role="alert">{{ loadError }}</p>
       <p v-if="ops.actionError.value" class="banner" role="alert">{{ ops.actionError.value }}</p>
 
       <div v-if="loaded && !devices.length && !loadError" class="card empty">
-        <span class="tape empty__tape">Noch kein Gerät</span>
-        <p>Leg ein Gerät an und führe den Befehl, den du danach bekommst, auf dem Gerät aus. Sobald der Daemon läuft, erscheint es hier als online.</p>
-        <button type="button" class="btn" @click="addOpen = true"><Plus :size="18" aria-hidden="true" />Erstes Gerät hinzufügen</button>
+        <span class="tape empty__tape">No device yet</span>
+        <p>Add a device and run the command you get afterwards on it. As soon as the daemon runs, it shows up here as online.</p>
+        <button type="button" class="btn" @click="addOpen = true"><Plus :size="18" aria-hidden="true" />Add your first device</button>
       </div>
 
       <DeviceCard

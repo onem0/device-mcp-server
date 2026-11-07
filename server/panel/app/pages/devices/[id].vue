@@ -12,7 +12,7 @@ const loadError = ref<string | null>(null)
 const loadingMore = ref(false)
 const PAGE = 50
 
-useHead({ title: () => device.value?.name ?? 'Gerät' })
+useHead({ title: () => device.value?.name ?? 'Device' })
 
 async function loadDevice() {
   try {
@@ -58,7 +58,7 @@ const ops = useDeviceOps({ changed: loadDevice, removed: () => navigateTo('/') }
 
 <template>
   <div class="detail">
-    <NuxtLink to="/" class="action detail__back"><ArrowLeft :size="16" aria-hidden="true" />Alle Geräte</NuxtLink>
+    <NuxtLink to="/" class="action detail__back"><ArrowLeft :size="16" aria-hidden="true" />All devices</NuxtLink>
     <p v-if="loadError" class="banner" role="alert">{{ loadError }}</p>
     <p v-if="ops.actionError.value" class="banner" role="alert">{{ ops.actionError.value }}</p>
 
@@ -84,11 +84,11 @@ const ops = useDeviceOps({ changed: loadDevice, removed: () => navigateTo('/') }
       </header>
 
       <section class="card detail__audit" aria-labelledby="audit-title">
-        <h2 id="audit-title" class="caps">Audit-Log · {{ total }} {{ total === 1 ? 'Eintrag' : 'Einträge' }}</h2>
-        <p v-if="!entries.length" class="hint">Claude hat auf diesem Gerät noch nichts ausgeführt, gelesen oder geschrieben.</p>
+        <h2 id="audit-title" class="caps">Audit log · {{ total }} {{ total === 1 ? 'entry' : 'entries' }}</h2>
+        <p v-if="!entries.length" class="hint">Claude has not run, read or written anything on this device yet.</p>
         <AuditTable v-else :entries="entries" />
         <button v-if="entries.length < total" type="button" class="btn btn--quiet detail__more" :disabled="loadingMore" @click="loadMore">
-          {{ loadingMore ? 'Lade …' : `Ältere laden (${total - entries.length} weitere)` }}
+          {{ loadingMore ? 'Loading …' : `Load older (${total - entries.length} more)` }}
         </button>
       </section>
     </template>

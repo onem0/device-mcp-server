@@ -10,7 +10,7 @@ const route: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/',
     schema: {
-      tags: ['Geräte'],
+      tags: ['Devices'],
       params: idParams,
       querystring: z.object({
         limit: z.coerce.number().int().min(1).max(200).default(50),

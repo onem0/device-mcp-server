@@ -17,7 +17,7 @@ export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=$XDG_RUNTIME_DIR/bus}"
 
 if command -v systemctl >/dev/null; then
-  step "Stoppe und entferne den systemd-User-Service"
+  step "Stopping and removing the systemd user service"
   systemctl --user disable --now device-mcp.service 2>/dev/null || true
   rm -f "$CONFIG_HOME/systemd/user/device-mcp.service"
   systemctl --user daemon-reload 2>/dev/null || true
@@ -27,19 +27,19 @@ fi
 # Sessions, die Claude über session_start angelegt hat (Präfix mcp-). Eigene tmux-Sessions bleiben.
 if command -v tmux >/dev/null; then
   for s in $(tmux list-sessions -F '#{session_name}' 2>/dev/null | grep '^mcp-' || true); do
-    step "Beende tmux-Session $s"
+    step "Ending tmux session $s"
     tmux kill-session -t "=$s" 2>/dev/null || true
   done
 fi
 
-step "Entferne Binary, Konfiguration und Job-Logs"
+step "Removing binary, config and job logs"
 rm -f "$HOME/.local/bin/device-mcp" "$HOME/.local/bin/device-mcp-uninstall"
 rm -rf "$CONFIG_HOME/device-mcp" "$STATE_HOME/device-mcp"
 
 cat <<MSG
 
-device-mcp ist entfernt.
-  Geblieben: $HOME/.claude-tools (deine Helfer-Scripts). Löschen mit: rm -rf ~/.claude-tools
-  Linger ist weiter aktiv. Abschalten, falls nicht mehr gebraucht: loginctl disable-linger $(id -un)
-  Im Panel das Gerät löschen, damit der Token ungültig wird.
+device-mcp has been removed.
+  Kept: $HOME/.claude-tools (your helper scripts). Delete with: rm -rf ~/.claude-tools
+  Linger is still enabled. Turn it off if no longer needed: loginctl disable-linger $(id -un)
+  Delete the device in the panel so its token becomes invalid.
 MSG

@@ -35,9 +35,9 @@ async function submit() {
 </script>
 
 <template>
-  <SheetDialog :open="open" label="Gerät hinzufügen" @close="emit('close')">
+  <SheetDialog :open="open" label="Add device" @close="emit('close')">
     <form class="sheet__body" @submit.prevent="submit">
-      <h2 class="sheet__title">Gerät hinzufügen</h2>
+      <h2 class="sheet__title">Add device</h2>
       <div class="field">
         <label for="new-device-name">Name</label>
         <input
@@ -45,7 +45,7 @@ async function submit() {
           ref="input"
           v-model="name"
           class="input"
-          placeholder="z. B. raspi-garten"
+          placeholder="e.g. raspi-garden"
           maxlength="64"
           autocomplete="off"
           spellcheck="false"
@@ -53,13 +53,13 @@ async function submit() {
           :aria-invalid="!!error"
           aria-describedby="new-device-hint"
         />
-        <p id="new-device-hint" class="hint">Mit diesem Namen sprichst du das Gerät in Claude an. Buchstaben, Ziffern, Punkt, Binde- und Unterstrich.</p>
+        <p id="new-device-hint" class="hint">This is the name you use for the device in Claude. Letters, digits, dot, hyphen and underscore.</p>
         <p v-if="error" class="error" role="alert">{{ error }}</p>
       </div>
-      <p class="hint">Danach bekommst du einen Install-Befehl mit dem Geräte-Token. Er wird nur ein einziges Mal angezeigt.</p>
+      <p class="hint">Next you get an install command with the device token. It is shown only once.</p>
       <div class="sheet__actions">
-        <button type="button" class="btn btn--quiet" :disabled="busy" @click="emit('close')">Abbrechen</button>
-        <button type="submit" class="btn" :disabled="busy || !name.trim()">{{ busy ? 'Lege an …' : 'Anlegen und Token erzeugen' }}</button>
+        <button type="button" class="btn btn--quiet" :disabled="busy" @click="emit('close')">Cancel</button>
+        <button type="submit" class="btn" :disabled="busy || !name.trim()">{{ busy ? 'Adding …' : 'Add and create token' }}</button>
       </div>
     </form>
   </SheetDialog>

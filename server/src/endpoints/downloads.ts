@@ -28,7 +28,7 @@ const downloads: FastifyPluginAsyncZod = async (fastify) => {
     async (request, reply) => {
       const file = path.join(env.DAEMON_DIST_DIR, request.params.file)
       const info = await stat(file).catch(() => null)
-      if (!info?.isFile()) return reply.code(404).send({ error: { code: 'NOT_FOUND', message: 'Dieses Binary wurde nicht gebaut.' } })
+      if (!info?.isFile()) return reply.code(404).send({ error: { code: 'NOT_FOUND', message: 'This binary was not built.' } })
       return reply
         .type(file.endsWith('.gz') ? 'application/gzip' : 'application/octet-stream')
         .header('content-length', info.size)
