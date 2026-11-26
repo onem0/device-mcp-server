@@ -3,6 +3,7 @@ import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod/v4'
 import { env } from '../env.js'
 import { VERSION } from '../version.js'
+import { latestDaemonVersion } from './daemon-release.js'
 import { finishAudit, logAudit } from './audit.js'
 import { findDeviceByRef, listDevices, type Device } from './devices.js'
 import { describeStatus, formatAgo, formatBytes, formatJob, formatOutputChunk, formatRunResult, lineRange, lines, num } from './format.js'
@@ -72,7 +73,7 @@ function daemonVersion(device: Device) {
 // Expected errors go to Claude as tool errors, everything else as protocol errors.
 function expectedErrorMessage(err: unknown, ctx: Ctx) {
   if (err instanceof DaemonError && err.code === 'UNKNOWN_METHOD' && ctx.device) {
-    return tooOldMessage(ctx.device.name, daemonVersion(ctx.device), VERSION, ctx.tool, env.PUBLIC_URL)
+    return tooOldMessage(ctx.device.name, daemonVersion(ctx.device), latestDaemonVersion() ?? VERSION, ctx.tool, env.PUBLIC_URL)
   }
   if (err instanceof ToolError || err instanceof DaemonError || err instanceof DeviceOfflineError) return err.message
   return null

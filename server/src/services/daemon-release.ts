@@ -1,39 +1,72 @@
-import { readFileSync, statSync } from 'node:fs'
-import path from 'node:path'
+import type { FastifyBaseLogger } from 'fastify'
 import { env } from '../env.js'
 
-// daemon/build.ts writes the manifest next to the binaries: version and checksums of the unpacked files.
+// The daemon is not built or hosted by this server. Its binaries are GitHub releases of the daemon repo
+// (DAEMON_RELEASE_URL): each release carries device-mcp-<platform>-<arch>.gz and manifest.json with the
+// version and the checksums of the unpacked binaries. Install script and daemons download from there.
+// The server only needs to know which version is the latest, to offer updates in the panel.
 export interface DaemonManifest {
   version: string
   binaries: Record<string, { sha256: string; size: number }>
 }
 
-const file = () => path.join(env.DAEMON_DIST_DIR, 'manifest.json')
+const REFRESH_EVERY_MS = 10 * 60_000
+const FETCH_TIMEOUT_MS = 15_000
 
-let cache: { mtimeMs: number; manifest: DaemonManifest | null } | null = null
+let manifest: DaemonManifest | null = null
+let fetchedAt = 0
+let inflight: Promise<void> | null = null
+let log: FastifyBaseLogger | null = null
+let onNewVersion: ((version: string) => void) | null = null
 
-// Synchronous and cached by mtime: needed for every device list in the panel.
-export function daemonManifest(): DaemonManifest | null {
-  let mtimeMs: number
-  try {
-    mtimeMs = statSync(file()).mtimeMs
-  } catch {
-    // No manifest (e.g. development without a built daemon): no updates.
-    cache = null
-    return null
-  }
-  if (cache?.mtimeMs === mtimeMs) return cache.manifest
-  let manifest: DaemonManifest | null = null
-  try {
-    const data = JSON.parse(readFileSync(file(), 'utf8')) as Partial<DaemonManifest>
-    if (typeof data.version === 'string' && data.binaries && typeof data.binaries === 'object') {
-      manifest = { version: data.version, binaries: data.binaries }
-    }
-  } catch {
-    // A broken manifest counts as none.
-  }
-  cache = { mtimeMs, manifest }
-  return manifest
+export const releaseUrl = () => env.DAEMON_RELEASE_URL
+export const latestManifestUrl = () => `${releaseUrl()}/latest/download/manifest.json`
+// A binary of exactly that version, so that manifest and binary always belong together.
+export const binaryUrl = (version: string, file: string) => `${releaseUrl()}/download/v${version}/${file}`
+
+// Synchronous: needed for every device list in the panel. null until the first fetch succeeded.
+export const daemonManifest = () => manifest
+export const latestDaemonVersion = () => manifest?.version ?? null
+
+async function fetchManifest() {
+  const res = await fetch(latestManifestUrl(), { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  const data = (await res.json()) as Partial<DaemonManifest>
+  if (typeof data.version !== 'string' || !data.binaries || typeof data.binaries !== 'object') throw new Error('unexpected manifest')
+  return { version: data.version, binaries: data.binaries } satisfies DaemonManifest
 }
 
-export const latestDaemonVersion = () => daemonManifest()?.version ?? null
+// On failure the last known manifest stays; GitHub being unreachable must not hide a known update.
+export function refreshDaemonRelease(): Promise<void> {
+  inflight ??= fetchManifest()
+    .then((next) => {
+      const previous = manifest?.version
+      manifest = next
+      if (previous !== next.version) {
+        log?.info({ version: next.version, previous: previous ?? null }, 'Latest daemon release')
+        onNewVersion?.(next.version)
+      }
+    })
+    .catch((err: Error) => {
+      log?.warn({ url: latestManifestUrl(), err: err.message }, 'Could not fetch the latest daemon release')
+    })
+    .finally(() => {
+      fetchedAt = Date.now()
+      inflight = null
+    })
+  return inflight
+}
+
+// For requests that want a fresh answer (the panel was just opened) without hitting GitHub on every call.
+export function refreshIfStale(maxAgeMs: number) {
+  if (Date.now() - fetchedAt > maxAgeMs) void refreshDaemonRelease()
+}
+
+export function watchDaemonRelease(logger: FastifyBaseLogger, newVersion: (version: string) => void) {
+  log = logger
+  onNewVersion = newVersion
+  void refreshDaemonRelease()
+  const timer = setInterval(() => void refreshDaemonRelease(), REFRESH_EVERY_MS)
+  timer.unref()
+  return () => clearInterval(timer)
+}

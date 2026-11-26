@@ -48,5 +48,6 @@ export interface ServerInfo {
   updateCommand: string
   uninstallCommand: string
   daemonVersion: string | null
+  daemonReleaseUrl: string
   heartbeatTimeoutSeconds: number
 }

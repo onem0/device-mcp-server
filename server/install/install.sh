@@ -3,7 +3,8 @@
 #
 #   curl -fsSL __SERVER_URL__/install.sh | DEVICE_MCP_TOKEN='dmcp_…' bash
 #
-# The script fetches the daemon from the server it was downloaded from and connects it to exactly that server.
+# The script comes from your server and connects the daemon to exactly that server.
+# The daemon binary itself is downloaded from the GitHub releases of the daemon repo.
 # Running it again updates binary and service. Without DEVICE_MCP_TOKEN the token from the existing config is kept.
 # The daemon runs as the user who runs this script, not as root.
 # Later updates are triggered by the server: by a click in the panel or, if turned on there, automatically.
@@ -13,6 +14,9 @@ set -euo pipefail
 
 SERVER_URL="${DEVICE_MCP_SERVER:-__SERVER_URL__}"
 SERVER_URL="${SERVER_URL%/}"
+# Where the daemon binary comes from: the GitHub releases of the daemon repo.
+RELEASE_URL="${DEVICE_MCP_RELEASE_URL:-__RELEASE_URL__}"
+RELEASE_URL="${RELEASE_URL%/}"
 TOKEN="${DEVICE_MCP_TOKEN:-}"
 
 BIN_DIR="$HOME/.local/bin"
@@ -95,8 +99,9 @@ step "Downloading the daemon"
 mkdir -p "$BIN_DIR"
 TMP_BIN="$(mktemp "$BIN_DIR/.device-mcp.XXXXXX")"
 trap 'rm -f "$TMP_BIN"' EXIT
-curl -fSL --progress-bar "$SERVER_URL/download/device-mcp-$OS-$ARCH.gz" | gzip -dc > "$TMP_BIN" \
-  || fail "Download of $SERVER_URL/download/device-mcp-$OS-$ARCH.gz failed."
+DOWNLOAD_URL="$RELEASE_URL/latest/download/device-mcp-$OS-$ARCH.gz"
+curl -fSL --progress-bar "$DOWNLOAD_URL" | gzip -dc > "$TMP_BIN" \
+  || fail "Download of $DOWNLOAD_URL failed."
 chmod 755 "$TMP_BIN"
 "$TMP_BIN" --version >/dev/null 2>&1 || fail "The downloaded binary does not run on this system."
 # mv replaces the file atomically; a running daemon keeps the old version until it restarts.

@@ -1,5 +1,5 @@
 // Messages between server and daemon over /daemon/ws (JSON, one message per frame).
-// Counterpart: daemon/src/protocol.ts. Always apply changes to both files.
+// Counterpart: src/protocol.ts in the daemon repo (device-mcp-client). Always apply changes to both files.
 
 import type { JobStatus } from '../db/schema/columns.js'
 

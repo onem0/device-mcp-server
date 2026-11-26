@@ -20,6 +20,7 @@ services:
       HEARTBEAT_TIMEOUT_SECONDS: ${HEARTBEAT_TIMEOUT_SECONDS:-45}
       TRUST_PROXY: ${TRUST_PROXY:-1}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      DAEMON_RELEASE_URL: ${DAEMON_RELEASE_URL:-}
     expose:
       - "3000"
     depends_on:

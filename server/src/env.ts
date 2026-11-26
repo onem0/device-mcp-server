@@ -42,7 +42,11 @@ const schema = z.object({
   SESSION_MAX_DAYS: withDefault(z.coerce.number().int().positive(), 30),
   HEARTBEAT_INTERVAL_SECONDS: withDefault(z.coerce.number().int().min(5).max(300), 15),
   HEARTBEAT_TIMEOUT_SECONDS: withDefault(z.coerce.number().int().min(10).max(900), 45),
-  DAEMON_DIST_DIR: withDefault(z.string(), path.resolve(import.meta.dirname, '../../daemon/dist')),
+  // Where daemon binaries are published: a GitHub releases URL (…/releases). Change it for a fork of the daemon.
+  DAEMON_RELEASE_URL: withDefault(
+    z.url({ error: 'DAEMON_RELEASE_URL must be a URL, e.g. https://github.com/onem0/device-mcp-client/releases.' }).transform((v) => v.replace(/\/+$/, '')),
+    'https://github.com/onem0/device-mcp-client/releases',
+  ),
   PANEL_DIST_DIR: withDefault(z.string(), path.resolve(import.meta.dirname, '../panel/.output/public')),
 })
 

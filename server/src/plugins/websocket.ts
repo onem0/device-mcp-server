@@ -8,9 +8,12 @@ export default fp(
     // Images (base64) and write_file contents go over the wire as a single message.
     await fastify.register(websocket, { options: { maxPayload: 32 * 1024 * 1024 } })
     hub.start(fastify.log)
-    watchUpdates(fastify.log)
+    const stopUpdates = watchUpdates(fastify.log)
     // Open WebSockets would otherwise hold up fastify.close().
-    fastify.addHook('preClose', async () => hub.stop())
+    fastify.addHook('preClose', async () => {
+      stopUpdates()
+      hub.stop()
+    })
   },
   { name: 'websocket' },
 )

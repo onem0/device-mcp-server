@@ -1,6 +1,6 @@
 import type { FastifyBaseLogger } from 'fastify'
-import { latestDaemonVersion } from './daemon-release.js'
-import type { Device } from './devices.js'
+import { latestDaemonVersion, releaseUrl, watchDaemonRelease } from './daemon-release.js'
+import { listDevices, type Device } from './devices.js'
 import { daemonUpdateState } from './guards.js'
 import { hub } from './hub.js'
 import type { UpdateResult } from './protocol.js'
@@ -37,7 +37,7 @@ export function startUpdate(device: Pick<Device, 'id' | 'name'>, opts: { force: 
   if (previous?.state === 'running') return
   const target = latestDaemonVersion()
   statuses.set(device.id, { state: 'running', target, message: null })
-  hub.request<UpdateResult>(device.id, 'update', { force: opts.force }, UPDATE_TIMEOUT_MS).then(
+  hub.request<UpdateResult>(device.id, 'update', { force: opts.force, releaseUrl: releaseUrl() }, UPDATE_TIMEOUT_MS).then(
     (result) => {
       if (result.status === 'current') {
         statuses.delete(device.id)
@@ -66,10 +66,17 @@ export function autoUpdateIfDue(device: Device, version: string | null | undefin
   if (daemonUpdateState(version, latestDaemonVersion()) === 'available') startUpdate(device, { force: false })
 }
 
+// A new daemon release appeared: update every connected device that has auto-update turned on.
+async function autoUpdateConnected() {
+  for (const device of await listDevices()) autoUpdateIfDue(device, hub.connection(device.id)?.info.version)
+}
+
 export function watchUpdates(logger: FastifyBaseLogger) {
   log = logger
+  const stop = watchDaemonRelease(logger, () => {
+    autoUpdateConnected().catch((err) => log?.error({ err }, 'Auto-update after a new release failed'))
+  })
   // After every connection: clean up the state and, if turned on, trigger the auto-update.
-  // A new server usually brings a new daemon along, and after a deploy all devices reconnect.
   hub.onConnect = (device, info) => {
     const state = daemonUpdateState(info.version, latestDaemonVersion())
     if (state === null) statuses.delete(device.id)
@@ -78,6 +85,7 @@ export function watchUpdates(logger: FastifyBaseLogger) {
     else if (statuses.get(device.id)?.state === 'running') statuses.delete(device.id)
     autoUpdateIfDue(device, info.version)
   }
+  return stop
 }
 
 // Device deleted.

@@ -9,7 +9,7 @@ A self-hosted MCP server through which Claude (claude.ai, the Claude app, Claude
  ┌──────────────────────────────┐        ┌───────────┐
  │ server  (Fastify, Coolify)   │◄──────►│ Postgres  │  devices, token hashes, jobs, audit log
  │  /mcp   /v1 (panel API)  /   │        └───────────┘
- │  /daemon/ws   /install.sh    │
+ │  /daemon/ws   /install.sh    │        daemon binaries: GitHub releases of device-mcp-client
  └──────────────▲───────────────┘
                 │  wss, opened from the device (no open ports on the devices)
      ┌──────────┴──────────┐
@@ -21,24 +21,20 @@ Two repos:
 | Repo | Contents |
 |---|---|
 | [device-mcp-server](https://github.com/onem0/device-mcp-server) (this one) | Server, web panel, installer, Compose for Coolify |
-| [device-mcp-client](https://github.com/onem0/device-mcp-client) | Daemon for the devices, included here as the submodule `daemon/` |
+| [device-mcp-client](https://github.com/onem0/device-mcp-client) | Daemon for the devices. Its [releases](https://github.com/onem0/device-mcp-client/releases) carry the binaries that the install script and the daemons download. |
 
 | Folder | Contents |
 |---|---|
 | `server/` | Fastify server (TypeScript): MCP endpoint, panel API, WebSocket for the daemons, installer. Drizzle + Postgres. |
 | `server/panel/` | Web panel, Nuxt SPA (`ssr: false`), served by the server. |
 | `server/install/` | `install.sh` and `uninstall.sh`, served by the server. |
-| `daemon/` | Submodule pointing to device-mcp-client. From it the Docker image builds the binaries for Linux and macOS (x64 and arm64 each) with `bun build --compile`, plus a `manifest.json` with version and checksums. |
 | `docker-compose.yml` | Server + Postgres for Coolify. |
 
-Clone with the submodule:
+To run your own server you only need this repo. The daemon is not built or hosted by the server: devices download it from the GitHub releases of device-mcp-client (set `DAEMON_RELEASE_URL` to use a fork).
 
 ```bash
-git clone --recurse-submodules https://github.com/onem0/device-mcp-server.git
-# or afterwards: git submodule update --init
+git clone https://github.com/onem0/device-mcp-server.git
 ```
-
-The submodule has a relative URL (`../device-mcp-client.git`). That way Coolify clones it with the same access as the server repo.
 
 ## Deployment on Coolify
 
@@ -47,7 +43,6 @@ The server currently runs on Coolify (server "Contabo", project "Private") at ht
 1. In Coolify: **New Resource → Private Repository (GitHub App)** with `onem0/device-mcp-server`, branch `main`, build pack **Docker Compose**.
    - Base Directory: `/`
    - Docker Compose Location: `/docker-compose.yml`
-   - Git submodules must be enabled (the default). The GitHub app needs access to both repos.
 2. Under **Environment Variables**, set the values from `.env.example`. To generate them: `openssl rand -hex 32`.
 
    | Variable | Required | Meaning |
@@ -64,7 +59,7 @@ The server currently runs on Coolify (server "Contabo", project "Private") at ht
    | `LOG_LEVEL` | no | Default `info` |
 
 3. For the **server** service, enter the domain with the container port: `https://device.onemo.dev:3000`. Coolify generates the Traefik labels including the Let's Encrypt certificate from it; the port is not exposed publicly, it only tells Traefik where to forward to. The domain must match `PUBLIC_URL`.
-4. **Deploy.** The first build takes a few minutes (Bun downloads the runtimes for x64 and arm64). The server runs the database migrations on startup; the health check uses `/healthz`.
+4. **Deploy.** The first build takes a few minutes. The server runs the database migrations on startup; the health check uses `/healthz`.
 
 WebSockets need no extra setting: Traefik and Cloudflare pass the upgrade on `/daemon/ws` through. The daemons send a heartbeat every 15 s, so idle timeouts do not kick in. Postgres has no public port and runs only in the internal Compose network.
 
@@ -125,14 +120,14 @@ The uninstaller removes the service, binary, configuration, job logs and the `mc
 
 ### Updating the daemon
 
-At `/download/manifest.json` the server serves the version and the SHA-256 checksums of its daemon binaries. If a device runs an older daemon, the panel shows "… available" next to the version under "Daemon", and the device card gets the **Update** button. The daemon does not look for updates on its own: the server triggers them.
+The daemon is published as [GitHub releases](https://github.com/onem0/device-mcp-client/releases) of device-mcp-client; each release carries the binaries and a `manifest.json` with the version and their SHA-256 checksums. The server looks up the latest release every ten minutes (and when you open the panel). If a device runs an older daemon, the panel shows "… available" next to the version under "Daemon", and the device card gets the **Update** button. The daemon does not look for updates on its own: the server triggers them.
 
 - **By click (default):** "Update" in the panel. The device must be online for this.
-- **Auto-update (per device, off by default):** turn it on with the "Auto-update" action. The server then triggers the update itself as soon as the device connects with an older daemon, i.e. shortly after every deploy, and immediately when you turn it on.
+- **Auto-update (per device, off by default):** turn it on with the "Auto-update" action. The server then triggers the update itself as soon as a newer release appears or the device connects with an older daemon, and immediately when you turn it on.
 
 In both cases the same thing happens on the device. The daemon
 
-1. downloads its binary from this server, unpacks it and checks size and checksum,
+1. downloads its binary of that release from GitHub, unpacks it and checks size and checksum against the release's manifest,
 2. starts the new binary as a trial with `--version`,
 3. replaces itself (`rename`, atomic) and
 4. exits as soon as no job is running any more. systemd or launchd then starts the new binary. tmux sessions keep running meanwhile.
@@ -224,14 +219,13 @@ Jobs survive connection drops: the daemon writes the output to disk and reports 
 - "Read-only" per device blocks `run_command`, `write_file`, `edit_file`, `session_start` and `session_send` on the server before anything goes to the device.
 - Every MCP call ends up in the audit log, including rejected ones. Tokens end up neither there nor in the server log: the logger redacts `authorization` and `cookie` headers, and the SDK's request context is filtered out of the logged arguments.
 - The daemon opens the connection itself; no port is open on the devices.
-- Daemon updates: they start only when someone clicks "Update" in the panel or auto-update is turned on for the device. The daemon downloads new versions only from the server it is connected to, over the same TLS connection as everything else. The checksum in the manifest protects against aborted or corrupted downloads, not against a compromised server; that one can run commands on the devices anyway. Installer, manifest and binaries are publicly accessible and contain no secrets.
+- Daemon updates: they start only when someone clicks "Update" in the panel or auto-update is turned on for the device. The binaries come from the public GitHub releases of the daemon repo, built there by a GitHub Action from the tagged source; this server neither builds nor stores them. The checksum in the release's manifest protects against aborted or corrupted downloads. Whoever controls the daemon repo's releases controls what devices install on an update, so use a fork you control (`DAEMON_RELEASE_URL`) if you do not want to depend on the upstream repo. Daemons before 0.5.0 still ask their server for updates; for them the server passes the GitHub release through under `/download/`.
 
 ## Developing and testing locally
 
 Requirements: Node 24, pnpm 10, Bun, Docker.
 
 ```bash
-git submodule update --init          # daemon/
 pnpm install
 cp .env.example .env                 # set the values, plus DATABASE_URL for localhost:5433
 pnpm db:up                           # Postgres on :5433
@@ -239,13 +233,12 @@ pnpm build:panel                     # build the panel, the server serves it
 PORT=3100 pnpm dev:server            # server on :3100, API docs at /docs
 ```
 
-Daemon against the local server, without installing (details in the device-mcp-client README):
+Daemon against the local server, without installing: clone [device-mcp-client](https://github.com/onem0/device-mcp-client) (e.g. into `daemon/`, which this repo ignores) and follow its README:
 
 ```bash
-cd daemon && bun install
+git clone https://github.com/onem0/device-mcp-client.git daemon && cd daemon && bun install
 printf '{"serverUrl":"http://127.0.0.1:3100","token":"dmcp_…"}' > /tmp/dmcp.json && chmod 600 /tmp/dmcp.json
 DEVICE_MCP_CONFIG=/tmp/dmcp.json DEVICE_MCP_STATE_DIR=/tmp/dmcp-state bun run src/index.ts
-bun run build                        # binaries into daemon/dist (Linux and macOS, x64 and arm64, each also as .gz) plus manifest.json
 ```
 
 The whole stack as on Coolify, with ports on your machine:
@@ -258,7 +251,6 @@ Tests:
 
 ```bash
 pnpm --filter server test            # server: version check, read-only list, audit arguments
-cd daemon && bun test                # daemon: edit_file and tmux sessions (needs tmux)
 ```
 
 Trying out the tools with the MCP Inspector:

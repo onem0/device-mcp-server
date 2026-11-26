@@ -28,7 +28,7 @@ A tool for exactly one person and his own machines, self-hosted on Coolify. The 
 
 - Login only with a password from the `.env`, session cookie, rate limit.
 - Device token and MCP token are secrets: the device token can be copied exactly once (hidden, never visible in plain text), the MCP token never appears in the panel.
-- Daemon for Linux (systemd user service) and macOS (launchd agent), x64 and arm64. The server triggers updates: by clicking "Update" in the panel or, switchable per device, automatically (as of daemon 0.4.0).
+- Daemon for Linux (systemd user service) and macOS (launchd agent), x64 and arm64. The server triggers updates: by clicking "Update" in the panel or, switchable per device, automatically (as of daemon 0.4.0). The binaries are GitHub releases of the daemon repo; the server neither builds nor hosts them.
 - All text is English: program strings (panel, tool descriptions and outputs, error messages, logs, install scripts), code comments and documentation.
 - Stack: Nuxt SPA (`ssr: false`), served by Fastify, panel API under `/v1`.
 

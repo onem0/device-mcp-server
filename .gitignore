@@ -14,3 +14,6 @@ dist
 **/.impeccable/questions
 **/.impeccable/build
 **/.impeccable/hook.cache.json
+
+# Optional local clone of the daemon repo (github.com/onem0/device-mcp-client) for development. Not part of this repo.
+/daemon/

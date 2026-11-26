@@ -33,7 +33,7 @@ const visible = computed(() => state.value !== null || props.device.daemonUpdate
         <p class="hint">
           <template v-if="!device.online">The device has to be online for an update.</template>
           <template v-else-if="device.autoUpdate">Auto-update is on and runs when the device connects. You can also start it now.</template>
-          <template v-else>Downloads the daemon from this server and restarts it once no job is running.</template>
+          <template v-else>Downloads the release from GitHub and restarts the daemon once no job is running.</template>
         </p>
       </div>
 

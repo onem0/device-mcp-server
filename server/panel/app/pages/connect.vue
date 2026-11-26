@@ -16,7 +16,7 @@ const { info, error, claudeCodeCommand, installTemplate } = useServerInfo()
         <ol class="setup__steps">
           <li>Add the device here in the panel. Copy the command you get there: it carries the device's own token, hidden and available only that once.</li>
           <li>Run it on the device as a normal user, not as root. It works on Linux with systemd and on macOS, x86_64 and arm64.</li>
-          <li>The script fetches the daemon from this server, connects it to this server and sets it up as a service. The device shows up as online a few seconds later.</li>
+          <li>The script downloads the daemon from its <a :href="info.daemonReleaseUrl" target="_blank" rel="noopener">GitHub releases</a>, connects it to this server and sets it up as a service. The device shows up as online a few seconds later.</li>
         </ol>
         <CopyField label="Command" :value="installTemplate" />
         <NuxtLink to="/?add" class="setup__go">Add a device <ArrowRight :size="16" aria-hidden="true" /></NuxtLink>
@@ -50,10 +50,10 @@ const { info, error, claudeCodeCommand, installTemplate } = useServerInfo()
       <section class="card setup__block" aria-labelledby="s-update">
         <h2 id="s-update" class="setup__title">Daemon updates</h2>
         <p>
-          When this server ships a newer daemon than a device runs<template v-if="info.daemonVersion"> (it currently ships <code>{{ info.daemonVersion }}</code>)</template>, the device gets an <strong>Update</strong> button. One click, and the daemon downloads the new version from this server, verifies its checksum and restarts as soon as no job is running.
+          The daemon is published as <a :href="info.daemonReleaseUrl" target="_blank" rel="noopener">GitHub releases</a><template v-if="info.daemonVersion">; the latest is <code>{{ info.daemonVersion }}</code></template>. When a device runs an older one, it gets an <strong>Update</strong> button. One click, and the daemon downloads the new release from GitHub, verifies its checksum and restarts as soon as no job is running.
         </p>
         <p>
-          <strong>Auto-update</strong> is a switch per device and off by default. Turned on, the server starts the update by itself whenever the device connects with an older daemon, which is right after every deploy.
+          <strong>Auto-update</strong> is a switch per device and off by default. Turned on, the server starts the update by itself as soon as a newer release appears or the device connects with an older daemon.
         </p>
         <p>Daemons older than <code>0.4.0</code> cannot be updated from the panel. Run this on the device once; it keeps the token.</p>
         <CopyField label="On the device" :value="info.updateCommand" />
