@@ -7,6 +7,9 @@ export const DAEMON_FEATURES = {
   sessions: '0.2.0',
 } as const
 
+// Ab dieser Version holt sich der Daemon neue Versionen selbst vom Server.
+export const AUTO_UPDATE_SINCE = '0.3.0'
+
 // Diese Tools sind auf Geräten mit „nur lesen“ gesperrt.
 export const WRITE_TOOLS = new Set(['run_command', 'write_file', 'edit_file', 'session_start', 'session_send'])
 
@@ -22,8 +25,22 @@ export function compareVersions(a: string, b: string) {
 
 export const daemonTooOld = (version: string | null | undefined, min: string) => !version || compareVersions(version, min) < 0
 
+// pending: Der Daemon ist älter als der vom Server ausgelieferte und aktualisiert sich selbst.
+// manual: Er ist zu alt dafür, das Install-Script muss einmal von Hand laufen.
+export function daemonUpdateState(version: string | null | undefined, latest: string | null | undefined): 'pending' | 'manual' | null {
+  if (!version || !latest || compareVersions(version, latest) >= 0) return null
+  return daemonTooOld(version, AUTO_UPDATE_SINCE) ? 'manual' : 'pending'
+}
+
 export function tooOldMessage(device: string, version: string | null | undefined, min: string, tool: string, baseUrl?: string) {
   const update = baseUrl ? `curl -fsSL ${baseUrl}/install.sh | bash` : 'run the install script again'
+  if (!daemonTooOld(version, AUTO_UPDATE_SINCE)) {
+    return (
+      `Daemon version too old: "${device}" has ${version}, ${tool} needs at least ${min}. The daemon updates itself ` +
+      `as soon as no job is running on the device, usually within a minute after the server was updated. Try again shortly. ` +
+      `If it stays on ${version}, run "${update}" on the device.`
+    )
+  }
   return (
     `Daemon version too old: "${device}" has ${version ?? 'an unknown version'}, ${tool} needs at least ${min}. ` +
     `Please update: run "${update}" on the device (keeps the token). Via run_command use this, so the daemon restart ` +

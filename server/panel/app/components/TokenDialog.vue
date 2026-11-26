@@ -2,8 +2,9 @@
 import { Check, Copy, Loader } from '@lucide/vue'
 import type { Device, DeviceWithToken } from '~/utils/types'
 
-// Der Geräte-Token erscheint genau hier und nie wieder. Er läuft als gelbes Band aus dem Dialog,
-// beim Schließen wird das Band abgeschnitten.
+// Der Geräte-Token ist nur in diesem Dialog greifbar und nie wieder. Er läuft als gelbes Band aus dem Dialog,
+// beim Schließen wird das Band abgeschnitten. Zu sehen ist er nicht: Band und Befehl zeigen ihn verdeckt,
+// die Kopieren-Buttons liefern den echten Wert.
 const props = defineProps<{ secret: { payload: DeviceWithToken; mode: 'create' | 'regenerate' } | null }>()
 const emit = defineEmits<{ close: [] }>()
 
@@ -20,6 +21,14 @@ async function copyToken() {
   setTimeout(() => (tokenCopied.value = false), 2000)
 }
 let poll: ReturnType<typeof setInterval> | undefined
+
+// Feste Länge, damit das Band nichts über den Token verrät.
+const MASK = '•'.repeat(24)
+const maskedToken = computed(() => `${props.secret?.payload.token.match(/^[a-z]+_/)?.[0] ?? ''}${MASK}`)
+const maskedCommand = computed(() => {
+  const payload = props.secret?.payload
+  return payload ? payload.installCommand.replace(payload.token, maskedToken.value) : ''
+})
 
 const device = computed(() => live.value ?? props.secret?.payload.device ?? null)
 const connected = computed(() => !!device.value?.online)
@@ -70,12 +79,12 @@ function close() {
     <div class="token" :class="{ 'is-cut': cutting }">
       <div class="token__exit">
         <div class="token__tape">
-          <code class="token__value">{{ secret.payload.token }}</code>
+          <code class="token__value" aria-label="Device token, hidden">{{ maskedToken }}</code>
         </div>
         <div class="token__slot" aria-hidden="true" />
       </div>
       <div class="token__under">
-        <span class="token__hint">Device token, visible only now.</span>
+        <span class="token__hint">Device token. Hidden, and only available now.</span>
         <button type="button" class="token__copy" :class="{ 'is-done': tokenCopied }" aria-label="Copy device token" @click="copyToken">
           <Check v-if="tokenCopied" :size="16" aria-hidden="true" />
           <Copy v-else :size="16" aria-hidden="true" />
@@ -92,7 +101,11 @@ function close() {
 
       <p v-if="secret.mode === 'regenerate'" class="hint">The old token no longer works and the connection was closed. Run the command on the device again; it only updates the config.</p>
 
-      <CopyField label="Run on the device (as a normal user)" :value="secret.payload.installCommand" @copied="copied = true" />
+      <CopyField label="Run on the device (as a normal user)" :value="secret.payload.installCommand" :display="maskedCommand" @copied="copied = true" />
+      <p class="hint">
+        Copy puts the full command with the real token on your clipboard; the token itself is never shown.
+        <template v-if="secret.mode === 'create'">It works on Linux with systemd and on macOS: the script fetches the daemon from this server, connects it here and sets it up as a service that keeps itself up to date.</template>
+      </p>
 
       <div class="token__live" :class="{ 'is-on': connected }" role="status" aria-live="polite">
         <template v-if="connected && device">
@@ -151,7 +164,7 @@ function close() {
   font-weight: 600;
   line-height: 1.4;
   overflow-wrap: anywhere;
-  user-select: all;
+  user-select: none;
 }
 .token__under {
   display: flex;

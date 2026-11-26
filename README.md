@@ -1,6 +1,6 @@
 # device-mcp-server
 
-Ein selbst gehosteter MCP-Server, über den Claude (claude.ai, Claude-App, Claude Code) auf deinen eigenen Linux-Geräten Befehle ausführt und Dateien liest und schreibt. Nur für dich, kein Multi-User.
+Ein selbst gehosteter MCP-Server, über den Claude (claude.ai, Claude-App, Claude Code) auf deinen eigenen Geräten (Linux und macOS) Befehle ausführt und Dateien liest und schreibt. Nur für dich, kein Multi-User.
 
 ```
  claude.ai / App / Claude Code
@@ -13,7 +13,7 @@ Ein selbst gehosteter MCP-Server, über den Claude (claude.ai, Claude-App, Claud
  └──────────────▲───────────────┘
                 │  wss, vom Gerät aus aufgebaut (keine offenen Ports auf den Geräten)
      ┌──────────┴──────────┐
-  daemon (Raspi)      daemon (Server) …   systemd-User-Service, läuft als dein Benutzer
+  daemon (Raspi)      daemon (Mac) …      systemd-User-Service bzw. launchd-Agent, läuft als dein Benutzer
 ```
 
 Zwei Repos:
@@ -28,7 +28,7 @@ Zwei Repos:
 | `server/` | Fastify-Server (TypeScript): MCP-Endpoint, Panel-API, WebSocket für die Daemons, Installer. Drizzle + Postgres. |
 | `server/panel/` | Web-Panel, Nuxt-SPA (`ssr: false`), wird vom Server ausgeliefert. |
 | `server/install/` | `install.sh` und `uninstall.sh`, der Server liefert sie aus. |
-| `daemon/` | Submodule auf device-mcp-client. Das Docker-Image baut daraus mit `bun build --compile` die Binaries für linux-x64 und linux-arm64. |
+| `daemon/` | Submodule auf device-mcp-client. Das Docker-Image baut daraus mit `bun build --compile` die Binaries für Linux und macOS (jeweils x64 und arm64) und ein `manifest.json` mit Version und Prüfsummen. |
 | `docker-compose.yml` | Server + Postgres für Coolify. |
 
 Klonen mit Submodule:
@@ -77,17 +77,21 @@ Neu ausrollen: auf `main` pushen. Coolify deployt über den Webhook der GitHub-A
 ## Gerät hinzufügen
 
 1. Im Panel (`https://device.onemo.dev`) anmelden und **Gerät hinzufügen** wählen. Der Name ist der, mit dem du das Gerät in Claude ansprichst (z. B. `raspi-garten`).
-2. Das Panel zeigt den Geräte-Token **genau einmal** an, zusammen mit dem fertigen Install-Befehl. In der Datenbank liegt nur sein SHA-256-Hash.
+2. Das Panel bietet den fertigen Install-Befehl **genau einmal** zum Kopieren an. Der Geräte-Token steckt im kopierten Befehl, auf dem Bildschirm ist er verdeckt. In der Datenbank liegt nur sein SHA-256-Hash.
 3. Den Befehl auf dem Gerät als normaler Benutzer ausführen (nicht als root):
 
    ```bash
    curl -fsSL https://device.onemo.dev/install.sh | DEVICE_MCP_TOKEN='dmcp_…' bash
    ```
 
-   Das Script lädt das passende Binary, schreibt `~/.config/device-mcp/config.json` (chmod 600), legt `~/.claude-tools/README.md` an (falls es sie noch nicht gibt), richtet den systemd-User-Service `device-mcp` mit `Restart=always` ein und setzt `loginctl enable-linger`, damit der Daemon nach einem Reboot ohne Anmeldung startet. Falls Linger Root-Rechte braucht, fragt es einmal nach dem sudo-Passwort.
+   Das Script kommt vom Server und holt auch den Daemon von dort: Es lädt das passende Binary, trägt genau diesen Server in `~/.config/device-mcp/config.json` ein (chmod 600), legt `~/.claude-tools/README.md` an (falls es sie noch nicht gibt) und richtet den Daemon als Service ein.
+   - **Linux:** systemd-User-Service `device-mcp` mit `Restart=always`, dazu `loginctl enable-linger`, damit der Daemon nach einem Reboot ohne Anmeldung startet. Falls Linger Root-Rechte braucht, fragt das Script einmal nach dem sudo-Passwort.
+   - **macOS:** LaunchAgent `dev.onemo.device-mcp` (`~/Library/LaunchAgents/`), Log in `~/Library/Logs/device-mcp.log`. Er läuft, solange du angemeldet bist.
 4. Im Dialog springt die Anzeige auf **Verbunden**, sobald sich der Daemon meldet.
 
-Voraussetzungen auf dem Gerät: Linux mit systemd, x86_64 oder aarch64, `curl` und `gzip`. Eine Runtime ist nicht nötig.
+Voraussetzungen auf dem Gerät: Linux mit systemd oder macOS, x86_64 oder arm64, `curl` und `gzip`. Eine Runtime ist nicht nötig. Die Befehlsform ohne Token steht auch im Panel unter „Connection“.
+
+macOS schützt Schreibtisch, Dokumente und Downloads: Meldet Claude dort „Operation not permitted“, `~/.local/bin/device-mcp` unter Systemeinstellungen → Datenschutz & Sicherheit → Festplattenvollzugriff erlauben. Das Binary ist ad hoc signiert, nach einem Update kann macOS die Freigabe erneut verlangen.
 
 ### Im Panel
 
@@ -104,15 +108,34 @@ Voraussetzungen auf dem Gerät: Linux mit systemd, x86_64 oder aarch64, `curl` u
 systemctl --user status device-mcp      # Status
 journalctl --user -u device-mcp -f      # Log
 systemctl --user restart device-mcp     # Neustart
-curl -fsSL https://device.onemo.dev/install.sh | bash   # Update, behält den Token
+curl -fsSL https://device.onemo.dev/install.sh | bash   # Binary und Service neu einrichten, behält den Token
 device-mcp-uninstall                    # Deinstallieren (oder: curl -fsSL https://device.onemo.dev/uninstall.sh | bash)
 ```
 
-Der Uninstaller entfernt Service, Binary, Konfiguration, Job-Logs und die `mcp-`-tmux-Sessions. `~/.claude-tools` bleibt stehen, ebenso Linger (das kann auch andere Dienste betreffen). Danach das Gerät im Panel löschen.
+Unter macOS statt der ersten drei Zeilen:
+
+```bash
+launchctl print gui/$(id -u)/dev.onemo.device-mcp          # Status
+tail -f ~/Library/Logs/device-mcp.log                      # Log
+launchctl kickstart -k gui/$(id -u)/dev.onemo.device-mcp   # Neustart
+```
+
+Der Uninstaller entfernt Service, Binary, Konfiguration, Job-Logs und die `mcp-`-tmux-Sessions. `~/.claude-tools` bleibt stehen, unter Linux ebenso Linger (das kann auch andere Dienste betreffen). Danach das Gerät im Panel löschen.
 
 ### Daemon updaten
 
-Neue Server-Versionen bringen oft neue Tools mit, die einen neuen Daemon brauchen. Ruft Claude ein Tool auf, das der Daemon noch nicht kennt, kommt „Daemon-Version zu alt … bitte updaten“ mit dem passenden Befehl. Die Version jedes Geräts steht im Panel unter „Daemon“.
+Ab Version 0.3.0 aktualisiert sich der Daemon selbst. Der Server liefert unter `/download/manifest.json` die Version und die SHA-256-Prüfsummen seiner Daemon-Binaries aus. Der Daemon fragt das nach jedem Verbindungsaufbau ab (also kurz nach jedem Deploy, denn dabei startet der Server neu) und zusätzlich alle sechs Stunden. Ist die Version dort neuer als seine eigene, dann
+
+1. lädt er sein Binary vom Server, entpackt es und prüft Größe und Prüfsumme,
+2. startet das neue Binary probeweise mit `--version`,
+3. ersetzt sich selbst (`rename`, atomar) und
+4. beendet sich, sobald kein Job mehr läuft. systemd bzw. launchd startet dann das neue Binary. tmux-Sessions laufen dabei weiter.
+
+Schlägt ein Schritt fehl, bleibt die alte Version in Betrieb, und dieselbe Version wird frühestens nach einer Stunde erneut versucht. Im Panel steht unter „Daemon“ neben der Version „Updates itself to …“, solange ein Update aussteht. Ein Downgrade gibt es nicht: Liefert der Server eine ältere Version aus, bleibt der Daemon, wie er ist.
+
+Abschalten pro Gerät: `"autoUpdate": false` in `~/.config/device-mcp/config.json`, oder beim Installieren `curl … | DEVICE_MCP_AUTO_UPDATE=0 bash` (mit `=1` wieder an). Aktualisiert wird nur das Binary. Ändert sich einmal die Service-Definition, das Install-Script erneut ausführen.
+
+**Daemons vor 0.3.0** können das noch nicht und brauchen das Update ein letztes Mal von Hand; das Panel zeigt bei ihnen „Needs a manual update“ mit dem Befehl. Ruft Claude ein Tool auf, das ein Daemon noch nicht kennt, kommt „Daemon-Version zu alt“ mit dem passenden Hinweis.
 
 Auf dem Gerät (per SSH):
 
@@ -120,7 +143,7 @@ Auf dem Gerät (per SSH):
 curl -fsSL https://device.onemo.dev/install.sh | bash   # holt das neue Binary, behält Token und Config, startet den Service neu
 ```
 
-Oder Claude erledigt es selbst per `run_command`. Wichtig ist `systemd-run`: Das Update startet den Daemon neu, und ohne eigene Unit würde der Neustart das laufende Update mit beenden.
+Oder Claude erledigt es selbst per `run_command` (Linux). Wichtig ist `systemd-run`: Das Update startet den Daemon neu, und ohne eigene Unit würde der Neustart das laufende Update mit beenden.
 
 ```bash
 systemd-run --user --collect bash -c 'curl -fsSL https://device.onemo.dev/install.sh | bash'
@@ -131,10 +154,13 @@ Der Befehl kehrt sofort zurück. Nach etwa 20 Sekunden ist das Gerät mit der ne
 | Pfad auf dem Gerät | Inhalt |
 |---|---|
 | `~/.local/bin/device-mcp` | Daemon |
-| `~/.config/device-mcp/config.json` | Server-URL und Geräte-Token (chmod 600) |
-| `~/.config/device-mcp/env` | PATH aus deiner Shell beim Installieren, damit Claude dieselben Programme findet |
-| `~/.config/systemd/user/device-mcp.service` | systemd-Unit |
+| `~/.config/device-mcp/config.json` | Server-URL, Geräte-Token und `autoUpdate` (chmod 600) |
+| `~/.config/device-mcp/env` | Linux: PATH aus deiner Shell beim Installieren, damit Claude dieselben Programme findet (unter macOS steht er in der plist) |
+| `~/.config/systemd/user/device-mcp.service` | Linux: systemd-Unit |
+| `~/Library/LaunchAgents/dev.onemo.device-mcp.plist` | macOS: LaunchAgent |
+| `~/Library/Logs/device-mcp.log` | macOS: Log des Daemons |
 | `~/.local/state/device-mcp/jobs/` | Job-Status und Ausgabe (die letzten 300 Jobs, höchstens 14 Tage) |
+| `~/.local/state/device-mcp/update.json` | Nur nach einem fehlgeschlagenen Update: Version, Zeitpunkt, Fehler |
 | `~/.claude-tools/` | Helfer-Scripts von Claude, mit README |
 
 ## Connector in claude.ai eintragen
@@ -194,6 +220,7 @@ Jobs überleben Verbindungsabbrüche: Der Daemon schreibt die Ausgabe auf die Pl
 - „Nur lesen“ pro Gerät sperrt `run_command`, `write_file`, `edit_file`, `session_start` und `session_send` auf dem Server, bevor etwas zum Gerät geht.
 - Jeder MCP-Aufruf landet im Audit-Log, auch abgelehnte. Tokens landen weder dort noch im Server-Log: Der Logger schwärzt `authorization`- und `cookie`-Header, und der Request-Kontext des SDK wird aus den protokollierten Argumenten herausgefiltert.
 - Der Daemon baut die Verbindung selbst auf, auf den Geräten ist kein Port offen.
+- Auto-Update: Der Daemon lädt neue Versionen nur von dem Server, mit dem er verbunden ist, über dieselbe TLS-Verbindung wie alles andere. Die Prüfsumme im Manifest schützt vor abgebrochenen oder beschädigten Downloads, nicht vor einem übernommenen Server; der kann ohnehin Befehle auf den Geräten ausführen. Installer, Manifest und Binaries sind öffentlich abrufbar und enthalten keine Geheimnisse.
 
 ## Lokal entwickeln und testen
 
@@ -214,7 +241,7 @@ Daemon gegen den lokalen Server, ohne Installation (Details im README von device
 cd daemon && bun install
 printf '{"serverUrl":"http://127.0.0.1:3100","token":"dmcp_…"}' > /tmp/dmcp.json && chmod 600 /tmp/dmcp.json
 DEVICE_MCP_CONFIG=/tmp/dmcp.json DEVICE_MCP_STATE_DIR=/tmp/dmcp-state bun run src/index.ts
-bun run build                        # Binaries nach daemon/dist (x64 und arm64, jeweils auch .gz)
+bun run build                        # Binaries nach daemon/dist (Linux und macOS, x64 und arm64, jeweils auch .gz) plus manifest.json
 ```
 
 Der ganze Stack wie auf Coolify, mit Ports auf dem Rechner:
@@ -244,8 +271,10 @@ Schema ändern: Datei in `server/src/db/schema/` anpassen, dann `pnpm --filter s
 
 | Symptom | Ursache und Abhilfe |
 |---|---|
-| Gerät bleibt „wartet auf den Daemon“ | `journalctl --user -u device-mcp -n 50` auf dem Gerät. „Token abgelehnt“: Token neu erzeugen und den Befehl erneut ausführen. |
+| Gerät bleibt „wartet auf den Daemon“ | `journalctl --user -u device-mcp -n 50` auf dem Gerät (macOS: `tail -n 50 ~/Library/Logs/device-mcp.log`). „Token abgelehnt“: Token neu erzeugen und den Befehl erneut ausführen. |
+| Daemon bleibt auf einer alten Version | Im Log nach „Update“ suchen. Ein laufender Job hält den Neustart auf; nach einem Fehler steht der Grund in `~/.local/state/device-mcp/update.json`, der nächste Versuch kommt nach einer Stunde oder sofort mit dem Install-Script. |
+| macOS: „Operation not permitted“ | Festplattenvollzugriff für `~/.local/bin/device-mcp` erlauben (siehe „Gerät hinzufügen“). |
 | `systemctl --user` geht nicht | Per SSH anmelden statt mit `su`, oder `export XDG_RUNTIME_DIR=/run/user/$(id -u)`. |
 | Daemon startet nach Reboot nicht | `loginctl show-user $USER -p Linger` muss `yes` zeigen, sonst `sudo loginctl enable-linger $USER`. |
-| Befehl findet ein Programm nicht | Der Service nutzt den PATH aus `~/.config/device-mcp/env`. Das Install-Script erneut ausführen, wenn sich dein PATH geändert hat. |
+| Befehl findet ein Programm nicht | Der Service nutzt den PATH aus `~/.config/device-mcp/env` (macOS: aus der plist). Das Install-Script erneut ausführen, wenn sich dein PATH geändert hat. |
 | claude.ai meldet einen Auth-Fehler | URL muss auf `/mcp` enden, Header-Wert `Bearer ` plus Token (mit Leerzeichen). |

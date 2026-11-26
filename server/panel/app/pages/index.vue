@@ -23,6 +23,14 @@ async function load() {
 onMounted(load)
 usePolling(load, 5000)
 
+// „Add a device“ auf der Connection-Seite führt mit ?add hierher und öffnet gleich den Dialog.
+const route = useRoute()
+onMounted(() => {
+  if (!('add' in route.query)) return
+  addOpen.value = true
+  void navigateTo({ path: '/', query: {} }, { replace: true })
+})
+
 const ops = useDeviceOps({ changed: load })
 const online = computed(() => devices.value.filter((d) => d.online).length)
 

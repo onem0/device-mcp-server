@@ -2,7 +2,8 @@
 import { Check, Copy } from '@lucide/vue'
 
 // pre: mehrzeilige Shell-Befehle unverändert zeigen, notfalls waagerecht scrollen statt mitten im Wort umbrechen.
-const props = defineProps<{ value: string; label?: string; pre?: boolean }>()
+// display: Text, der statt value zu sehen ist (z. B. ein Befehl mit verdecktem Token). Kopiert wird immer value.
+const props = defineProps<{ value: string; label?: string; pre?: boolean; display?: string }>()
 const emit = defineEmits<{ copied: [] }>()
 const copied = ref(false)
 let timer: ReturnType<typeof setTimeout> | undefined
@@ -20,7 +21,7 @@ async function copy() {
   <div class="copy">
     <span v-if="label" class="copy__label caps muted">{{ label }}</span>
     <div class="copy__row">
-      <code class="copy__value" :class="{ 'copy__value--pre': pre }">{{ value }}</code>
+      <code class="copy__value" :class="{ 'copy__value--pre': pre, 'copy__value--masked': display !== undefined }">{{ display ?? value }}</code>
       <button type="button" class="copy__btn" :class="{ 'is-done': copied }" :aria-label="`Copy ${label ?? 'value'}`" @click="copy">
         <Check v-if="copied" :size="16" aria-hidden="true" />
         <Copy v-else :size="16" aria-hidden="true" />
@@ -70,6 +71,10 @@ async function copy() {
   line-height: 1.55;
   overflow-wrap: anywhere;
   user-select: all;
+}
+/* Verdeckter Wert: Markieren würde nur die Platzhalter kopieren, deshalb geht es hier allein über den Button. */
+.copy__value--masked {
+  user-select: none;
 }
 .copy__value--pre {
   white-space: pre;

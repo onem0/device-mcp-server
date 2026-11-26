@@ -13,6 +13,8 @@ export interface Device {
   username: string | null
   homeDir: string | null
   daemonVersion: string | null
+  // pending: updates itself to the server's daemon version. manual: too old for that, run the install script again.
+  daemonUpdate: 'pending' | 'manual' | null
   createdAt: string
 }
 
@@ -41,6 +43,8 @@ export interface ServerInfo {
   version: string
   baseUrl: string
   mcpUrl: string
+  updateCommand: string
   uninstallCommand: string
+  daemonVersion: string | null
   heartbeatTimeoutSeconds: number
 }

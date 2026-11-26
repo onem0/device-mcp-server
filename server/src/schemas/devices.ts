@@ -1,6 +1,8 @@
 import { z } from 'zod/v4'
 import type { AuditEntry } from '../services/audit.js'
+import { latestDaemonVersion } from '../services/daemon-release.js'
 import type { Device } from '../services/devices.js'
+import { daemonUpdateState } from '../services/guards.js'
 import { hub } from '../services/hub.js'
 import { iso, isoOrNull } from './common.js'
 
@@ -27,6 +29,8 @@ export const device = z.object({
   username: z.string().nullable(),
   homeDir: z.string().nullable(),
   daemonVersion: z.string().nullable(),
+  // pending: aktualisiert sich selbst auf die Version des Servers. manual: zu alt dafür, Install-Script erneut ausführen.
+  daemonUpdate: z.enum(['pending', 'manual']).nullable(),
   createdAt: z.string(),
 })
 
@@ -68,6 +72,7 @@ export function toDevice(d: Device): z.infer<typeof device> {
     username: d.username,
     homeDir: d.homeDir,
     daemonVersion: d.daemonVersion,
+    daemonUpdate: daemonUpdateState(d.daemonVersion, latestDaemonVersion()),
     createdAt: iso(d.createdAt),
   }
 }

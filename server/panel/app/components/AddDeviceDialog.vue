@@ -56,7 +56,7 @@ async function submit() {
         <p id="new-device-hint" class="hint">This is the name you use for the device in Claude. Letters, digits, dot, hyphen and underscore.</p>
         <p v-if="error" class="error" role="alert">{{ error }}</p>
       </div>
-      <p class="hint">Next you get an install command with the device token. It is shown only once.</p>
+      <p class="hint">Next you get the install command for Linux or macOS. Copying it includes the device token, which stays hidden and is only available that once.</p>
       <div class="sheet__actions">
         <button type="button" class="btn btn--quiet" :disabled="busy" @click="emit('close')">Cancel</button>
         <button type="submit" class="btn" :disabled="busy || !name.trim()">{{ busy ? 'Adding …' : 'Add and create token' }}</button>

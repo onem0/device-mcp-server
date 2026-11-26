@@ -2,6 +2,7 @@
 import type { Device } from '~/utils/types'
 
 defineProps<{ device: Device; editing: boolean; busy: boolean; renameError: string | null }>()
+const { info } = useServerInfo()
 const emit = defineEmits<{ rename: []; save: [name: string]; cancel: []; toggle: []; readOnly: []; regenerate: []; remove: [] }>()
 </script>
 
@@ -14,8 +15,12 @@ const emit = defineEmits<{ rename: []; save: [name: string]; cancel: []; toggle:
     <DeviceFacts :device="device" />
     <p v-if="!device.lastSeenAt && !device.os" class="device__never hint">
       <template v-if="!device.enabled">Disabled before the daemon ever connected. Claude can reach the device again once you enable it.</template>
-      <template v-else>The daemon has never connected. The install command was only shown when adding the device; if it is gone, create a new one with “New token”.</template>
+      <template v-else>The daemon has never connected. The install command could only be copied when adding the device; if it is gone, create a new one with “New token”.</template>
     </p>
+    <div v-if="device.daemonUpdate === 'manual' && info" class="device__update">
+      <p class="hint">This daemon is too old to update itself. Run the installer on the device once more; it keeps the token, and from then on the daemon updates itself.</p>
+      <CopyField label="On the device" :value="info.updateCommand" />
+    </div>
     <DeviceActions
       class="device__actions"
       :device="device"
@@ -52,5 +57,10 @@ const emit = defineEmits<{ rename: []; save: [name: string]; cancel: []; toggle:
 .device__never {
   max-width: 70ch;
   margin-top: -0.25rem;
+}
+.device__update {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 70ch;
 }
 </style>

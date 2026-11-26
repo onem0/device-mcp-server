@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { ArrowRight } from '@lucide/vue'
+
 useHead({ title: 'Connection' })
-const { info, error, claudeCodeCommand } = useServerInfo()
+const { info, error, claudeCodeCommand, installTemplate } = useServerInfo()
 </script>
 
 <template>
@@ -9,6 +11,17 @@ const { info, error, claudeCodeCommand } = useServerInfo()
     <p v-if="error" class="banner" role="alert">{{ error }}</p>
 
     <template v-if="info">
+      <section class="card setup__block" aria-labelledby="s-install">
+        <h2 id="s-install" class="setup__title">Install the daemon on a device</h2>
+        <ol class="setup__steps">
+          <li>Add the device here in the panel. Copy the command you get there: it carries the device's own token, hidden and available only that once.</li>
+          <li>Run it on the device as a normal user, not as root. It works on Linux with systemd and on macOS, x86_64 and arm64.</li>
+          <li>The script fetches the daemon from this server, connects it to this server and sets it up as a service. The device shows up as online a few seconds later.</li>
+        </ol>
+        <CopyField label="Command" :value="installTemplate" />
+        <NuxtLink to="/?add" class="setup__go">Add a device <ArrowRight :size="16" aria-hidden="true" /></NuxtLink>
+      </section>
+
       <section class="card setup__block" aria-labelledby="s-claude-ai">
         <h2 id="s-claude-ai" class="setup__title">claude.ai and the Claude app</h2>
         <ol class="setup__steps">
@@ -32,6 +45,15 @@ const { info, error, claudeCodeCommand } = useServerInfo()
       <section class="card setup__block" aria-labelledby="s-token">
         <h2 id="s-token" class="setup__title">Where does the MCP token come from?</h2>
         <p>It is <code>MCP_TOKEN</code> in the server's .env (on Coolify under Environment Variables). The panel deliberately never shows it: whoever has it can run commands on every device. Requests with a wrong or missing token only get 401.</p>
+      </section>
+
+      <section class="card setup__block" aria-labelledby="s-update">
+        <h2 id="s-update" class="setup__title">Daemon updates</h2>
+        <p>
+          Daemons update themselves. After the server was redeployed they reconnect, see the daemon version this server ships<template v-if="info.daemonVersion"> (currently <code>{{ info.daemonVersion }}</code>)</template>, download it from here, verify its checksum and restart as soon as no job is running. They also check every six hours.
+        </p>
+        <p>Daemons older than <code>0.3.0</code> cannot do that yet. Run this on the device once; it keeps the token. The same command also turns auto-update off or on again with <code>DEVICE_MCP_AUTO_UPDATE=0</code> or <code>=1</code> in front of <code>bash</code>.</p>
+        <CopyField label="On the device" :value="info.updateCommand" />
       </section>
 
       <section class="card setup__block" aria-labelledby="s-remove">
@@ -83,5 +105,16 @@ const { info, error, claudeCodeCommand } = useServerInfo()
 .setup__fields {
   display: grid;
   gap: 0.9rem;
+}
+.setup__go {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 0.35rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.setup__go:hover {
+  text-decoration: underline;
 }
 </style>

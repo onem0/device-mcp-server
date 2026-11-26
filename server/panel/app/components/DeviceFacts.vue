@@ -3,14 +3,29 @@ import type { Device } from '~/utils/types'
 
 // Feste Zellen: Auf jeder Karte steht derselbe Fakt an derselben Stelle.
 const props = defineProps<{ device: Device; detailed?: boolean }>()
+const { info } = useServerInfo()
 
-const cells = computed(() => {
+// Steht unter der Daemon-Version, solange der Server eine neuere ausliefert.
+const updateNote = computed(() => {
+  const target = info.value?.daemonVersion
+  if (props.device.daemonUpdate === 'pending') return target ? `Updates itself to ${target}` : 'Updates itself'
+  if (props.device.daemonUpdate === 'manual') return target ? `Needs a manual update to ${target}` : 'Needs a manual update'
+  return null
+})
+
+interface Cell {
+  label: string
+  value: string
+  note?: string | null
+}
+
+const cells = computed<Cell[]>(() => {
   const d = props.device
-  const base = [
+  const base: Cell[] = [
     { label: 'User', value: d.username && d.hostname ? `${d.username}@${d.hostname}` : (d.hostname ?? '–') },
     { label: 'System', value: d.os ?? '–' },
     { label: 'Architecture', value: [d.arch, d.kernel].filter(Boolean).join(' · ') || '–' },
-    { label: 'Daemon', value: d.daemonVersion ?? '–' },
+    { label: 'Daemon', value: d.daemonVersion ?? '–', note: updateNote.value },
   ]
   if (!props.detailed) return base
   return [
@@ -27,6 +42,7 @@ const cells = computed(() => {
     <div v-for="cell in cells" :key="cell.label" class="facts__cell">
       <dt class="caps muted">{{ cell.label }}</dt>
       <dd class="mono">{{ cell.value }}</dd>
+      <dd v-if="cell.note" class="facts__note">{{ cell.note }}</dd>
     </div>
   </dl>
 </template>
@@ -53,6 +69,12 @@ const cells = computed(() => {
 }
 dd {
   overflow-wrap: anywhere;
+}
+.facts__note {
+  margin-top: -0.1rem;
+  color: var(--mute);
+  font-size: var(--fs-s);
+  line-height: 1.4;
 }
 @media (max-width: 720px) {
   .facts,

@@ -182,7 +182,7 @@ Eine matte, leicht grünstichige Neutralpalette mit drei Bandfarben und zwei Sig
 - **Wortmarkenschwarz** (`tape-black`): Band der Wortmarke „device-mcp“ und der Druckerschlitz im Token-Dialog.
 
 ### Tertiary
-- **Geheimnisgelb** (`tape-yellow`): ausschließlich das gelbe Band, auf dem der Geräte-Token genau einmal erscheint.
+- **Geheimnisgelb** (`tape-yellow`): ausschließlich das gelbe Band, das für den Geräte-Token steht. Der Token steht dort verdeckt (Präfix und 24 Punkte), kopierbar ist er nur dieses eine Mal.
 
 ### Neutral
 - **Werkbank** (`ground`): Seitengrund; auch Grund der Kopierfelder und der Warte-Zeile im Token-Dialog, damit kopierbare Werte wie in die Werkbank eingelassen wirken.
@@ -199,7 +199,7 @@ Eine matte, leicht grünstichige Neutralpalette mit drei Bandfarben und zwei Sig
 ### Named Rules
 **The Ink-Only Rule.** Text steht in `ink` oder `mute`, sonst nichts. Grün und Rot tragen Status, nie Gliederung oder Schmuck.
 
-**The One Secret Rule.** Gelb erscheint nur dort, wo ein Geheimnis genau einmal gezeigt wird. Kein gelber Hinweis, kein gelber Button, keine gelbe Hervorhebung sonst.
+**The One Secret Rule.** Gelb erscheint nur dort, wo ein Geheimnis genau einmal greifbar ist. Im Klartext steht es nie auf dem Schirm: Band und Install-Befehl zeigen den Token verdeckt, die Kopieren-Buttons liefern den echten Wert. Kein gelber Hinweis, kein gelber Button, keine gelbe Hervorhebung sonst.
 
 ## Typography
 
@@ -277,7 +277,7 @@ Klar, kompakt, tintenschwarz.
 - **Error:** roter Text 600 klein unter dem Feld, `aria-invalid`.
 
 ### Kopierfeld
-Wert in Mono auf Werkbankgrund, als eingelassene Rinne (6px, Innenkontur `line`), rechts ein durch eine Haarlinie abgetrennter Kopieren-Button mit Symbol und Text; nach dem Kopieren grün „Kopiert“ für zwei Sekunden. Der ganze Wert ist mit einem Klick markierbar. Mehrzeilige Befehle behalten ihre Zeilen und scrollen waagerecht; in schmalen Containern brechen sie um.
+Wert in Mono auf Werkbankgrund, als eingelassene Rinne (6px, Innenkontur `line`), rechts ein durch eine Haarlinie abgetrennter Kopieren-Button mit Symbol und Text; nach dem Kopieren grün „Kopiert“ für zwei Sekunden. Der ganze Wert ist mit einem Klick markierbar. Enthält der Wert ein Geheimnis, zeigt das Feld es verdeckt (`display`), ist nicht markierbar und kopiert über den Button den echten Wert. Mehrzeilige Befehle behalten ihre Zeilen und scrollen waagerecht; in schmalen Containern brechen sie um.
 
 ### Navigation
 Archivo 700 mittel, grau; Hover Tinte; aktiv Tinte mit 2px-Unterstrich an der Unterkante der Kopfzeile. Mobil eigene Zeile unter Wortmarke und Abmelden.
