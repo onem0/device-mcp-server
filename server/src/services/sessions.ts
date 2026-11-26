@@ -8,7 +8,7 @@ import { hashToken, newToken } from './tokens.js'
 const ttlMs = () => env.SESSION_TTL_HOURS * 3_600_000
 const maxAgeMs = () => env.SESSION_MAX_DAYS * 86_400_000
 
-// Langsam abgeleitet (scrypt), damit ein Datenbankleck das Passwort nicht billig verrät. Einmal pro Prozess.
+// Derived slowly (scrypt) so that a database leak does not give the password away cheaply. Once per process.
 const passwordFingerprint = scryptSync(env.PANEL_PASSWORD, 'device-mcp/panel-session/v1', 32).toString('hex')
 
 export async function createSession(meta: { userAgent?: string; ip?: string }) {
@@ -20,12 +20,12 @@ export async function createSession(meta: { userAgent?: string; ip?: string }) {
     ip: meta.ip ?? null,
     expiresAt: new Date(Date.now() + ttlMs()),
   })
-  // Abgelaufene Sitzungen bei Gelegenheit aufräumen.
+  // Clean up expired sessions when the occasion arises.
   await db.delete(panelSessions).where(lt(panelSessions.expiresAt, new Date()))
   return token
 }
 
-// Gleitende Gültigkeit: Jede Nutzung verlängert die Sitzung, höchstens bis SESSION_MAX_DAYS nach der Anmeldung.
+// Sliding expiry: every use extends the session, at most until SESSION_MAX_DAYS after login.
 export async function resolveSession(token: string) {
   const tokenHash = hashToken(token)
   const now = new Date()

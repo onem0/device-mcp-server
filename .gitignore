@@ -8,7 +8,7 @@ dist
 !.env.example
 *.log
 .DS_Store
-# Impeccable: Arbeitsdateien der Design-Runden, nur Brief, Config und design.json gehören ins Repo
+# Impeccable: working files of the design rounds; only brief, config and design.json belong in the repo
 **/.impeccable/review
 **/.impeccable/mocks
 **/.impeccable/questions

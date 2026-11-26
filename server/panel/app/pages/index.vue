@@ -23,7 +23,7 @@ async function load() {
 onMounted(load)
 usePolling(load, 5000)
 
-// „Add a device“ auf der Connection-Seite führt mit ?add hierher und öffnet gleich den Dialog.
+// "Add a device" on the Connection page leads here with ?add and opens the dialog right away.
 const route = useRoute()
 onMounted(() => {
   if (!('add' in route.query)) return

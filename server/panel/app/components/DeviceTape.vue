@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { Device } from '~/utils/types'
 
-// Namensband, beim Umbenennen wird es an Ort und Stelle neu gedruckt.
+// Name tape; when renaming it is reprinted in place.
 const props = defineProps<{ device: Device; editing: boolean; link?: boolean; busy?: boolean; error?: string | null }>()
 const emit = defineEmits<{ save: [name: string]; cancel: [] }>()
 
 const draft = ref(props.device.name)
-// Nur nach einer Namensänderung neu drucken, nicht beim ersten Anzeigen.
+// Reprint only after a name change, not on first display.
 const reprinted = ref(false)
 watch(
   () => props.device.name,

@@ -19,7 +19,7 @@ export const recentJobs = (deviceId: string, limit = 20) =>
 export const runningJobs = (deviceId: string) =>
   db.select({ id: jobs.id }).from(jobs).where(and(eq(jobs.deviceId, deviceId), eq(jobs.status, 'running')))
 
-// Übernimmt den Endstand aus dem Daemon in Job und Audit-Eintrag. Nur Jobs des eigenen Geräts.
+// Copies the final state from the daemon into the job and the audit entry. Only jobs of the device itself.
 export async function saveJobResult(deviceId: string, s: Pick<JobSummary, 'id' | 'status' | 'exitCode' | 'signal' | 'error' | 'finishedAt' | 'durationMs'>) {
   const [row] = await db
     .update(jobs)

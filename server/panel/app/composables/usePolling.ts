@@ -1,4 +1,4 @@
-// Ruft fn regelmäßig auf, solange die Seite sichtbar ist. Gleich beim Zurückkehren in den Tab einmal sofort.
+// Calls fn regularly while the page is visible. Once immediately on returning to the tab.
 export function usePolling(fn: () => Promise<unknown> | unknown, intervalMs: number) {
   let timer: ReturnType<typeof setInterval> | undefined
   const tick = () => {

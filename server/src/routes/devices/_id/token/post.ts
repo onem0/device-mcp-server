@@ -6,7 +6,7 @@ import { hub } from '../../../../services/hub.js'
 import { installCommand, publicBaseUrl } from '../../../../services/install.js'
 import { CloseCode } from '../../../../services/protocol.js'
 
-// Neuer Token: Der alte gilt ab sofort nicht mehr, die laufende Verbindung wird getrennt.
+// New token: the old one stops working immediately, the current connection is closed.
 const route: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'POST',

@@ -7,7 +7,7 @@ import { hub } from '../services/hub.js'
 import { updateStatus } from '../services/updates.js'
 import { iso, isoOrNull } from './common.js'
 
-// Claude spricht Geräte beim Namen an, deshalb ohne Leerzeichen.
+// Claude addresses devices by name, hence no spaces.
 export const deviceName = z
   .string()
   .trim()
@@ -30,10 +30,10 @@ export const device = z.object({
   username: z.string().nullable(),
   homeDir: z.string().nullable(),
   daemonVersion: z.string().nullable(),
-  // available: älter als der Daemon des Servers, aus dem Panel aktualisierbar. manual: zu alt dafür, Install-Script erneut ausführen.
+  // available: older than the server's daemon and updatable from the panel. manual: too old for that, run the install script again.
   daemonUpdate: z.enum(['available', 'manual']).nullable(),
   autoUpdate: z.boolean(),
-  // Ein Update, das der Server angestoßen hat und das noch läuft, auf den Neustart wartet oder fehlgeschlagen ist.
+  // An update that the server triggered and that is still running, waiting for the restart or has failed.
   updateStatus: z.object({ state: z.enum(['running', 'restarting', 'failed']), target: z.string().nullable(), message: z.string().nullable() }).nullable(),
   createdAt: z.string(),
 })

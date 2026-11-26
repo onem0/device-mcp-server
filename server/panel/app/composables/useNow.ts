@@ -1,4 +1,4 @@
-// Gemeinsame Uhr für relative Zeitangaben ("vor 3 Minuten"), tickt alle 15 s.
+// Shared clock for relative times ("3 minutes ago"), ticks every 15 s.
 export function useNow(intervalMs = 15_000) {
   const now = useState('now', () => Date.now())
   let timer: ReturnType<typeof setInterval> | undefined

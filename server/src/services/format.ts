@@ -27,7 +27,7 @@ export function formatAgo(date: Date | null | undefined, now = Date.now()) {
 const nf = new Intl.NumberFormat('en-US')
 export const num = (n: number) => nf.format(n)
 export const lines = (n: number) => `${num(n)} ${n === 1 ? 'line' : 'lines'}`
-// Zeilenbereich, 0-basiert und exklusiv übergeben, 1-basiert angezeigt.
+// Line range, passed 0-based and exclusive, displayed 1-based.
 export const lineRange = (from: number, to: number) => (to - from === 1 ? `line ${num(to)}` : `lines ${num(from + 1)}–${num(to)}`)
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1)
 
@@ -66,7 +66,7 @@ export function formatJob(job: JobSummary) {
   return out.join('\n')
 }
 
-// Ergebnis eines run_command im Vordergrund: Kopf, ausgelassene Mitte, Ende.
+// Result of a run_command in the foreground: head, omitted middle, tail.
 export function formatRunResult(job: JobSummary, out: OutputChunk | null) {
   const header = [`exit_code: ${job.exitCode ?? '–'}`, `Status: ${describeStatus(job)}`, `job_id: ${job.id}`]
   if (!out) return `${header.join('\n')}\n\n(output not available, try job_output)`

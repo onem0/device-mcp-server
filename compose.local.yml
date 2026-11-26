@@ -1,4 +1,4 @@
-# Nur lokal: Ports auf den Rechner legen. Coolify nutzt diese Datei nicht.
+# Local only: publish the ports on the host machine. Coolify does not use this file.
 services:
   server:
     ports:

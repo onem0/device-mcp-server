@@ -1,11 +1,11 @@
-// Nachrichten zwischen Server und Daemon über /daemon/ws (JSON, eine Nachricht pro Frame).
-// Gegenstück: daemon/src/protocol.ts. Änderungen immer in beiden Dateien nachziehen.
+// Messages between server and daemon over /daemon/ws (JSON, one message per frame).
+// Counterpart: daemon/src/protocol.ts. Always apply changes to both files.
 
 import type { JobStatus } from '../db/schema/columns.js'
 
 export const PROTOCOL_VERSION = 1
 
-// Close-Codes, mit denen der Server eine Daemon-Verbindung beendet.
+// Close codes with which the server ends a daemon connection.
 export const CloseCode = {
   BadMessage: 4400,
   InvalidToken: 4401,
@@ -62,7 +62,7 @@ export interface OutputChunk {
   fromLine: number
   toLine: number
   totalLines: number
-  // Nur bei mode=headtail: ausgelassene Zeilen zwischen Anfang und Ende.
+  // Only with mode=headtail: omitted lines between head and tail.
   omittedLines?: number
   omittedFrom?: number
   tailText?: string
@@ -85,7 +85,7 @@ export type ReadFileResult =
     }
   | { kind: 'image'; path: string; size: number; mimeType: string; data: string }
   | { kind: 'binary'; path: string; size: number; mimeType: string | null }
-  // read_file mit encoding=base64: ein Byte-Bereich der Datei.
+  // read_file with encoding=base64: a byte range of the file.
   | { kind: 'base64'; path: string; size: number; offset: number; length: number; data: string; hasMore: boolean }
 
 export interface EditFileResult {
@@ -124,7 +124,7 @@ export interface SessionScreen {
   command: string
 }
 
-// Antwort des Daemons auf "update" (ab 0.4.0). installed: Das neue Binary liegt auf dem Gerät.
+// The daemon's response to "update" (since 0.4.0). installed: the new binary is on the device.
 export type UpdateResult =
   | { status: 'current'; version: string }
   | { status: 'installed'; version: string; restart: 'now' | 'when_idle' | 'manual'; runningJobs: number }

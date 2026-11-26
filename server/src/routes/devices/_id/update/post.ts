@@ -8,8 +8,8 @@ import { daemonUpdateState } from '../../../../services/guards.js'
 import { hub } from '../../../../services/hub.js'
 import { startUpdate } from '../../../../services/updates.js'
 
-// „Update“ im Panel: Der Daemon lädt die Version, die dieser Server ausliefert, und startet neu, sobald kein Job läuft.
-// Die Antwort kommt sofort (202). Den Fortschritt zeigt updateStatus in der Geräteliste.
+// "Update" in the panel: the daemon downloads the version this server ships and restarts as soon as no job is running.
+// The response comes immediately (202). Progress is shown by updateStatus in the device list.
 const route: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'POST',

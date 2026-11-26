@@ -11,7 +11,7 @@ export class DeviceOfflineError extends Error {
   }
 }
 
-// Fehler, den der Daemon selbst gemeldet hat (z. B. Datei nicht gefunden).
+// Error that the daemon itself reported (e.g. file not found).
 export class DaemonError extends Error {
   constructor(
     message: string,
@@ -42,17 +42,17 @@ interface Connection {
 type JobWaiter = (summary: JobSummary | null) => void
 
 const HELLO_TIMEOUT_MS = 10_000
-// last_seen_at in der Datenbank nur alle 60 s schreiben, im Speicher bei jedem Heartbeat.
+// Write last_seen_at to the database only every 60 s, in memory on every heartbeat.
 const PERSIST_EVERY_MS = 60_000
 
 export class DeviceHub {
   private conns = new Map<string, Connection>()
   private jobWaiters = new Map<string, Set<JobWaiter>>()
-  // Jobs, deren exec-Anfrage noch unterwegs ist. Der Abgleich nach einem Reconnect lässt sie aus.
+  // Jobs whose exec request is still in flight. The reconciliation after a reconnect skips them.
   private startingJobs = new Set<string>()
   private sweeper: NodeJS.Timeout | null = null
   private log: FastifyBaseLogger | null = null
-  // Nach jedem erfolgreichen hello, mit dem aktuellen Stand des Geräts aus der Datenbank.
+  // After every successful hello, with the device's current state from the database.
   onConnect: ((device: Device, info: DaemonInfo) => void) | null = null
 
   get heartbeatIntervalMs() {
@@ -83,7 +83,7 @@ export class DeviceHub {
     return conn ? { connectedAt: conn.connectedAt, lastSeen: new Date(conn.lastHeartbeat), info: conn.info } : null
   }
 
-  // Trennt ein Gerät sofort, z. B. nach Deaktivieren, Löschen oder neuem Token.
+  // Disconnects a device immediately, e.g. after disabling, deleting or a new token.
   disconnect(deviceId: string, code: number, reason: string) {
     const conn = this.conns.get(deviceId)
     if (!conn) return
@@ -99,7 +99,7 @@ export class DeviceHub {
 
     socket.on('message', (data, isBinary) => {
       if (isBinary) return socket.close(CloseCode.BadMessage, 'binary not supported')
-      // Nacheinander abarbeiten, damit hello sicher vor allem anderen fertig ist.
+      // Process one at a time so that hello is sure to be finished before anything else.
       queue = queue
         .then(() => this.onMessage(socket, state, data.toString(), ip, helloTimer))
         .catch((err) => this.log?.error({ err }, 'Daemon message failed'))
@@ -196,8 +196,8 @@ export class DeviceHub {
     }
     this.conns.set(device.id, conn)
 
-    // Während der Token-Abfrage kann das Panel den Token erneuert, das Gerät deaktiviert oder gelöscht haben.
-    // disconnect() fand da noch keine Verbindung, deshalb jetzt gegen den aktuellen Stand prüfen.
+    // During the token lookup the panel may have renewed the token, or disabled or deleted the device.
+    // disconnect() found no connection yet at that point, so check against the current state now.
     const fresh = await findDeviceById(device.id)
     if (!fresh || fresh.tokenHash !== device.tokenHash || !fresh.enabled) {
       this.drop(conn, new DeviceOfflineError('The device credentials just changed.'))
@@ -227,7 +227,7 @@ export class DeviceHub {
     return conn
   }
 
-  // Nach einem Reconnect: Was in der Datenbank noch läuft, mit dem Stand des Daemons abgleichen.
+  // After a reconnect: reconcile what is still running in the database with the daemon's state.
   private async reconcile(deviceId: string, daemonJobs: JobSummary[]) {
     const known = new Map(daemonJobs.map((j) => [j.id, j]))
     for (const { id } of await runningJobs(deviceId)) {
@@ -247,7 +247,7 @@ export class DeviceHub {
         await this.onJobEnd(deviceId, job)
       }
     }
-    // Wartende Vordergrund-Aufrufe, deren Job während der Trennung fertig wurde.
+    // Waiting foreground calls whose job finished during the disconnect.
     for (const job of daemonJobs) {
       if (job.status !== 'running' && this.jobWaiters.has(job.id)) this.notifyJob(job.id, job)
     }
@@ -272,7 +272,7 @@ export class DeviceHub {
     this.startingJobs.delete(jobId)
   }
 
-  // Vor dem exec registrieren, damit auch sehr schnelle Befehle nicht verpasst werden.
+  // Register before the exec so that even very fast commands are not missed.
   waitForJobEnd(jobId: string, timeoutMs: number) {
     let finish: JobWaiter = () => {}
     const promise = new Promise<JobSummary | null>((resolve) => {

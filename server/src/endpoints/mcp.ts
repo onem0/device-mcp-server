@@ -4,7 +4,7 @@ import { env } from '../env.js'
 import { createMcpServer } from '../services/mcp.js'
 import { safeEqual } from '../services/tokens.js'
 
-// write_file nimmt bis zu 10 MB Text, base64 und JSON-Hülle kommen dazu.
+// write_file takes up to 10 MB of text, plus base64 and the JSON envelope.
 const BODY_LIMIT = 20 * 1024 * 1024
 
 function hasValidBearer(request: FastifyRequest) {
@@ -14,10 +14,10 @@ function hasValidBearer(request: FastifyRequest) {
   return match ? safeEqual(match[1]!, env.MCP_TOKEN) : false
 }
 
-// Streamable HTTP ohne Sitzungen: Jede POST-Anfrage bekommt einen frischen MCP-Server.
-// Das übersteht Neustarts und braucht keinen Zustand zwischen Anfragen.
-// Antworten kommen als SSE-Stream: Das SDK schickt dabei alle 15 s einen Keepalive-Kommentar,
-// sonst trennen Proxys wie Cloudflare (100 s ohne Daten) lange run_command-Aufrufe.
+// Streamable HTTP without sessions: every POST request gets a fresh MCP server.
+// That survives restarts and needs no state between requests.
+// Responses come as an SSE stream: the SDK then sends a keepalive comment every 15 s,
+// otherwise proxies like Cloudflare (100 s without data) cut off long run_command calls.
 export default async function mcp(fastify: FastifyInstance) {
   fastify.route({
     method: ['GET', 'POST', 'DELETE'],
@@ -25,7 +25,7 @@ export default async function mcp(fastify: FastifyInstance) {
     bodyLimit: BODY_LIMIT,
     schema: { hide: true },
     onRequest: async (request, reply) => {
-      // Bewusst ohne Body und ohne WWW-Authenticate: keine Hinweise für Ratende.
+      // Deliberately without a body and without WWW-Authenticate: no hints for anyone guessing.
       if (!hasValidBearer(request)) return reply.code(401).send()
     },
     handler: async (request, reply) => {

@@ -1,4 +1,4 @@
-// Kopieren mit Rückfall für Browser ohne Clipboard-API (z. B. http ohne localhost).
+// Copy with a fallback for browsers without the Clipboard API (e.g. http without localhost).
 export async function copyText(text: string) {
   try {
     await navigator.clipboard.writeText(text)

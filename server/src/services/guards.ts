@@ -1,16 +1,16 @@
-// Reine Hilfsfunktionen für die MCP-Tools, ohne Datenbank und ohne Umgebung (testbar).
+// Pure helper functions for the MCP tools, without database and without environment (testable).
 
-// Ab welcher Daemon-Version eine Methode existiert. Ältere Daemons kennen sie nicht.
+// From which daemon version on a method exists. Older daemons do not know it.
 export const DAEMON_FEATURES = {
   edit_file: '0.2.0',
   read_file_base64: '0.2.0',
   sessions: '0.2.0',
 } as const
 
-// Ab dieser Version kennt der Daemon die Methode "update": Der Server kann ihn aus dem Panel heraus aktualisieren.
+// From this version on the daemon knows the "update" method: the server can update it from the panel.
 export const REMOTE_UPDATE_SINCE = '0.4.0'
 
-// Diese Tools sind auf Geräten mit „nur lesen“ gesperrt.
+// These tools are blocked on devices set to "read-only".
 export const WRITE_TOOLS = new Set(['run_command', 'write_file', 'edit_file', 'session_start', 'session_send'])
 
 export function compareVersions(a: string, b: string) {
@@ -25,8 +25,8 @@ export function compareVersions(a: string, b: string) {
 
 export const daemonTooOld = (version: string | null | undefined, min: string) => !version || compareVersions(version, min) < 0
 
-// available: Der Daemon ist älter als der vom Server ausgelieferte und lässt sich aus dem Panel aktualisieren.
-// manual: Er ist zu alt dafür, das Install-Script muss einmal von Hand laufen.
+// available: the daemon is older than the one the server ships and can be updated from the panel.
+// manual: it is too old for that, the install script has to be run by hand once.
 export function daemonUpdateState(version: string | null | undefined, latest: string | null | undefined): 'available' | 'manual' | null {
   if (!version || !latest || compareVersions(version, latest) >= 0) return null
   return daemonTooOld(version, REMOTE_UPDATE_SINCE) ? 'manual' : 'available'
@@ -49,17 +49,17 @@ export function tooOldMessage(device: string, version: string | null | undefined
 }
 
 const MAX_STRING = 200
-// Felder aus dem Request-Kontext des SDK. Landen sie versehentlich in den Argumenten, gehören sie nie ins Log
-// (requestInfo enthält die HTTP-Header mit dem Bearer-Token).
+// Fields from the SDK's request context. If they end up in the arguments by accident, they never belong in the log
+// (requestInfo contains the HTTP headers with the bearer token).
 const INTERNAL_KEYS = new Set(['requestInfo', 'authInfo', 'signal', 'sendNotification', 'sendRequest', 'requestId', '_meta', 'headers', 'authorization'])
-// Inhalte, die nur mit ihrer Länge ins Audit-Log gehören.
+// Contents that go into the audit log only as their length.
 const CONTENT_KEYS = new Set(['content'])
 
 function trimString(value: string) {
   return value.length > MAX_STRING ? `${value.slice(0, MAX_STRING)}… (+${value.length - MAX_STRING} chars)` : value
 }
 
-// Argumente fürs Audit-Log: lange Strings gekürzt, Dateiinhalte nur als Länge.
+// Arguments for the audit log: long strings truncated, file contents only as a length.
 export function sanitizeArgs(args: unknown): Record<string, unknown> {
   if (!args || typeof args !== 'object') return {}
   const out: Record<string, unknown> = {}

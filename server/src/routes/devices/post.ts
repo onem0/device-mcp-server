@@ -4,7 +4,7 @@ import { deviceName, deviceWithToken, toDevice } from '../../schemas/devices.js'
 import { createDevice } from '../../services/devices.js'
 import { installCommand, publicBaseUrl } from '../../services/install.js'
 
-// Der Token steht nur in dieser Antwort, gespeichert wird sein Hash.
+// The token appears only in this response; what gets stored is its hash.
 const route: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'POST',

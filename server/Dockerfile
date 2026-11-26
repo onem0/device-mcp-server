@@ -1,14 +1,14 @@
 # syntax=docker/dockerfile:1
-# Build-Kontext ist der Projektordner (siehe docker-compose.yml), weil das Image auch die Daemon-Binaries enthält.
+# The build context is the project folder (see docker-compose.yml) because the image also contains the daemon binaries.
 
-# --- Daemon: Single-Binaries für Linux und macOS (x64, arm64) plus manifest.json
+# --- Daemon: single binaries for Linux and macOS (x64, arm64) plus manifest.json
 FROM oven/bun:1.3.11 AS daemon
 WORKDIR /build
 COPY daemon/package.json daemon/build.ts daemon/tsconfig.json ./
 COPY daemon/src ./src
 RUN bun run build.ts && ls -la dist
 
-# --- Server (tsc) und Panel (nuxt generate) --------------------------------
+# --- Server (tsc) and panel (nuxt generate) --------------------------------
 FROM node:24-slim AS build
 RUN corepack enable
 WORKDIR /repo
@@ -20,7 +20,7 @@ COPY server/ server/
 RUN pnpm --filter panel generate && pnpm --filter server build
 RUN pnpm --filter server deploy --prod --legacy /out
 
-# --- Laufzeit ---------------------------------------------------------------
+# --- Runtime ----------------------------------------------------------------
 FROM node:24-slim
 ENV NODE_ENV=production \
     PORT=3000 \

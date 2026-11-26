@@ -2,9 +2,9 @@
 import { Check, Copy, Loader } from '@lucide/vue'
 import type { Device, DeviceWithToken } from '~/utils/types'
 
-// Der Geräte-Token ist nur in diesem Dialog greifbar und nie wieder. Er läuft als gelbes Band aus dem Dialog,
-// beim Schließen wird das Band abgeschnitten. Zu sehen ist er nicht: Band und Befehl zeigen ihn verdeckt,
-// die Kopieren-Buttons liefern den echten Wert.
+// The device token is available only in this dialog and never again. It runs out of the dialog as a yellow tape,
+// and on closing the tape is cut off. It is never visible: tape and command show it masked,
+// the copy buttons deliver the real value.
 const props = defineProps<{ secret: { payload: DeviceWithToken; mode: 'create' | 'regenerate' } | null }>()
 const emit = defineEmits<{ close: [] }>()
 
@@ -22,7 +22,7 @@ async function copyToken() {
 }
 let poll: ReturnType<typeof setInterval> | undefined
 
-// Feste Länge, damit das Band nichts über den Token verrät.
+// Fixed length so the tape reveals nothing about the token.
 const MASK = '•'.repeat(24)
 const maskedToken = computed(() => `${props.secret?.payload.token.match(/^[a-z]+_/)?.[0] ?? ''}${MASK}`)
 const maskedCommand = computed(() => {
@@ -43,13 +43,13 @@ watch(
     cutting.value = false
     live.value = null
     if (!secret) return
-    // Live mitverfolgen, bis der Daemon sich meldet.
+    // Follow live until the daemon reports in.
     poll = setInterval(async () => {
       try {
         live.value = await api<Device>(`/devices/${secret.payload.device.id}`)
         if (live.value.online) clearInterval(poll)
       } catch {
-        // nächster Versuch
+        // next attempt
       }
     }, 2000)
   },
@@ -57,7 +57,7 @@ watch(
 
 onBeforeUnmount(() => clearInterval(poll))
 
-// Schließen ohne Kopieren verliert den Token. Einmal warnen, dann gehen lassen.
+// Closing without copying loses the token. Warn once, then let it go.
 const canClose = () => {
   if (copied.value || connected.value || warned.value) return true
   warned.value = true
@@ -128,7 +128,7 @@ function close() {
 </template>
 
 <style scoped>
-/* Das Band steht ganz über der Dialogkante und steckt nur unten im Schlitz. */
+/* The tape stands entirely above the dialog edge and is only stuck in the slot at the bottom. */
 .token {
   padding: 0 1.75rem;
 }
@@ -238,7 +238,7 @@ function close() {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  /* Einmal der Länge nach gedruckt, wie aus dem Etikettendrucker. Ohne Animation ist es einfach da. */
+  /* Printed once lengthwise, as if from a label printer. Without animation it is simply there. */
   .token__tape {
     animation: feed 700ms linear both;
   }
@@ -246,7 +246,7 @@ function close() {
     animation: cut 260ms cubic-bezier(0.5, 0, 0.75, 0) forwards;
   }
 }
-/* Aus dem Schlitz nach oben ausgeworfen: Verschiebung und Beschnitt laufen gleich, die Unterkante bleibt am Schlitz. */
+/* Ejected upward out of the slot: translation and clipping run in sync, the bottom edge stays at the slot. */
 @keyframes feed {
   from {
     transform: translateY(100%);

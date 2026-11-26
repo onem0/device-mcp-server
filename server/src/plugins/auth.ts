@@ -21,7 +21,7 @@ export const clearSessionCookie = (reply: FastifyReply) =>
 
 export const sessionToken = (request: FastifyRequest) => request.cookies[SESSION_COOKIE]
 
-// Für autohooks.ts der geschützten Panel-Routen.
+// For the autohooks.ts of the protected panel routes.
 export async function requireSession(request: FastifyRequest) {
   const token = sessionToken(request)
   const session = token ? await resolveSession(token) : null

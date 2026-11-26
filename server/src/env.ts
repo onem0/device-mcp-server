@@ -2,21 +2,21 @@ import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { z } from 'zod/v4'
 
-// Lokal liegt die .env im Projektordner oder eine Ebene höher (neben der docker-compose.yml).
-// Im Container kommen alle Werte aus der Compose-Datei.
+// Locally the .env sits in the project folder or one level up (next to docker-compose.yml).
+// In the container all values come from the Compose file.
 if (process.env.NODE_ENV !== 'test') {
   const file = ['.env', '../.env'].find((f) => existsSync(f))
   if (file) process.loadEnvFile(file)
 }
 
-// Compose setzt nicht gesetzte Variablen als leeren String, das soll wie "fehlt" zählen.
+// Compose sets unset variables to an empty string; that should count as "missing".
 const blankAsUndefined = (v: unknown) => (v === '' ? undefined : v)
 const optional = <T extends z.ZodType>(schema: T) => z.preprocess(blankAsUndefined, schema.optional())
 const withDefault = <T extends z.ZodType>(schema: T, fallback: z.input<T>) =>
   z.preprocess(blankAsUndefined, schema.default(fallback as never))
 
-// Zahl: so vielen Proxy-Hops vertrauen (Standard 1 = Traefik, hinter Cloudflare 2),
-// true: jedem Proxy glauben (nur wenn niemand den Server direkt erreicht), sonst eine Liste von IPs/CIDRs.
+// Number: trust this many proxy hops (default 1 = Traefik, behind Cloudflare 2),
+// true: trust every proxy (only if nobody reaches the server directly), otherwise a list of IPs/CIDRs.
 const trustProxy = z.preprocess(
   (v) => {
     if (v === undefined || v === '') return 1
@@ -38,7 +38,7 @@ const schema = z.object({
   MCP_TOKEN: z.string({ error: 'MCP_TOKEN is missing.' }).min(32, 'MCP_TOKEN needs at least 32 characters (openssl rand -base64 32).'),
   PANEL_PASSWORD: z.string({ error: 'PANEL_PASSWORD is missing.' }).min(12, 'PANEL_PASSWORD needs at least 12 characters.'),
   SESSION_TTL_HOURS: withDefault(z.coerce.number().int().positive(), 168),
-  // Obergrenze ab Anmeldung, auch wenn die Sitzung ständig genutzt wird.
+  // Upper limit counted from login, even if the session is in constant use.
   SESSION_MAX_DAYS: withDefault(z.coerce.number().int().positive(), 30),
   HEARTBEAT_INTERVAL_SECONDS: withDefault(z.coerce.number().int().min(5).max(300), 15),
   HEARTBEAT_TIMEOUT_SECONDS: withDefault(z.coerce.number().int().min(10).max(900), 45),

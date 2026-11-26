@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Rückfragen zu Löschen und neuem Token, gemeinsam für Übersicht und Detailseite.
+// Confirmation prompts for deleting and a new token, shared by overview and detail page.
 const props = defineProps<{ ops: ReturnType<typeof useDeviceOps> }>()
 const c = props.ops.confirm
 </script>

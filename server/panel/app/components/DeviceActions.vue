@@ -47,7 +47,7 @@ const emit = defineEmits<{ rename: []; toggle: []; readOnly: []; autoUpdate: [];
   justify-content: flex-end;
   gap: 0.15rem;
 }
-/* Schmal: nur Symbole in einer Zeile, die Namen stehen in title und für Screenreader im Text. */
+/* Narrow: icons only in a single row, the names are in title and, for screen readers, in the text. */
 @media (max-width: 720px) {
   .actions {
     flex-wrap: nowrap;

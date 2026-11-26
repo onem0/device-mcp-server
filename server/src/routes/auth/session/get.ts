@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 import { sessionToken } from '../../../plugins/auth.js'
 import { resolveSession } from '../../../services/sessions.js'
 
-// Für das Panel: Ist die Sitzung noch gültig? Antwortet immer 200, damit der Login-Check einfach bleibt.
+// For the panel: is the session still valid? Always answers 200 so the login check stays simple.
 const route: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'GET',

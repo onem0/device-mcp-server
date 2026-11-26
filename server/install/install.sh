@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# device-mcp: Daemon installieren oder aktualisieren (Linux mit systemd, macOS mit launchd).
+# device-mcp: install or update the daemon (Linux with systemd, macOS with launchd).
 #
 #   curl -fsSL __SERVER_URL__/install.sh | DEVICE_MCP_TOKEN='dmcp_…' bash
 #
-# Das Script holt den Daemon von dem Server, von dem es selbst kommt, und verbindet ihn mit genau diesem Server.
-# Erneut ausführen aktualisiert Binary und Service. Ohne DEVICE_MCP_TOKEN bleibt der Token aus der bestehenden Config.
-# Der Daemon läuft als der Benutzer, der dieses Script ausführt, nicht als root.
-# Spätere Updates stößt der Server an: per Klick im Panel oder, wenn dort eingeschaltet, automatisch.
+# The script fetches the daemon from the server it was downloaded from and connects it to exactly that server.
+# Running it again updates binary and service. Without DEVICE_MCP_TOKEN the token from the existing config is kept.
+# The daemon runs as the user who runs this script, not as root.
+# Later updates are triggered by the server: by a click in the panel or, if turned on there, automatically.
 #
-# Muss auch mit der bash 3.2 von macOS laufen.
+# Must also run with the bash 3.2 that ships with macOS.
 set -euo pipefail
 
 SERVER_URL="${DEVICE_MCP_SERVER:-__SERVER_URL__}"
@@ -18,7 +18,7 @@ TOKEN="${DEVICE_MCP_TOKEN:-}"
 BIN_DIR="$HOME/.local/bin"
 BIN="$BIN_DIR/device-mcp"
 UNINSTALL_BIN="$BIN_DIR/device-mcp-uninstall"
-# Fester Ort, den auch die Unit-Datei (%h/.config) und der Daemon ohne XDG-Variablen finden.
+# Fixed location that the unit file (%h/.config) and the daemon also find without XDG variables.
 CONFIG_HOME="$HOME/.config"
 CONFIG_DIR="$CONFIG_HOME/device-mcp"
 CONFIG="$CONFIG_DIR/config.json"
@@ -39,7 +39,7 @@ step() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33mNote:\033[0m %s\n' "$*" >&2; }
 fail() { printf '\033[1;31mError:\033[0m %s\n' "$*" >&2; exit 1; }
 
-# --- Voraussetzungen -------------------------------------------------------
+# --- Prerequisites ---------------------------------------------------------
 
 case "$(uname -s)" in
   Linux) OS=linux ;;
@@ -79,7 +79,7 @@ case "$TOKEN" in
 esac
 
 if [ "$OS" = linux ]; then
-  # systemctl --user braucht die Laufzeitumgebung der Benutzersitzung, auch per SSH oder su.
+  # systemctl --user needs the runtime environment of the user session, also via SSH or su.
   export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
   export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=$XDG_RUNTIME_DIR/bus}"
   SYSTEM_NAME="$( (. /etc/os-release 2>/dev/null && echo "${PRETTY_NAME:-Linux}") || echo Linux )"
@@ -99,12 +99,12 @@ curl -fSL --progress-bar "$SERVER_URL/download/device-mcp-$OS-$ARCH.gz" | gzip -
   || fail "Download of $SERVER_URL/download/device-mcp-$OS-$ARCH.gz failed."
 chmod 755 "$TMP_BIN"
 "$TMP_BIN" --version >/dev/null 2>&1 || fail "The downloaded binary does not run on this system."
-# mv ersetzt die Datei atomar, ein laufender Daemon behält bis zum Neustart die alte Version.
+# mv replaces the file atomically; a running daemon keeps the old version until it restarts.
 mv -f "$TMP_BIN" "$BIN"
 trap - EXIT
 step "Daemon $("$BIN" --version) at $BIN"
 
-# --- Konfiguration ---------------------------------------------------------
+# --- Configuration ---------------------------------------------------------
 
 step "Writing $CONFIG"
 mkdir -p "$CONFIG_DIR"
@@ -115,8 +115,8 @@ chmod 700 "$CONFIG_DIR"
 )
 chmod 600 "$CONFIG"
 
-# Der Service bekommt den PATH dieser Shell, damit Claude dieselben Programme findet wie du (nvm, Homebrew, ~/.local/bin, …).
-# systemd liest ihn aus der env-Datei. launchd kennt so etwas nicht, dort steht er in der plist.
+# The service gets the PATH of this shell so that Claude finds the same programs as you do (nvm, Homebrew, ~/.local/bin, …).
+# systemd reads it from the env file. launchd has nothing like that, there it goes into the plist.
 SERVICE_PATH="$BIN_DIR:$PATH"
 if [ "$OS" = linux ]; then
   (
@@ -173,11 +173,11 @@ Type=simple
 ExecStart=%h/.local/bin/device-mcp
 WorkingDirectory=%h
 EnvironmentFile=-%h/.config/device-mcp/env
-# Daran erkennt der Daemon, dass er nach einem Update einfach enden darf: systemd startet das neue Binary.
+# This tells the daemon that it may simply exit after an update: systemd starts the new binary.
 Environment=DEVICE_MCP_SUPERVISED=1
 Restart=always
 RestartSec=5
-# Jobs laufen in eigenen Prozessgruppen, beim Stoppen sollen sie mit enden.
+# Jobs run in their own process groups; they should end too when the service is stopped.
 KillMode=control-group
 TimeoutStopSec=15
 
@@ -185,7 +185,7 @@ TimeoutStopSec=15
 WantedBy=default.target
 UNIT
 
-  # Damit der Daemon nach einem Reboot ohne Anmeldung startet.
+  # So that the daemon starts after a reboot without a login.
   if [ "$(loginctl show-user "$(id -un)" -p Linger --value 2>/dev/null || true)" != "yes" ]; then
     step "Enabling linger for $(id -un)"
     if ! loginctl enable-linger "$(id -un)" 2>/dev/null; then
@@ -200,7 +200,7 @@ UNIT
     fi
   fi
 
-  # Nach enable-linger startet systemd den User-Manager, das kann einen Moment dauern.
+  # After enable-linger systemd starts the user manager, which can take a moment.
   for _ in $(seq 1 20); do
     [ -S "$XDG_RUNTIME_DIR/bus" ] && break
     sleep 0.5
@@ -214,7 +214,7 @@ UNIT
 
 xml_escape() { printf '%s' "$1" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g'; }
 
-# LaunchAgent des Benutzers: startet bei der Anmeldung, launchd startet den Daemon nach jedem Ende neu.
+# The user's LaunchAgent: starts at login, launchd restarts the daemon every time it exits.
 setup_launchd() {
   step "Setting up the launchd agent"
   mkdir -p "$PLIST_DIR" "$(dirname "$LOG_FILE")"
@@ -262,11 +262,11 @@ PLIST
   } > "$PLIST"
   chmod 644 "$PLIST"
 
-  # gui/<uid> gibt es nur mit angemeldeter Sitzung. Per SSH ohne Anmeldung am Bildschirm bleibt user/<uid>.
+  # gui/<uid> only exists with a logged-in session. Via SSH without a login at the screen, user/<uid> remains.
   DOMAIN="gui/$(id -u)"
   launchctl print "$DOMAIN" >/dev/null 2>&1 || DOMAIN="user/$(id -u)"
 
-  # Einen laufenden Agent erst entladen. bootout kehrt zurück, bevor er ganz weg ist.
+  # Unload a running agent first. bootout returns before it is completely gone.
   launchctl bootout "$DOMAIN/$LABEL" 2>/dev/null || true
   for _ in $(seq 1 20); do
     launchctl print "$DOMAIN/$LABEL" >/dev/null 2>&1 || break
@@ -291,7 +291,7 @@ if [ "$OS" = linux ]; then setup_systemd; else setup_launchd; fi
 curl -fsSL "$SERVER_URL/uninstall.sh" -o "$UNINSTALL_BIN" && chmod 755 "$UNINSTALL_BIN" \
   || warn "Could not download the uninstaller. You can also uninstall with: curl -fsSL $SERVER_URL/uninstall.sh | bash"
 
-# --- Kontrolle -------------------------------------------------------------
+# --- Check -----------------------------------------------------------------
 
 sleep 2
 if [ "$OS" = linux ]; then

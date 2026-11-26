@@ -11,8 +11,8 @@ const INSTALL_DIR = path.join(import.meta.dirname, '..', '..', 'install')
 
 const script = (name: string) => readFile(path.join(INSTALL_DIR, name), 'utf8')
 
-// Installer, Uninstaller und Daemon-Binaries sind öffentlich: Sie enthalten keine Geheimnisse,
-// der Geräte-Token kommt erst beim Aufruf über DEVICE_MCP_TOKEN dazu.
+// Installer, uninstaller and daemon binaries are public: they contain no secrets,
+// the device token is only added at invocation via DEVICE_MCP_TOKEN.
 const downloads: FastifyPluginAsyncZod = async (fastify) => {
   fastify.get('/install.sh', { schema: { hide: true } }, async (request, reply) => {
     const body = (await script('install.sh')).replaceAll('__SERVER_URL__', publicBaseUrl(request))
@@ -23,7 +23,7 @@ const downloads: FastifyPluginAsyncZod = async (fastify) => {
     return reply.type('text/x-shellscript; charset=utf-8').header('cache-control', 'no-store').send(await script('uninstall.sh'))
   })
 
-  // Version und Prüfsummen der Binaries. Die Daemons fragen das ab und aktualisieren sich selbst.
+  // Version and checksums of the binaries. The daemons query this and update themselves.
   fastify.get('/download/manifest.json', { schema: { hide: true } }, async (_request, reply) => {
     const manifest = daemonManifest()
     if (!manifest) return reply.code(404).send({ error: { code: 'NOT_FOUND', message: 'No daemon binaries were built.' } })

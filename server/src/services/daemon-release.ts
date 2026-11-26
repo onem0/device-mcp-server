@@ -2,7 +2,7 @@ import { readFileSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { env } from '../env.js'
 
-// daemon/build.ts schreibt das Manifest neben die Binaries: Version und Prüfsummen der entpackten Dateien.
+// daemon/build.ts writes the manifest next to the binaries: version and checksums of the unpacked files.
 export interface DaemonManifest {
   version: string
   binaries: Record<string, { sha256: string; size: number }>
@@ -12,13 +12,13 @@ const file = () => path.join(env.DAEMON_DIST_DIR, 'manifest.json')
 
 let cache: { mtimeMs: number; manifest: DaemonManifest | null } | null = null
 
-// Synchron und nach mtime gecacht: wird für jede Geräteliste im Panel gebraucht.
+// Synchronous and cached by mtime: needed for every device list in the panel.
 export function daemonManifest(): DaemonManifest | null {
   let mtimeMs: number
   try {
     mtimeMs = statSync(file()).mtimeMs
   } catch {
-    // Kein Manifest (z. B. Entwicklung ohne gebauten Daemon): keine Updates.
+    // No manifest (e.g. development without a built daemon): no updates.
     cache = null
     return null
   }
@@ -30,7 +30,7 @@ export function daemonManifest(): DaemonManifest | null {
       manifest = { version: data.version, binaries: data.binaries }
     }
   } catch {
-    // Kaputtes Manifest zählt wie keins.
+    // A broken manifest counts as none.
   }
   cache = { mtimeMs, manifest }
   return manifest

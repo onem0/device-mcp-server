@@ -8,41 +8,41 @@ web
 
 ## Users
 
-Eine einzige Person: der Betreiber (Neo), der seine eigenen Geräte (Linux-Server, Raspberry Pis, Macs) für Claude erreichbar macht. Kein Multi-User, keine Rollen. Das Web-Panel öffnet er meist am Laptop/Desktop, typischerweise während er per SSH ein neues Gerät einrichtet; das Handy dient nur zum Nachschauen. Realistisch verwaltet das Panel 1 bis 5 Geräte.
+A single person: the operator (Neo), who makes his own devices (Linux servers, Raspberry Pis, Macs) reachable for Claude. No multi-user, no roles. He mostly opens the web panel on a laptop/desktop, typically while setting up a new device over SSH; the phone is only for checking in. Realistically the panel manages 1 to 5 devices.
 
 ## Product Purpose
 
-device-mcp ist ein selbst gehosteter MCP-Server, über den Claude (claude.ai, Handy-App, Claude Code) auf den Geräten des Betreibers Befehle ausführt und Dateien liest und schreibt. Auf jedem Gerät läuft ein Daemon, der sich per WebSocket beim Server meldet. Das Panel ist die Verwaltung dazu: Geräte anlegen (der fertige Install-Befehl mit Token lässt sich genau einmal kopieren, der Token selbst bleibt verdeckt), umbenennen, deaktivieren, löschen, Token neu erzeugen, Online-Status prüfen und nachvollziehen, was Claude auf welchem Gerät getan hat (Audit-Log). Erfolg: ein neues Gerät ist in unter einer Minute verbunden, und jeder Befehl von Claude ist nachvollziehbar.
+device-mcp is a self-hosted MCP server through which Claude (claude.ai, mobile app, Claude Code) runs commands and reads and writes files on the operator's devices. Each device runs a daemon that connects to the server over WebSocket. The panel is the administration for it: add devices (the ready-made install command with the token can be copied exactly once, the token itself stays hidden), rename, disable, delete, create a new token, check the online status and trace what Claude did on which device (audit log). Success: a new device is connected in under a minute, and every command from Claude is traceable.
 
 ## Positioning
 
-Ein Werkzeug für genau einen Menschen und seine eigenen Maschinen, selbst gehostet auf Coolify. Die Daemons verbinden sich von sich aus (keine offenen Ports auf den Geräten), Jobs überleben Verbindungsabbrüche, und jede Aktion von Claude landet mit Exit-Code und Dauer im Audit-Log.
+A tool for exactly one person and his own machines, self-hosted on Coolify. The daemons connect on their own initiative (no open ports on the devices), jobs survive connection drops, and every action by Claude ends up in the audit log with exit code and duration.
 
 ## Operating Context
 
-- Gerät hinzufügen: Name eingeben, Install-Befehl (enthält den Token) kopieren, im SSH-Terminal des Geräts einfügen, warten bis das Gerät online erscheint.
-- Gelegentliches Nachsehen: Ist ein Gerät online, wann zuletzt gesehen, was hat Claude ausgeführt.
-- Einrichtung der Clients: MCP-URL `/mcp` mit Header `Authorization: Bearer <MCP_TOKEN>` in claude.ai (Custom Connector) und Claude Code (`claude mcp add --transport http …`).
+- Adding a device: enter a name, copy the install command (contains the token), paste it into the device's SSH terminal, wait until the device shows up as online.
+- Occasional check: is a device online, when was it last seen, what did Claude run.
+- Setting up the clients: MCP URL `/mcp` with the header `Authorization: Bearer <MCP_TOKEN>` in claude.ai (custom connector) and Claude Code (`claude mcp add --transport http …`).
 
 ## Capabilities and Constraints
 
-- Login nur mit einem Passwort aus der `.env`, Session-Cookie, Rate-Limit.
-- Geräte-Token und MCP-Token sind Geheimnisse: Der Geräte-Token ist genau einmal kopierbar (verdeckt, nie im Klartext zu sehen), der MCP-Token nie im Panel.
-- Daemon für Linux (systemd-User-Service) und macOS (launchd-Agent), x64 und arm64. Updates stößt der Server an: per Klick auf „Update“ im Panel oder, pro Gerät einschaltbar, automatisch (ab Daemon 0.4.0).
-- Alle Strings im Programm auf Englisch (Panel, Tool-Beschreibungen und -Ausgaben, Fehlermeldungen, Logs, Install-Scripts). Code-Kommentare und READMEs auf Deutsch.
-- Stack: Nuxt-SPA (`ssr: false`), von Fastify ausgeliefert, Panel-API unter `/v1`.
+- Login only with a password from the `.env`, session cookie, rate limit.
+- Device token and MCP token are secrets: the device token can be copied exactly once (hidden, never visible in plain text), the MCP token never appears in the panel.
+- Daemon for Linux (systemd user service) and macOS (launchd agent), x64 and arm64. The server triggers updates: by clicking "Update" in the panel or, switchable per device, automatically (as of daemon 0.4.0).
+- All text is English: program strings (panel, tool descriptions and outputs, error messages, logs, install scripts), code comments and documentation.
+- Stack: Nuxt SPA (`ssr: false`), served by Fastify, panel API under `/v1`.
 
 ## Brand Commitments
 
-Name: device-mcp. Darf auf keinen Fall wie ein generisches, austauschbares Admin-Dashboard aussehen (vom Betreiber ausdrücklich genannt).
+Name: device-mcp. Must under no circumstances look like a generic, interchangeable admin dashboard (explicitly stated by the operator).
 
 ## Evidence on Hand
 
-Keine Logos, Bilder oder Markenassets. Echte Inhalte sind die Gerätedaten (Name, Hostname, OS, Architektur, Kernel, Benutzer) und Audit-Einträge (Tool, Befehl, Exit-Code, Dauer), die der laufende Server liefert.
+No logos, images or brand assets. The real content is the device data (name, hostname, OS, architecture, kernel, user) and audit entries (tool, command, exit code, duration) that the running server provides.
 
 ## Product Principles
 
-1. Ein Geheimnis ist einmal kopierbar und dann nie wieder, im Klartext zu sehen ist es nie: Kopieren muss beim ersten Mal sicher gelingen.
-2. Status vor Dekoration: online/offline und „zuletzt gesehen“ sind auf einen Blick lesbar.
-3. Nachvollziehbarkeit: Was Claude getan hat, ist pro Gerät vollständig und ehrlich sichtbar, auch Fehler.
-4. Wenige Geräte, viel Klarheit: Jedes Gerät darf Raum bekommen statt in einer dichten Tabelle zu verschwinden.
+1. A secret can be copied once and then never again, and it is never visible in plain text: copying has to succeed reliably the first time.
+2. Status before decoration: online/offline and "last seen" are readable at a glance.
+3. Traceability: what Claude did is visible per device, completely and honestly, including errors.
+4. Few devices, much clarity: each device may have room instead of disappearing in a dense table.

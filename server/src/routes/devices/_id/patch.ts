@@ -7,8 +7,8 @@ import { hub } from '../../../services/hub.js'
 import { CloseCode } from '../../../services/protocol.js'
 import { autoUpdateIfDue } from '../../../services/updates.js'
 
-// Umbenennen, Aktivieren/Deaktivieren, „nur lesen“ und Auto-Update. Deaktivieren trennt die Verbindung sofort.
-// Auto-Update einschalten holt ein ausstehendes Update gleich nach.
+// Rename, enable/disable, "read-only" and auto-update. Disabling closes the connection immediately.
+// Turning auto-update on catches up on a pending update right away.
 const route: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'PATCH',

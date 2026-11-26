@@ -1,6 +1,6 @@
 import type { Device, DeviceWithToken } from '~/utils/types'
 
-// Gemeinsame Geräteaktionen für Übersicht und Detailseite.
+// Shared device actions for overview and detail page.
 export function useDeviceOps(hooks: { changed: () => unknown; removed?: (device: Device) => unknown }) {
   const busyId = ref<string | null>(null)
   const editingId = ref<string | null>(null)
@@ -67,7 +67,7 @@ export function useDeviceOps(hooks: { changed: () => unknown; removed?: (device:
     }
   }
 
-  // Stößt das Daemon-Update an. Der Fortschritt kommt über updateStatus beim nächsten Abruf der Geräte.
+  // Triggers the daemon update. Progress arrives via updateStatus on the next fetch of the devices.
   async function update(device: Device) {
     busyId.value = device.id
     actionError.value = null

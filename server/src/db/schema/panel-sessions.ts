@@ -2,9 +2,9 @@ import { pgTable, text } from 'drizzle-orm/pg-core'
 import { createdAt, tstz } from './columns.js'
 
 export const panelSessions = pgTable('panel_sessions', {
-  // SHA-256 des Cookie-Werts.
+  // SHA-256 of the cookie value.
   tokenHash: text('token_hash').primaryKey(),
-  // Abgeleitet vom PANEL_PASSWORD zur Anmeldezeit. Ein neues Passwort macht alle alten Sitzungen ungültig.
+  // Derived from PANEL_PASSWORD at login time. A new password invalidates all old sessions.
   passwordFingerprint: text('password_fingerprint').notNull().default(''),
   userAgent: text('user_agent'),
   ip: text('ip'),

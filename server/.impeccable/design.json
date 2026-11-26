@@ -6,10 +6,10 @@
     "colorMeta": {
       "ground": {
         "role": "neutral",
-        "displayName": "Werkbank",
+        "displayName": "Workbench",
         "canonical": "#eceee9",
         "oklch": "oklch(94.6% 0.007 124.5)",
-        "purpose": "Seitengrund; Grund der Kopierfelder.",
+        "purpose": "Page ground; ground of the copy fields.",
         "tonalRamp": [
           "#0b0b0a",
           "#262723",
@@ -23,10 +23,10 @@
       },
       "card": {
         "role": "neutral",
-        "displayName": "Karton",
+        "displayName": "Cardboard",
         "canonical": "#f7f8f5",
         "oklch": "oklch(97.8% 0.004 121.6)",
-        "purpose": "Gerätekarten.",
+        "purpose": "Device cards.",
         "tonalRamp": [
           "#0b0b0a",
           "#262725",
@@ -40,10 +40,10 @@
       },
       "raised": {
         "role": "neutral",
-        "displayName": "Heller Karton",
+        "displayName": "Light cardboard",
         "canonical": "#fcfcfa",
         "oklch": "oklch(99.1% 0.003 106.4)",
-        "purpose": "Lese- und Kopierflächen, Dialoge.",
+        "purpose": "Reading and copying surfaces, dialogs.",
         "tonalRamp": [
           "#0b0b0b",
           "#262625",
@@ -57,10 +57,10 @@
       },
       "ink": {
         "role": "primary",
-        "displayName": "Bandschwarz",
+        "displayName": "Tape black",
         "canonical": "#151515",
         "oklch": "oklch(19.6% 0.000 89.9)",
-        "purpose": "Text, Primärbutton, Fokus, aktive Navigation.",
+        "purpose": "Text, primary button, focus, active navigation.",
         "tonalRamp": [
           "#0b0b0b",
           "#262626",
@@ -74,10 +74,10 @@
       },
       "mute": {
         "role": "neutral",
-        "displayName": "Grau",
+        "displayName": "Grey",
         "canonical": "#585d55",
         "oklch": "oklch(47.1% 0.014 133.5)",
-        "purpose": "Einzige zweite Textfarbe.",
+        "purpose": "The only second text colour.",
         "tonalRamp": [
           "#0a0c09",
           "#242821",
@@ -91,10 +91,10 @@
       },
       "line": {
         "role": "neutral",
-        "displayName": "Haarlinie",
+        "displayName": "Hairline",
         "canonical": "#d5d8d0",
         "oklch": "oklch(87.8% 0.011 123.5)",
-        "purpose": "Kartenränder, Trennlinien.",
+        "purpose": "Card borders, dividers.",
         "tonalRamp": [
           "#0b0c09",
           "#252721",
@@ -108,10 +108,10 @@
       },
       "line-strong": {
         "role": "neutral",
-        "displayName": "Kräftige Linie",
+        "displayName": "Strong line",
         "canonical": "#b4b8af",
         "oklch": "oklch(77.7% 0.013 126.4)",
-        "purpose": "Eingabefelder, ruhiger Button, Tabellenkopf.",
+        "purpose": "Input fields, quiet button, table header.",
         "tonalRamp": [
           "#0a0c09",
           "#252821",
@@ -125,10 +125,10 @@
       },
       "tape-white": {
         "role": "secondary",
-        "displayName": "Etikettenweiß",
+        "displayName": "Label white",
         "canonical": "#fbfbf7",
         "oklch": "oklch(98.7% 0.005 106.5)",
-        "purpose": "Namensband der Geräte.",
+        "purpose": "Name tape of the devices.",
         "tonalRamp": [
           "#0b0b0a",
           "#272724",
@@ -142,10 +142,10 @@
       },
       "tape-black": {
         "role": "secondary",
-        "displayName": "Wortmarkenschwarz",
+        "displayName": "Wordmark black",
         "canonical": "#1b1b1b",
         "oklch": "oklch(22.2% 0.000 89.9)",
-        "purpose": "Wortmarke, Druckerschlitz.",
+        "purpose": "Wordmark, printer slot.",
         "tonalRamp": [
           "#0b0b0b",
           "#262626",
@@ -159,10 +159,10 @@
       },
       "tape-yellow": {
         "role": "tertiary",
-        "displayName": "Geheimnisgelb",
+        "displayName": "Secret yellow",
         "canonical": "#f4d21f",
         "oklch": "oklch(86.7% 0.173 96.8)",
-        "purpose": "Nur das einmal gezeigte Token-Band.",
+        "purpose": "Only the token tape that is shown once.",
         "tonalRamp": [
           "#110b00",
           "#352400",
@@ -176,10 +176,10 @@
       },
       "ok": {
         "role": "success",
-        "displayName": "Online-Grün",
+        "displayName": "Online green",
         "canonical": "#1f8f4e",
         "oklch": "oklch(57.4% 0.138 152.4)",
-        "purpose": "Statuspunkt online, Kopiert-Bestätigung.",
+        "purpose": "Online status dot, Copied confirmation.",
         "tonalRamp": [
           "#001004",
           "#00320c",
@@ -193,10 +193,10 @@
       },
       "err": {
         "role": "error",
-        "displayName": "Fehlerrot",
+        "displayName": "Error red",
         "canonical": "#b3301d",
         "oklch": "oklch(51.0% 0.171 31.4)",
-        "purpose": "Fehlertexte, Löschen, Fehler im Audit-Log.",
+        "purpose": "Error texts, Delete, errors in the audit log.",
         "tonalRamp": [
           "#1b0301",
           "#530000",
@@ -210,10 +210,10 @@
       },
       "err-soft": {
         "role": "error",
-        "displayName": "Fehlerrosa",
+        "displayName": "Error pink",
         "canonical": "#f6e2dc",
         "oklch": "oklch(92.7% 0.024 37.4)",
-        "purpose": "Fehlerbanner, Hover der Löschen-Aktion.",
+        "purpose": "Error banners, hover of the Delete action.",
         "tonalRamp": [
           "#0d0a09",
           "#2d2422",
@@ -228,81 +228,81 @@
     },
     "typographyMeta": {
       "tape": {
-        "displayName": "Band",
-        "purpose": "Gerätenamen auf Beschriftungsband; Archivo 800, Breite 68 %, versal."
+        "displayName": "Tape",
+        "purpose": "Device names on label tape; Archivo 800, width 68%, uppercase."
       },
       "tape-small": {
-        "displayName": "Band klein",
-        "purpose": "Wortmarke in der Kopfzeile, Namensband im Token-Dialog."
+        "displayName": "Tape small",
+        "purpose": "Wordmark in the header, name tape in the token dialog."
       },
       "title": {
-        "displayName": "Titel",
-        "purpose": "Dialogtitel und Login-Titel."
+        "displayName": "Title",
+        "purpose": "Dialog titles and login title."
       },
       "body": {
         "displayName": "Body",
-        "purpose": "Fließtext, Navigation und Buttons (700); tabellarische Ziffern."
+        "purpose": "Body text, navigation and buttons (700); tabular figures."
       },
       "label": {
-        "displayName": "Beschriftung",
-        "purpose": "Versale Abschnitts-, Feld- und Spaltenbeschriftungen."
+        "displayName": "Label",
+        "purpose": "Uppercase section, field and column labels."
       },
       "small": {
-        "displayName": "Klein",
-        "purpose": "Hinweise, Fehlertexte, Textaktionen."
+        "displayName": "Small",
+        "purpose": "Hints, error texts, text actions."
       },
       "mono": {
         "displayName": "Mono",
-        "purpose": "Befehle, Pfade, Tokens, IDs, Messwerte."
+        "purpose": "Commands, paths, tokens, IDs, measured values."
       }
     },
     "shadows": [
       {
         "name": "shadow-card",
         "value": "0 1px 2px rgba(21, 21, 21, 0.06), 0 2px 8px rgba(21, 21, 21, 0.04)",
-        "purpose": "Karton auf der Werkbank; jede Karte."
+        "purpose": "Cardboard on the workbench; every card."
       },
       {
         "name": "shadow-tape",
         "value": "0 1px 1.5px rgba(21, 21, 21, 0.22), 0 2px 6px rgba(21, 21, 21, 0.06), inset 0 0 0 1px rgba(21, 21, 21, 0.06)",
-        "purpose": "Aufgeklebtes Beschriftungsband; nur das Band."
+        "purpose": "Stuck-on label tape; the tape only."
       },
       {
         "name": "shadow-dialog",
         "value": "0 24px 60px rgba(21, 21, 21, 0.28), 0 4px 12px rgba(21, 21, 21, 0.12)",
-        "purpose": "Modale Blätter über rgba(21,21,21,0.45)-Backdrop."
+        "purpose": "Modal sheets over an rgba(21,21,21,0.45) backdrop."
       },
       {
         "name": "focus-ring",
         "value": "outline: 2px solid var(--ink); outline-offset: 2px",
-        "purpose": "Globaler Fokus; Eingabefelder mit Offset 0."
+        "purpose": "Global focus; input fields with offset 0."
       }
     ],
     "motion": [
       {
         "name": "ease-out",
         "value": "cubic-bezier(0.16, 1, 0.3, 1)",
-        "purpose": "Standard für Zustandswechsel (150ms Buttons, 160ms Band-Hover)."
+        "purpose": "Default for state changes (150ms buttons, 160ms tape hover)."
       },
       {
         "name": "reprint",
-        "value": "480ms linear, clip-path von links nach rechts",
-        "purpose": "Band wird nach dem Umbenennen neu gedruckt."
+        "value": "480ms linear, clip-path from left to right",
+        "purpose": "Tape is reprinted after renaming."
       },
       {
         "name": "feed",
-        "value": "700ms linear, translateY + clip-path aus dem Schlitz",
-        "purpose": "Gelbes Token-Band läuft einmal aus dem Dialog."
+        "value": "700ms linear, translateY + clip-path out of the slot",
+        "purpose": "Yellow token tape runs out of the dialog once."
       },
       {
         "name": "cut",
         "value": "260ms cubic-bezier(0.5, 0, 0.75, 0)",
-        "purpose": "Token-Band wird beim Schließen abgeschnitten."
+        "purpose": "Token tape is cut off on closing."
       },
       {
         "name": "reduced-motion",
         "value": "prefers-reduced-motion: reduce -> 0.01ms",
-        "purpose": "Ohne Bewegung ist das Band einfach da."
+        "purpose": "Without motion the tape is simply there."
       }
     ],
     "breakpoints": [
@@ -320,7 +320,7 @@
       },
       {
         "name": "copy-field-container",
-        "value": "26rem (Container-Query)"
+        "value": "26rem (container query)"
       },
       {
         "name": "content-max",
@@ -333,55 +333,55 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Tintenschwarzer Hauptbutton, einer pro Ansicht.",
-      "html": "<button class=\"ds-btn\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg>Gerät hinzufügen</button>",
+      "description": "Ink-black main button, one per view.",
+      "html": "<button class=\"ds-btn\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg>Add device</button>",
       "css": ".ds-btn { display: inline-flex; align-items: center; gap: 0.45rem; min-height: 2.5rem; padding: 0 1rem; border: 0; border-radius: 6px; background: var(--ink, #151515); color: #fff; font-family: var(--sans, 'Archivo Variable', 'Archivo', system-ui, sans-serif); font-size: 0.9375rem; font-weight: 700; line-height: 1; cursor: pointer; transition: background-color 150ms cubic-bezier(0.16,1,0.3,1); } .ds-btn:hover { background: #2d2d2d; } .ds-btn:focus-visible { outline: 2px solid var(--ink, #151515); outline-offset: 2px; } .ds-btn:disabled { opacity: 0.55; cursor: not-allowed; }"
     },
     {
       "name": "Quiet Button",
       "kind": "button",
       "refersTo": "button-quiet",
-      "description": "Ruhiger Button mit Innenkontur für Abbrechen und Nachladen.",
-      "html": "<button class=\"ds-btn-quiet\">Abbrechen</button>",
+      "description": "Quiet button with inner outline for Cancel and loading more.",
+      "html": "<button class=\"ds-btn-quiet\">Cancel</button>",
       "css": ".ds-btn-quiet { display: inline-flex; align-items: center; min-height: 2.5rem; padding: 0 1rem; border: 0; border-radius: 6px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-strong, #b4b8af); color: var(--ink, #151515); font-family: var(--sans, 'Archivo Variable', 'Archivo', system-ui, sans-serif); font-size: 0.9375rem; font-weight: 700; line-height: 1; cursor: pointer; transition: background-color 150ms cubic-bezier(0.16,1,0.3,1); } .ds-btn-quiet:hover { background: rgba(21,21,21,0.05); } .ds-btn-quiet:focus-visible { outline: 2px solid var(--ink, #151515); outline-offset: 2px; }"
     },
     {
       "name": "Danger Button",
       "kind": "button",
       "refersTo": "button-danger",
-      "description": "Nur als Bestätigung im Löschdialog.",
-      "html": "<button class=\"ds-btn-danger\">Löschen</button>",
+      "description": "Only as the confirmation in the delete dialog.",
+      "html": "<button class=\"ds-btn-danger\">Delete</button>",
       "css": ".ds-btn-danger { display: inline-flex; align-items: center; min-height: 2.5rem; padding: 0 1rem; border: 0; border-radius: 6px; background: var(--err, #b3301d); color: #fff; font-family: var(--sans, 'Archivo Variable', 'Archivo', system-ui, sans-serif); font-size: 0.9375rem; font-weight: 700; line-height: 1; cursor: pointer; transition: background-color 150ms cubic-bezier(0.16,1,0.3,1); } .ds-btn-danger:hover { background: #962817; } .ds-btn-danger:focus-visible { outline: 2px solid var(--ink, #151515); outline-offset: 2px; }"
     },
     {
       "name": "Text Actions",
       "kind": "custom",
       "refersTo": "action",
-      "description": "Randlose graue Aktionen mit Symbol in Gerätekarten; Löschen wird beim Hover rot.",
-      "html": "<div class=\"ds-actions\"><button class=\"ds-action\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"/><path d=\"m15 5 4 4\"/></svg>Umbenennen</button><button class=\"ds-action ds-action--danger\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 6h18\"/><path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\"/><path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2\"/><line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\"/><line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\"/></svg>Löschen</button></div>",
+      "description": "Borderless grey actions with icon in device cards; Delete turns red on hover.",
+      "html": "<div class=\"ds-actions\"><button class=\"ds-action\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"/><path d=\"m15 5 4 4\"/></svg>Rename</button><button class=\"ds-action ds-action--danger\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 6h18\"/><path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\"/><path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2\"/><line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\"/><line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\"/></svg>Delete</button></div>",
       "css": ".ds-actions { display: flex; gap: 0.15rem; } .ds-action { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.25rem; padding: 0 0.6rem; border: 0; border-radius: 6px; background: transparent; color: var(--mute, #585d55); font-family: var(--sans, 'Archivo Variable', 'Archivo', system-ui, sans-serif); font-size: 0.8125rem; font-weight: 600; line-height: 1; cursor: pointer; } .ds-action:hover { background: rgba(21,21,21,0.06); color: var(--ink, #151515); } .ds-action--danger:hover { background: var(--err-soft, #f6e2dc); color: var(--err, #b3301d); } .ds-action:focus-visible { outline: 2px solid var(--ink, #151515); outline-offset: 2px; }"
     },
     {
       "name": "Text Field",
       "kind": "input",
       "refersTo": "input",
-      "description": "Weißes Eingabefeld mit Beschriftung darüber.",
-      "html": "<div class=\"ds-field\"><label class=\"ds-field__label\" for=\"ds-pw\">Panel-Passwort</label><input id=\"ds-pw\" class=\"ds-input\" type=\"password\" placeholder=\"••••••••\"></div>",
+      "description": "White input field with label above.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field__label\" for=\"ds-pw\">Panel password</label><input id=\"ds-pw\" class=\"ds-input\" type=\"password\" placeholder=\"••••••••\"></div>",
       "css": ".ds-field { display: grid; gap: 0.4rem; } .ds-field__label { font-family: var(--sans, 'Archivo Variable', 'Archivo', system-ui, sans-serif); font-size: 0.8125rem; font-weight: 700; color: var(--ink, #151515); } .ds-input { width: 100%; min-height: 2.75rem; padding: 0 0.85rem; border: 1px solid var(--line-strong, #b4b8af); border-radius: 6px; background: #fff; color: var(--ink, #151515); font-family: var(--sans, 'Archivo Variable', 'Archivo', system-ui, sans-serif); font-size: 0.9375rem; } .ds-input::placeholder { color: #7a7f76; } .ds-input:focus-visible { outline: 2px solid var(--ink, #151515); outline-offset: 0; border-color: var(--ink, #151515); }"
     },
     {
       "name": "Top Navigation",
       "kind": "nav",
       "refersTo": null,
-      "description": "Kopfzeile mit schwarzem Wortmarkenband und unterstrichenem aktivem Eintrag.",
-      "html": "<header class=\"ds-top\"><span class=\"ds-tape ds-tape--black ds-tape--small\">device-mcp</span><nav class=\"ds-nav\"><a href=\"#\" class=\"is-on\">Geräte</a><a href=\"#\">Verbindung</a></nav></header>",
+      "description": "Header with black wordmark tape and underlined active entry.",
+      "html": "<header class=\"ds-top\"><span class=\"ds-tape ds-tape--black ds-tape--small\">device-mcp</span><nav class=\"ds-nav\"><a href=\"#\" class=\"is-on\">Devices</a><a href=\"#\">Connection</a></nav></header>",
       "css": ".ds-tape { display: inline-flex; align-items: center; min-height: 2.25rem; padding: 0.25rem 0.9rem 0.2rem; border-radius: 4px; background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0) 45%), var(--tape-white, #fbfbf7); box-shadow: 0 1px 1.5px rgba(21,21,21,0.22), 0 2px 6px rgba(21,21,21,0.06), inset 0 0 0 1px rgba(21,21,21,0.06); color: var(--ink, #151515); font-family: var(--sans, 'Archivo Variable', 'Archivo', system-ui, sans-serif); font-size: 1.375rem; font-weight: 800; font-stretch: 68%; line-height: 1.1; letter-spacing: 0.05em; text-transform: uppercase; } .ds-tape--black { background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0) 45%), var(--tape-black, #1b1b1b); color: var(--tape-white, #fbfbf7); } .ds-tape--small { min-height: 1.9rem; font-size: 0.9375rem; padding-inline: 0.75rem; } .ds-top { display: flex; align-items: center; gap: 2.25rem; height: 4.5rem; padding: 0 1.5rem; border-bottom: 1px solid var(--line, #d5d8d0); background: var(--ground, #eceee9); } .ds-nav { display: flex; gap: 1.75rem; height: 100%; } .ds-nav a { display: inline-flex; align-items: center; color: var(--mute, #585d55); font-family: var(--sans, 'Archivo Variable', 'Archivo', system-ui, sans-serif); font-size: 0.9375rem; font-weight: 700; text-decoration: none; box-shadow: inset 0 -2px 0 transparent; } .ds-nav a:hover { color: var(--ink, #151515); } .ds-nav a.is-on { color: var(--ink, #151515); box-shadow: inset 0 -2px 0 var(--ink, #151515); } .ds-nav a:focus-visible { outline: 2px solid var(--ink, #151515); outline-offset: 2px; }"
     },
     {
       "name": "Label Tape",
       "kind": "custom",
       "refersTo": "label-tape",
-      "description": "Signatur: Gerätename auf laminiertem Band; schwarz für die Wortmarke, gelb nur für den Token, durchgestrichen für deaktivierte Geräte.",
+      "description": "Signature: device name on laminated tape; black for the wordmark, yellow only for the token, struck through for disabled devices.",
       "html": "<div class=\"ds-tapes\"><span class=\"ds-tape\">orb-ubuntu</span><span class=\"ds-tape ds-tape--black\">device-mcp</span><span class=\"ds-tape ds-tape--yellow\">dmcp_qjiXZG0</span><span class=\"ds-tape ds-tape--struck\">vps-alt</span></div>",
       "css": ".ds-tape { display: inline-flex; align-items: center; min-height: 2.25rem; padding: 0.25rem 0.9rem 0.2rem; border-radius: 4px; background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0) 45%), var(--tape-white, #fbfbf7); box-shadow: 0 1px 1.5px rgba(21,21,21,0.22), 0 2px 6px rgba(21,21,21,0.06), inset 0 0 0 1px rgba(21,21,21,0.06); color: var(--ink, #151515); font-family: var(--sans, 'Archivo Variable', 'Archivo', system-ui, sans-serif); font-size: 1.375rem; font-weight: 800; font-stretch: 68%; line-height: 1.1; letter-spacing: 0.05em; text-transform: uppercase; } .ds-tapes { display: flex; flex-wrap: wrap; gap: 0.75rem; } .ds-tape--black { background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0) 45%), var(--tape-black, #1b1b1b); color: var(--tape-white, #fbfbf7); } .ds-tape--yellow { background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0) 45%), var(--tape-yellow, #f4d21f); } .ds-tape--struck { color: var(--mute, #585d55); text-decoration: line-through; text-decoration-thickness: 2px; } .ds-tape:hover { transform: translateY(-1px); transition: transform 160ms cubic-bezier(0.16,1,0.3,1); }"
     },
@@ -389,72 +389,72 @@
       "name": "Device Card",
       "kind": "card",
       "refersTo": "card",
-      "description": "Karton-Karte mit Namensband, Statusmarke und festen Faktenzellen.",
-      "html": "<article class=\"ds-card\"><div class=\"ds-card__top\"><span class=\"ds-tape\">orb-ubuntu</span><span class=\"ds-status\"><i class=\"ds-status__dot\"></i><strong>online</strong><span class=\"ds-status__detail\">· verbunden seit 2 min</span></span></div><dl class=\"ds-facts\"><div><dt>Benutzer</dt><dd>neo@dmcp</dd></div><div><dt>System</dt><dd>Ubuntu 24.04</dd></div><div><dt>Architektur</dt><dd>arm64</dd></div><div><dt>Daemon</dt><dd>0.1.0</dd></div></dl></article>",
+      "description": "Cardboard card with name tape, status mark and fixed fact cells.",
+      "html": "<article class=\"ds-card\"><div class=\"ds-card__top\"><span class=\"ds-tape\">orb-ubuntu</span><span class=\"ds-status\"><i class=\"ds-status__dot\"></i><strong>online</strong><span class=\"ds-status__detail\">· connected for 2 min</span></span></div><dl class=\"ds-facts\"><div><dt>User</dt><dd>neo@dmcp</dd></div><div><dt>System</dt><dd>Ubuntu 24.04</dd></div><div><dt>Architecture</dt><dd>arm64</dd></div><div><dt>Daemon</dt><dd>0.1.0</dd></div></dl></article>",
       "css": ".ds-tape { display: inline-flex; align-items: center; min-height: 2.25rem; padding: 0.25rem 0.9rem 0.2rem; border-radius: 4px; background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0) 45%), var(--tape-white, #fbfbf7); box-shadow: 0 1px 1.5px rgba(21,21,21,0.22), 0 2px 6px rgba(21,21,21,0.06), inset 0 0 0 1px rgba(21,21,21,0.06); color: var(--ink, #151515); font-family: var(--sans, 'Archivo Variable', 'Archivo', system-ui, sans-serif); font-size: 1.375rem; font-weight: 800; font-stretch: 68%; line-height: 1.1; letter-spacing: 0.05em; text-transform: uppercase; } .ds-card { display: grid; gap: 1rem; padding: 1.35rem 1.5rem 1rem; background: var(--card, #f7f8f5); border: 1px solid var(--line, #d5d8d0); border-radius: 10px; box-shadow: 0 1px 2px rgba(21,21,21,0.06), 0 2px 8px rgba(21,21,21,0.04); color: var(--ink, #151515); font-family: var(--sans, 'Archivo Variable', 'Archivo', system-ui, sans-serif); } .ds-card__top { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.1rem; } .ds-status { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.9375rem; } .ds-status strong { font-weight: 700; } .ds-status__detail { color: var(--mute, #585d55); } .ds-status__dot { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--ok, #1f8f4e); box-shadow: 0 0 0 3px rgba(31,143,78,0.16); } .ds-facts { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); margin: 0; border-top: 1px solid var(--line, #d5d8d0); } .ds-facts div { display: grid; gap: 0.3rem; padding: 0.85rem 1rem 0.1rem 0; min-width: 0; } .ds-facts dt { color: var(--mute, #585d55); font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; } .ds-facts dd { margin: 0; font-family: var(--mono, 'JetBrains Mono', ui-monospace, monospace); font-size: 0.8125rem; overflow-wrap: anywhere; }"
     },
     {
       "name": "Copy Field",
       "kind": "input",
       "refersTo": "copy-field",
-      "description": "Mono-Wert in eingelassener Rinne mit abgetrenntem Kopieren-Button.",
-      "html": "<div class=\"ds-copy\"><span class=\"ds-copy__label\">MCP-URL</span><div class=\"ds-copy__row\"><code class=\"ds-copy__value\">https://host/mcp</code><button class=\"ds-copy__btn\" aria-label=\"MCP-URL kopieren\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/></svg><span>Kopieren</span></button></div></div>",
+      "description": "Mono value in a recessed groove with a separated copy button.",
+      "html": "<div class=\"ds-copy\"><span class=\"ds-copy__label\">MCP URL</span><div class=\"ds-copy__row\"><code class=\"ds-copy__value\">https://host/mcp</code><button class=\"ds-copy__btn\" aria-label=\"Copy MCP URL\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/></svg><span>Copy</span></button></div></div>",
       "css": ".ds-copy { display: grid; gap: 0.4rem; } .ds-copy__label { color: var(--mute, #585d55); font-family: var(--sans, 'Archivo Variable', 'Archivo', system-ui, sans-serif); font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; } .ds-copy__row { display: flex; align-items: stretch; border-radius: 6px; background: var(--ground, #eceee9); box-shadow: inset 0 0 0 1px var(--line, #d5d8d0); } .ds-copy__value { flex: 1; min-width: 0; padding: 0.6rem 0.75rem; font-family: var(--mono, 'JetBrains Mono', ui-monospace, monospace); font-size: 0.8125rem; line-height: 1.55; color: var(--ink, #151515); overflow-wrap: anywhere; user-select: all; } .ds-copy__btn { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0 0.75rem; border: 0; border-left: 1px solid var(--line, #d5d8d0); border-radius: 0 6px 6px 0; background: transparent; color: var(--ink, #151515); font-family: var(--sans, 'Archivo Variable', 'Archivo', system-ui, sans-serif); font-size: 0.8125rem; font-weight: 600; cursor: pointer; } .ds-copy__btn:hover { background: rgba(21,21,21,0.06); } .ds-copy__btn:active { color: var(--ok, #1f8f4e); } .ds-copy__btn:focus-visible { outline: 2px solid var(--ink, #151515); outline-offset: 2px; }"
     }
   ],
   "narrative": {
-    "northStar": "Die beschriftete Werkbank",
-    "overview": "Das Panel ist eine matte, helle Werkbank, auf der Karten aus Karton liegen. Jedes Gerät trägt seinen Namen auf laminiertem Beschriftungsband, so wie es im Homelab auf Raspis und Switches klebt: schmal geschnittene, fette Archivo-Versalien auf weißem Band. Das Band ist der einzige gestalterische Auftritt; alles andere ist ruhige Arbeitsfläche mit festen Faktenzellen, Monospace für alles, was man kopieren oder nachlesen muss, und einem Statuspunkt, der auf einen Blick sagt, ob ein Gerät da ist.\n\nDie Dichte ist großzügig, weil es nur ein bis fünf Geräte gibt: Jedes Gerät bekommt eine eigene Karte statt einer Zeile in einer dichten Tabelle. Schrift kennt nur Bandschwarz und ein Grau; Farbe tritt ausschließlich als Bedeutung auf (Grün für online, Rot für Fehler, Gelb für das einmalige Geheimnis). Rang entsteht über Gewicht und Versalien, nicht über Größe; es gibt genau drei Schriftgrade.\n\nBewusst abgelehnt (Markenvorgabe aus PRODUCT.md): das generische Admin-Dashboard aus dunkler Seitenleiste, Kennzahlen-Kacheln und Tabellen mit Status-Pillen. Das Panel ist bewusst nur hell; es gibt keinen Dark Mode.",
+    "northStar": "The labelled workbench",
+    "overview": "The panel is a matt, light workbench with cards made of cardboard lying on it. Every device wears its name on laminated label tape, the way it sticks to Raspis and switches in a homelab: narrow-cut, bold Archivo capitals on white tape. The tape is the only design statement; everything else is a calm work surface with fixed fact cells, monospace for everything you need to copy or look up, and a status dot that says at a glance whether a device is there.\n\nThe density is generous because there are only one to five devices: each device gets a card of its own instead of a row in a dense table. Type knows only tape black and one grey; colour appears exclusively as meaning (green for online, red for errors, yellow for the one-time secret). Rank comes from weight and capitals, not from size; there are exactly three type sizes.\n\nDeliberately rejected (brand requirement from PRODUCT.md): the generic admin dashboard made of a dark sidebar, metric tiles and tables with status pills. The panel is deliberately light only; there is no dark mode.",
     "keyCharacteristics": [
-      "Gerätenamen und Wortmarke stehen auf Beschriftungsband, nie als normale Überschrift.",
-      "Drei Schriftgrade, Rang über Gewicht und Versalien.",
-      "Fakten stehen in festen Zellen: derselbe Fakt an derselben Stelle auf jeder Karte.",
-      "JetBrains Mono nur für Befehle, Pfade, Tokens, IDs und Messwerte.",
-      "Flache, warme Neutraltöne; Akzentfarbe nur als Bedeutungsträger.",
-      "Bewegung ist mechanisch und einmalig: Band wird gedruckt, abgeschnitten, neu gedruckt."
+      "Device names and the wordmark sit on label tape, never as an ordinary heading.",
+      "Three type sizes, rank through weight and capitals.",
+      "Facts sit in fixed cells: the same fact in the same place on every card.",
+      "JetBrains Mono only for commands, paths, tokens, IDs and measured values.",
+      "Flat, warm neutrals; accent colour only as a carrier of meaning.",
+      "Motion is mechanical and one-off: tape is printed, cut off, reprinted."
     ],
     "rules": [
       {
         "name": "The Ink-Only Rule",
-        "body": "Text steht in `ink` oder `mute`, sonst nichts. Grün und Rot tragen Status, nie Gliederung oder Schmuck.",
+        "body": "Text is set in `ink` or `mute`, nothing else. Green and red carry status, never structure or decoration.",
         "section": "colors"
       },
       {
         "name": "The One Secret Rule",
-        "body": "Gelb erscheint nur dort, wo ein Geheimnis genau einmal gezeigt wird. Kein gelber Hinweis, kein gelber Button, keine gelbe Hervorhebung sonst.",
+        "body": "Yellow appears only where a secret is shown exactly once. No yellow hint, no yellow button, no yellow highlight anywhere else.",
         "section": "colors"
       },
       {
         "name": "The Three Sizes Rule",
-        "body": "Es gibt genau drei Schriftgrade. Wer mehr Rang braucht, nimmt Gewicht oder Versalien, nie einen vierten Grad. (Einzige Ausnahme im Build: die Job-ID im Audit-Log mit 0.75rem.)",
+        "body": "There are exactly three type sizes. Whoever needs more rank uses weight or capitals, never a fourth size. (Only exception in the build: the job ID in the audit log at 0.75rem.)",
         "section": "typography"
       },
       {
         "name": "The Machine Text Rule",
-        "body": "Was kopiert, getippt oder verglichen wird, steht in JetBrains Mono; alles, was ein Mensch liest, in Archivo.",
+        "body": "Whatever is copied, typed or compared is set in JetBrains Mono; everything a human reads, in Archivo.",
         "section": "typography"
       },
       {
         "name": "The Stuck-On Rule",
-        "body": "Das Band darf glänzen und einen Kantenschatten werfen, weil es ein physisches Etikett ist. Diese Behandlung gehört dem Band; Buttons, Kopierfelder und Karten bekommen sie nicht.",
+        "body": "The tape may shine and cast an edge shadow because it is a physical label. This treatment belongs to the tape; buttons, copy fields and cards do not get it.",
         "section": "elevation"
       }
     ],
     "dos": [
-      "**Do** jeden Gerätenamen auf `label-tape` setzen, in der Liste wie im Detail und im Dialog.",
-      "**Do** neue Fakten als weitere feste Zelle in `DeviceFacts` ergänzen, mit Gedankenstrich als Leerwert.",
-      "**Do** Rang über 700/800 und Versalien bilden, innerhalb der drei Grade (0.8125, 0.9375, 1.375rem).",
-      "**Do** kopierbare Werte immer im Kopierfeld zeigen, in JetBrains Mono auf `ground`.",
-      "**Do** Status als Punkt plus Wort plus Zeitangabe zeigen, nie nur als Farbe.",
-      "**Do** Bewegung mechanisch und einmalig halten (`cubic-bezier(0.16, 1, 0.3, 1)`, 150ms für Zustände) und `prefers-reduced-motion` respektieren."
+      "**Do** set every device name on `label-tape`, in the list as well as in the detail view and the dialog.",
+      "**Do** add new facts as another fixed cell in `DeviceFacts`, with a dash as the empty value.",
+      "**Do** build rank through 700/800 and capitals, within the three sizes (0.8125, 0.9375, 1.375rem).",
+      "**Do** always show copyable values in the copy field, in JetBrains Mono on `ground`.",
+      "**Do** show status as dot plus word plus time, never as colour alone.",
+      "**Do** keep motion mechanical and one-off (`cubic-bezier(0.16, 1, 0.3, 1)`, 150ms for states) and respect `prefers-reduced-motion`."
     ],
     "donts": [
-      "**Don't** Status-Pillen, Kennzahlen-Kacheln oder eine dunkle Seitenleiste einführen; das ist der abgelehnte Admin-Standard.",
-      "**Don't** `tape-yellow` außerhalb des einmal gezeigten Geheimnisses verwenden.",
-      "**Don't** Text in einer anderen Farbe als `ink` oder `mute` setzen, außer Fehlerrot und Erfolgsgrün als Status.",
-      "**Don't** einen vierten Schriftgrad einführen.",
-      "**Don't** Glanz und Kantenschatten des Bandes auf Buttons, Karten oder Kopierfelder übertragen.",
-      "**Don't** versale Kleinzeilen als Vorspann über Überschriften setzen; Versalien beschriften Abschnitte, Felder und Spalten, sie stehen nicht dekorativ über einem Titel."
+      "**Don't** introduce status pills, metric tiles or a dark sidebar; that is the rejected admin standard.",
+      "**Don't** use `tape-yellow` outside the secret that is shown once.",
+      "**Don't** set text in any colour other than `ink` or `mute`, except error red and success green as status.",
+      "**Don't** introduce a fourth type size.",
+      "**Don't** transfer the tape's gloss and edge shadow to buttons, cards or copy fields.",
+      "**Don't** set small uppercase lines as a kicker above headings; capitals label sections, fields and columns, they do not sit decoratively above a title."
     ]
   }
 }

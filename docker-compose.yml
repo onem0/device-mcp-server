@@ -1,6 +1,6 @@
-# device-mcp auf Coolify: Server (MCP, Panel, Daemon-WebSocket) und Postgres.
-# Coolify setzt die Domain auf den Service "server" (Port 3000), Traefik reicht auch WebSockets durch.
-# Lokal: docker compose -f docker-compose.yml -f compose.local.yml up -d --build
+# device-mcp on Coolify: server (MCP, panel, daemon WebSocket) and Postgres.
+# Coolify puts the domain on the service "server" (port 3000), Traefik passes WebSockets through as well.
+# Local: docker compose -f docker-compose.yml -f compose.local.yml up -d --build
 services:
   server:
     build:

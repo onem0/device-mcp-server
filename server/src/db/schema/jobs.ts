@@ -2,7 +2,7 @@ import { boolean, index, integer, pgTable, text, uuid } from 'drizzle-orm/pg-cor
 import { jobStatus, tstz } from './columns.js'
 import { devices } from './devices.js'
 
-// Jeder run_command ist ein Job, auch im Vordergrund. Die Ausgabe liegt auf dem Gerät, hier nur der Stand.
+// Every run_command is a job, even in the foreground. The output lives on the device, here only the state.
 export const jobs = pgTable(
   'jobs',
   {

@@ -28,7 +28,7 @@ export const finishAudit = (id: string, result: { status: string; exitCode?: num
     .set({ ...result, error: result.error?.slice(0, 2_000) ?? null })
     .where(eq(auditLog.id, id))
 
-// Neueste zuerst. Ohne deviceId über alle Geräte (auch Aufrufe ohne Gerät wie list_devices).
+// Newest first. Without deviceId across all devices (including calls without a device such as list_devices).
 export async function listAudit(filter: { deviceId?: string }, limit: number, offset: number) {
   const where = filter.deviceId ? eq(auditLog.deviceId, filter.deviceId) : undefined
   const [rows, [total]] = await Promise.all([

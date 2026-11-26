@@ -1,5 +1,5 @@
-// Das Panel wird als statische SPA gebaut (nuxt generate) und vom Fastify-Server ausgeliefert.
-// In der Entwicklung leitet der Nuxt-Dev-Server /v1 an den lokalen Server weiter.
+// The panel is built as a static SPA (nuxt generate) and served by the Fastify server.
+// In development the Nuxt dev server forwards /v1 to the local server.
 export default defineNuxtConfig({
   compatibilityDate: '2026-10-01',
   ssr: false,

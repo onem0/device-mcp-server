@@ -21,7 +21,7 @@ const TOOLS: Record<string, string> = {
   session_kill: 'Session end',
 }
 
-// Argumente ohne das Gerät, das steht schon in der Zeile.
+// Arguments without the device, which is already in the row.
 const detailArgs = (e: AuditEntry) => Object.entries(e.args ?? {}).filter(([k]) => k !== 'device')
 const formatArg = (v: unknown) => (typeof v === 'string' ? v : JSON.stringify(v))
 

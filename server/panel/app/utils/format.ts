@@ -1,7 +1,7 @@
 import type { Device } from './types'
 
 
-// Zeitangaben auf Englisch: "3 days ago", "connected for 3 days".
+// Times in English: "3 days ago", "connected for 3 days".
 
 const units = [
   { ms: 86_400_000, one: 'day', many: 'days' },
@@ -19,7 +19,7 @@ export function span(ms: number) {
   return 'a few seconds'
 }
 
-// Dauer seit einem Zeitpunkt, z. B. "3 days" (für "connected for 3 days").
+// Duration since a point in time, e.g. "3 days" (for "connected for 3 days").
 export const since = (iso: string, now: number) => span(Math.max(0, now - Date.parse(iso)))
 
 export function ago(iso: string | null, now: number) {

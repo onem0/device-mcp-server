@@ -1,7 +1,7 @@
 import type { ServerInfo } from '~/utils/types'
 
-// Verbindungsdaten ändern sich nicht während der Sitzung, ein Abruf reicht.
-// Mehrere Komponenten fragen gleichzeitig (jede Gerätekarte), deshalb teilen sie sich den laufenden Abruf.
+// Connection details do not change during the session, one fetch is enough.
+// Several components ask at the same time (every device card), so they share the fetch in progress.
 let pending: Promise<ServerInfo> | null = null
 
 export function useServerInfo() {
@@ -17,7 +17,7 @@ export function useServerInfo() {
       error.value = failureText(err)
     }
   })
-  // Der Token kommt aus „Add device“; hier steht nur die Form des Befehls.
+  // The token comes from "Add device"; only the shape of the command is here.
   const installTemplate = computed(() => (info.value ? `curl -fsSL ${info.value.baseUrl}/install.sh | DEVICE_MCP_TOKEN='<device token>' bash` : ''))
   const claudeCodeCommand = computed(() =>
     info.value

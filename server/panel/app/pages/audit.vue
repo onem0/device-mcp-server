@@ -14,7 +14,7 @@ const PAGE = 50
 
 const query = (limit: number, offset: number) => ({ limit, offset, ...(deviceFilter.value ? { device: deviceFilter.value } : {}) })
 
-// Beim Nachladen im Hintergrund die schon sichtbaren Einträge auffrischen (höchstens 200).
+// When reloading in the background, refresh the entries already visible (at most 200).
 async function load() {
   try {
     const limit = Math.min(200, Math.max(PAGE, entries.value.length))

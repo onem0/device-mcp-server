@@ -1,4 +1,4 @@
-// Prüft die Sitzung einmal pro Seitenaufruf, danach entscheidet der Zustand.
+// Checks the session once per page load, after that the state decides.
 export default defineNuxtRouteMiddleware(async (to) => {
   const auth = useState<boolean | null>('auth', () => null)
   if (auth.value === null) {

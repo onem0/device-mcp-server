@@ -1,6 +1,6 @@
 ---
 name: device-mcp Panel
-description: Werkbank mit Beschriftungsband. Jedes Gerät trägt sein Etikett.
+description: Workbench with label tape. Every device wears its label.
 colors:
   ground: "#eceee9"
   card: "#f7f8f5"
@@ -154,163 +154,163 @@ components:
 
 ## Overview
 
-**Creative North Star: "Die beschriftete Werkbank"**
+**Creative North Star: "The labelled workbench"**
 
-Das Panel ist eine matte, helle Werkbank, auf der Karten aus Karton liegen. Jedes Gerät trägt seinen Namen auf laminiertem Beschriftungsband, so wie es im Homelab auf Raspis und Switches klebt: schmal geschnittene, fette Archivo-Versalien auf weißem Band. Das Band ist der einzige gestalterische Auftritt; alles andere ist ruhige Arbeitsfläche mit festen Faktenzellen, Monospace für alles, was man kopieren oder nachlesen muss, und einem Statuspunkt, der auf einen Blick sagt, ob ein Gerät da ist.
+The panel is a matt, light workbench with cards made of cardboard lying on it. Every device wears its name on laminated label tape, the way it sticks to Raspis and switches in a homelab: narrow-cut, bold Archivo capitals on white tape. The tape is the only design statement; everything else is a calm work surface with fixed fact cells, monospace for everything you need to copy or look up, and a status dot that says at a glance whether a device is there.
 
-Die Dichte ist großzügig, weil es nur ein bis fünf Geräte gibt: Jedes Gerät bekommt eine eigene Karte statt einer Zeile in einer dichten Tabelle. Schrift kennt nur Bandschwarz und ein Grau; Farbe tritt ausschließlich als Bedeutung auf (Grün für online, Rot für Fehler, Gelb für das einmalige Geheimnis). Rang entsteht über Gewicht und Versalien, nicht über Größe; es gibt genau drei Schriftgrade.
+The density is generous because there are only one to five devices: each device gets a card of its own instead of a row in a dense table. Type knows only tape black and one grey; colour appears exclusively as meaning (green for online, red for errors, yellow for the one-time secret). Rank comes from weight and capitals, not from size; there are exactly three type sizes.
 
-Bewusst abgelehnt (Markenvorgabe aus PRODUCT.md): das generische Admin-Dashboard aus dunkler Seitenleiste, Kennzahlen-Kacheln und Tabellen mit Status-Pillen. Das Panel ist bewusst nur hell; es gibt keinen Dark Mode.
+Deliberately rejected (brand requirement from PRODUCT.md): the generic admin dashboard made of a dark sidebar, metric tiles and tables with status pills. The panel is deliberately light only; there is no dark mode.
 
 **Key Characteristics:**
-- Gerätenamen und Wortmarke stehen auf Beschriftungsband, nie als normale Überschrift.
-- Drei Schriftgrade, Rang über Gewicht und Versalien.
-- Fakten stehen in festen Zellen: derselbe Fakt an derselben Stelle auf jeder Karte.
-- JetBrains Mono nur für Befehle, Pfade, Tokens, IDs und Messwerte.
-- Flache, warme Neutraltöne; Akzentfarbe nur als Bedeutungsträger.
-- Bewegung ist mechanisch und einmalig: Band wird gedruckt, abgeschnitten, neu gedruckt.
+- Device names and the wordmark sit on label tape, never as an ordinary heading.
+- Three type sizes, rank through weight and capitals.
+- Facts sit in fixed cells: the same fact in the same place on every card.
+- JetBrains Mono only for commands, paths, tokens, IDs and measured values.
+- Flat, warm neutrals; accent colour only as a carrier of meaning.
+- Motion is mechanical and one-off: tape is printed, cut off, reprinted.
 
 ## Colors
 
-Eine matte, leicht grünstichige Neutralpalette mit drei Bandfarben und zwei Signalfarben; keine dekorative Akzentfarbe.
+A matt, slightly green-tinted neutral palette with three tape colours and two signal colours; no decorative accent colour.
 
 ### Primary
-- **Bandschwarz** (`ink`): Text, Primärbuttons, Fokusring, aktive Navigation, Textauswahl. Die einzige „Markenfarbe“ ist Tinte.
+- **Tape black** (`ink`): text, primary buttons, focus ring, active navigation, text selection. The only "brand colour" is ink.
 
 ### Secondary
-- **Etikettenweiß** (`tape-white`): Grund des Namensbands für jedes Gerät.
-- **Wortmarkenschwarz** (`tape-black`): Band der Wortmarke „device-mcp“ und der Druckerschlitz im Token-Dialog.
+- **Label white** (`tape-white`): ground of the name tape for every device.
+- **Wordmark black** (`tape-black`): tape of the "device-mcp" wordmark and the printer slot in the token dialog.
 
 ### Tertiary
-- **Geheimnisgelb** (`tape-yellow`): ausschließlich das gelbe Band, das für den Geräte-Token steht. Der Token steht dort verdeckt (Präfix und 24 Punkte), kopierbar ist er nur dieses eine Mal.
+- **Secret yellow** (`tape-yellow`): exclusively the yellow tape that stands for the device token. The token is shown there hidden (prefix and 24 dots); it can be copied only this one time.
 
 ### Neutral
-- **Werkbank** (`ground`): Seitengrund; auch Grund der Kopierfelder und der Warte-Zeile im Token-Dialog, damit kopierbare Werte wie in die Werkbank eingelassen wirken.
-- **Karton** (`card`): Gerätekarten. Deaktivierte Geräte sinken auf einen etwas dunkleren Karton (#eef0eb).
-- **Heller Karton** (`raised`): Verbindungskarte, Audit-Log, Login-Karte, Dialoge; Flächen, auf denen gelesen und kopiert wird.
-- **Grau** (`mute`): die einzige zweite Textfarbe: Feldbeschriftungen, Hinweise, Zeitangaben, ruhende Aktionen.
-- **Haarlinie** (`line`): Kartenrand, Trennlinien zwischen Faktenzeile und Kopf, Tabellenzeilen.
-- **Kräftige Linie** (`line-strong`): Rand der Eingabefelder und des ruhigen Buttons, Tabellenkopf-Unterkante, Scrollbar.
+- **Workbench** (`ground`): page ground; also the ground of the copy fields and of the waiting row in the token dialog, so that copyable values look as if set into the workbench.
+- **Cardboard** (`card`): device cards. Disabled devices sink to a slightly darker cardboard (#eef0eb).
+- **Light cardboard** (`raised`): connection card, audit log, login card, dialogs; surfaces for reading and copying.
+- **Grey** (`mute`): the only second text colour: field labels, hints, times, actions at rest.
+- **Hairline** (`line`): card border, dividers between fact row and header, table rows.
+- **Strong line** (`line-strong`): border of the input fields and of the quiet button, bottom edge of the table header, scrollbar.
 
 ### Signal
-- **Online-Grün** (`ok`): Statuspunkt „online“ (mit 3px Hof in 16 % Deckkraft), „Kopiert“-Bestätigung. Erfolgreiche Verbindung im Token-Dialog auf hellgrünem Feld (#e3f1e8, Text #155f35).
-- **Fehlerrot** (`err`) und **Fehlerrosa** (`err-soft`): Fehlertexte, Fehlerbanner, Löschen-Button, Hover der Löschen-Aktion, Ergebnis „Fehler“ und Exit-Codes ungleich 0 im Audit-Log.
+- **Online green** (`ok`): "online" status dot (with a 3px halo at 16% opacity), "Copied" confirmation. Successful connection in the token dialog on a light green field (#e3f1e8, text #155f35).
+- **Error red** (`err`) and **Error pink** (`err-soft`): error texts, error banners, Delete button, hover of the Delete action, "Error" result and exit codes other than 0 in the audit log.
 
 ### Named Rules
-**The Ink-Only Rule.** Text steht in `ink` oder `mute`, sonst nichts. Grün und Rot tragen Status, nie Gliederung oder Schmuck.
+**The Ink-Only Rule.** Text is set in `ink` or `mute`, nothing else. Green and red carry status, never structure or decoration.
 
-**The One Secret Rule.** Gelb erscheint nur dort, wo ein Geheimnis genau einmal greifbar ist. Im Klartext steht es nie auf dem Schirm: Band und Install-Befehl zeigen den Token verdeckt, die Kopieren-Buttons liefern den echten Wert. Kein gelber Hinweis, kein gelber Button, keine gelbe Hervorhebung sonst.
+**The One Secret Rule.** Yellow appears only where a secret is within reach exactly once. It is never on screen in plain text: tape and install command show the token hidden, the copy buttons deliver the real value. No yellow hint, no yellow button, no yellow highlight anywhere else.
 
 ## Typography
 
-**Display Font:** Archivo Variable mit Breitenachse (Fallback Archivo, system-ui), selbst gehostet
+**Display Font:** Archivo Variable with width axis (fallback Archivo, system-ui), self-hosted
 **Body Font:** Archivo Variable
-**Label/Mono Font:** JetBrains Mono 400/600 (Fallback ui-monospace, SF Mono, Menlo)
+**Label/Mono Font:** JetBrains Mono 400/600 (fallback ui-monospace, SF Mono, Menlo)
 
-**Character:** Eine einzige Grotesk in zwei Gestalten: normal breit für Fließtext und Bedienung, auf 68 % Breite gestaucht, fett und versal für das Band. Dazu eine nüchterne Monospace für alles Maschinenlesbare. Ziffern sind überall tabellarisch.
+**Character:** A single grotesque in two guises: normal width for body text and controls; condensed to 68% width, bold and uppercase for the tape. Plus a sober monospace for everything machine-readable. Figures are tabular everywhere.
 
 ### Hierarchy
-Drei Grade: groß (`--fs-l`), mittel (`--fs-m`), klein (`--fs-s`).
-- **Band** (800, groß, 1.1, 0.05em, versal, Breite 68 %): Gerätenamen und Wortmarke; klein (mittlerer Grad) für die Wortmarke in der Kopfzeile und das Namensband im Token-Dialog.
-- **Titel** (800, groß, 1.2): Dialogtitel und „Anmelden“. Normale Breite, gemischte Schreibung.
-- **Body** (400, mittel, 1.5): Fließtext, Navigation (700), Statustext (700 für den Zustand, 400 grau für das Detail), Buttons (700).
-- **Beschriftung** (700, klein, 0.1em, versal): Abschnittstitel („Geräte · n“, „Verbindung“, „Audit-Log · n Einträge“), Faktenbeschriftungen, Kopierfeld-Beschriftungen, Tabellenköpfe. Grau, wenn sie ein Feld beschriftet; Tinte, wenn sie einen Abschnitt benennt.
-- **Klein** (400 bzw. 600, klein, 1.5): Hinweise, Fehlertexte (600, rot), Textaktionen (600).
-- **Mono** (400, klein, 1.55): Faktenwerte, Befehle, URLs, Pfade, IDs, Zeitstempel und Dauern im Audit-Log; der Token auf dem gelben Band in 600.
+Three sizes: large (`--fs-l`), medium (`--fs-m`), small (`--fs-s`).
+- **Tape** (800, large, 1.1, 0.05em, uppercase, width 68%): device names and wordmark; small (medium size) for the wordmark in the header and the name tape in the token dialog.
+- **Title** (800, large, 1.2): dialog titles and "Log in". Normal width, mixed case.
+- **Body** (400, medium, 1.5): body text, navigation (700), status text (700 for the state, 400 grey for the detail), buttons (700).
+- **Label** (700, small, 0.1em, uppercase): section titles ("Devices · n", "Connection", "Audit log · n entries"), fact labels, copy field labels, table headers. Grey when it labels a field; ink when it names a section.
+- **Small** (400 or 600, small, 1.5): hints, error texts (600, red), text actions (600).
+- **Mono** (400, small, 1.55): fact values, commands, URLs, paths, IDs, timestamps and durations in the audit log; the token on the yellow tape in 600.
 
 ### Named Rules
-**The Three Sizes Rule.** Es gibt genau drei Schriftgrade. Wer mehr Rang braucht, nimmt Gewicht oder Versalien, nie einen vierten Grad. (Einzige Ausnahme im Build: die Job-ID im Audit-Log mit 0.75rem.)
+**The Three Sizes Rule.** There are exactly three type sizes. Whoever needs more rank uses weight or capitals, never a fourth size. (Only exception in the build: the job ID in the audit log at 0.75rem.)
 
-**The Machine Text Rule.** Was kopiert, getippt oder verglichen wird, steht in JetBrains Mono; alles, was ein Mensch liest, in Archivo.
+**The Machine Text Rule.** Whatever is copied, typed or compared is set in JetBrains Mono; everything a human reads, in Archivo.
 
 ## Layout
 
-Die Seite hat eine 72px hohe Kopfzeile (Wortmarke links, Navigation daneben, Abmelden rechts, Haarlinie darunter). Der Inhalt sitzt in einem 84rem-Rahmen mit 3rem Innenabstand, auf schmalen Schirmen mindestens 1rem. Die Übersicht ist zweispaltig: links die Gerätekarten untereinander (Abstand 1rem), rechts eine 25rem breite, beim Scrollen haftende Verbindungsspalte, Spaltenabstand 2.5rem. Unter 1040px wird daraus eine Spalte.
+The page has a 72px high header (wordmark on the left, navigation next to it, Log out on the right, hairline below). The content sits in an 84rem frame with 3rem padding, at least 1rem on narrow screens. The overview has two columns: on the left the device cards one below the other (gap 1rem), on the right a 25rem wide connection column that sticks while scrolling, column gap 2.5rem. Below 1040px this becomes one column.
 
-Innerhalb einer Gerätekarte: Kopf mit Band und Status in einer umbrechenden Zeile, darunter die Faktenzeile mit festen Zellen (vier Spalten, unter 720px zwei), darunter die Textaktionen bündig links. Die Detailseite stellt dieselben Zellen erweitert (sieben Fakten, vier Spalten) dar und darunter das Audit-Log als Tabelle über die volle Breite. Unter 720px wird die Tabelle zu zweispaltigen Einträgen, die Aktionen zeigen nur noch Symbole (außer Aktivieren/Deaktivieren), die Navigation rückt in eine eigene Zeile.
+Inside a device card: header with tape and status in a wrapping row, below it the fact row with fixed cells (four columns, two below 720px), below that the text actions flush left. The detail page shows the same cells extended (seven facts, four columns) and below them the audit log as a full-width table. Below 720px the table turns into two-column entries, the actions show only icons (except Enable/Disable), and the navigation moves into a row of its own.
 
-Kopierfelder reagieren auf ihre eigene Breite (Container-Query 26rem): darunter verliert der Kopieren-Button seinen Text und mehrzeilige Befehle brechen um, statt abgeschnitten zu werden. Fließtext ist auf 60 bis 70ch begrenzt.
+Copy fields respond to their own width (container query 26rem): below that the copy button loses its text and multi-line commands wrap instead of being cut off. Body text is limited to 60 to 70ch.
 
-Abstandsrhythmus: 0.4rem zwischen Beschriftung und Wert, 0.75rem innerhalb von Zeilen, 1rem zwischen Elementen einer Karte, 1.5rem Karteninnenrand seitlich, 2.5rem zwischen Spalten und unter der Kopfzeile.
+Spacing rhythm: 0.4rem between label and value, 0.75rem within rows, 1rem between elements of a card, 1.5rem card padding at the sides, 2.5rem between columns and below the header.
 
 ## Elevation & Depth
 
-Weitgehend flach mit einer kleinen, physischen Schattenlogik: Karton liegt auf der Werkbank, Band klebt auf dem Karton, ein Dialog schwebt darüber. Karten haben eine Haarlinie und einen kaum sichtbaren Doppelschatten; Tiefe entsteht sonst über die drei Neutraltöne (Werkbank, Karton, heller Karton). Das Band ist das einzige Element mit eigenem Glanz: ein senkrechter Lichtverlauf auf der oberen Hälfte, ein knapper Kantenschatten und eine feine Innenkontur.
+Largely flat with a small, physical shadow logic: cardboard lies on the workbench, tape sticks to the cardboard, a dialog floats above. Cards have a hairline and a barely visible double shadow; otherwise depth comes from the three neutrals (workbench, cardboard, light cardboard). The tape is the only element with a gloss of its own: a vertical light gradient on the upper half, a tight edge shadow and a fine inner outline.
 
 ### Shadow Vocabulary
-- **Karte** (`box-shadow: 0 1px 2px rgba(21,21,21,0.06), 0 2px 8px rgba(21,21,21,0.04)`): jede `.card`.
-- **Band** (`box-shadow: 0 1px 1.5px rgba(21,21,21,0.22), 0 2px 6px rgba(21,21,21,0.06), inset 0 0 0 1px rgba(21,21,21,0.06)`): das aufgeklebte Etikett.
-- **Dialog** (`box-shadow: 0 24px 60px rgba(21,21,21,0.28), 0 4px 12px rgba(21,21,21,0.12)`): modale Blätter über 45 % Tinten-Abdunklung.
+- **Card** (`box-shadow: 0 1px 2px rgba(21,21,21,0.06), 0 2px 8px rgba(21,21,21,0.04)`): every `.card`.
+- **Tape** (`box-shadow: 0 1px 1.5px rgba(21,21,21,0.22), 0 2px 6px rgba(21,21,21,0.06), inset 0 0 0 1px rgba(21,21,21,0.06)`): the stuck-on label.
+- **Dialog** (`box-shadow: 0 24px 60px rgba(21,21,21,0.28), 0 4px 12px rgba(21,21,21,0.12)`): modal sheets over a 45% ink dimming.
 
 ### Named Rules
-**The Stuck-On Rule.** Das Band darf glänzen und einen Kantenschatten werfen, weil es ein physisches Etikett ist. Diese Behandlung gehört dem Band; Buttons, Kopierfelder und Karten bekommen sie nicht.
+**The Stuck-On Rule.** The tape may shine and cast an edge shadow because it is a physical label. This treatment belongs to the tape; buttons, copy fields and cards do not get it.
 
 ## Shapes
 
-Leicht abgerundete Rechtecke in einer festen Stufung nach Größe: Band 4px (wie ein zugeschnittenes Etikett), Bedienelemente und Kopierfelder 6px, Banner und Statusfelder 8px, Karten 10px, Dialoge 12px. Der Token-Streifen ist fast eckig (1px), der Druckerschlitz eine schwarze Pille. Einzig runde Form ist der Statuspunkt. Ränder sind 1px-Haarlinien; der ruhige Button und das Kopierfeld zeichnen ihre Kontur als Innenschatten statt als Border.
+Slightly rounded rectangles in a fixed scale by size: tape 4px (like a label cut to size), controls and copy fields 6px, banners and status fields 8px, cards 10px, dialogs 12px. The token strip is almost square-cornered (1px), the printer slot a black pill. The only round shape is the status dot. Borders are 1px hairlines; the quiet button and the copy field draw their outline as an inset shadow instead of a border.
 
 ## Components
 
 ### Buttons
-Klar, kompakt, tintenschwarz.
-- **Shape:** sanft gerundet (6px), Mindesthöhe 2.5rem.
-- **Primary:** Tinte mit weißem Text, 700, Symbol links mit 0.45rem Abstand. Hover dunkelt auf #2d2d2d auf. Ein Primärbutton pro Ansicht („Gerät hinzufügen“, „Speichern“, „Fertig“, „Anmelden“).
-- **Quiet:** transparent mit 1px-Innenkontur in `line-strong`, Hover 5 % Tinte. Für Abbrechen und „Ältere laden“.
-- **Danger:** Fehlerrot, Hover #962817. Nur als Bestätigung im Löschdialog.
-- **Disabled:** 55 % Deckkraft, Cursor „not-allowed“.
-- **Focus:** global 2px Tintenring mit 2px Abstand.
+Clear, compact, ink black.
+- **Shape:** gently rounded (6px), minimum height 2.5rem.
+- **Primary:** ink with white text, 700, icon on the left with a 0.45rem gap. Hover darkens to #2d2d2d. One primary button per view ("Add device", "Save", "Done", "Log in").
+- **Quiet:** transparent with a 1px inner outline in `line-strong`, hover 5% ink. For Cancel and "Load older".
+- **Danger:** error red, hover #962817. Only as the confirmation in the delete dialog.
+- **Disabled:** 55% opacity, cursor "not-allowed".
+- **Focus:** global 2px ink ring with a 2px offset.
 
-### Textaktionen
-- **Style:** randlos, grau, 600 klein, Lucide-Symbol 16px links, Mindesthöhe 2.25rem. Hover: 6 % Tintenfläche und Tintentext; Löschen färbt sich beim Hover rosa/rot.
-- **Einsatz:** Protokoll, Umbenennen, Token neu, Aktivieren/Deaktivieren, Löschen, Zurück, Abmelden.
+### Text actions
+- **Style:** borderless, grey, 600 small, 16px Lucide icon on the left, minimum height 2.25rem. Hover: 6% ink surface and ink text; Delete turns pink/red on hover.
+- **Use:** Audit log, Rename, New token, Enable/Disable, Delete, All devices, Log out.
 
 ### Cards / Containers
 - **Corner Style:** 10px.
-- **Background:** `card` für Gerätekarten, `raised` für Lese- und Kopierflächen (Verbindung, Audit-Log, Login).
-- **Shadow Strategy:** Kartenschatten (siehe Elevation).
+- **Background:** `card` for device cards, `raised` for reading and copying surfaces (connection, audit log, login).
+- **Shadow Strategy:** card shadow (see Elevation).
 - **Border:** 1px `line`.
-- **Internal Padding:** etwa 1.35rem oben, 1.5rem seitlich.
+- **Internal Padding:** about 1.35rem at the top, 1.5rem at the sides.
 
 ### Inputs / Fields
-- **Style:** weißes Feld, 1px `line-strong`, 6px, Höhe 2.75rem, Beschriftung darüber (700 klein).
-- **Focus:** Rand und 2px-Ring in Tinte, ohne Abstand.
-- **Error:** roter Text 600 klein unter dem Feld, `aria-invalid`.
+- **Style:** white field, 1px `line-strong`, 6px, height 2.75rem, label above (700 small).
+- **Focus:** border and 2px ring in ink, without offset.
+- **Error:** red text 600 small below the field, `aria-invalid`.
 
-### Kopierfeld
-Wert in Mono auf Werkbankgrund, als eingelassene Rinne (6px, Innenkontur `line`), rechts ein durch eine Haarlinie abgetrennter Kopieren-Button mit Symbol und Text; nach dem Kopieren grün „Kopiert“ für zwei Sekunden. Der ganze Wert ist mit einem Klick markierbar. Enthält der Wert ein Geheimnis, zeigt das Feld es verdeckt (`display`), ist nicht markierbar und kopiert über den Button den echten Wert. Mehrzeilige Befehle behalten ihre Zeilen und scrollen waagerecht; in schmalen Containern brechen sie um.
+### Copy field
+Value in mono on workbench ground, as a recessed groove (6px, inner outline `line`), on the right a copy button with icon and text, separated by a hairline; after copying, a green "Copied" for two seconds. The whole value can be selected with one click. If the value contains a secret, the field shows it hidden (`display`), is not selectable and copies the real value via the button. Multi-line commands keep their lines and scroll horizontally; in narrow containers they wrap.
 
 ### Navigation
-Archivo 700 mittel, grau; Hover Tinte; aktiv Tinte mit 2px-Unterstrich an der Unterkante der Kopfzeile. Mobil eigene Zeile unter Wortmarke und Abmelden.
+Archivo 700 medium, grey; hover ink; active ink with a 2px underline at the bottom edge of the header. On mobile a row of its own below wordmark and Log out.
 
-### Statusmarke
-Punkt (0.6rem) plus fetter Zustand plus graues Detail: online grün gefüllt mit Hof; offline, wartend und deaktiviert als leerer grauer Ring. Das Detail sagt immer, seit wann oder wann zuletzt.
+### Status mark
+Dot (0.6rem) plus bold state plus grey detail: online filled green with a halo; offline, waiting and disabled as an empty grey ring. The detail always says since when or when last.
 
-### Faktenzellen
-`dl` als Raster fester Zellen unter einer Haarlinie: Beschriftung versal grau, Wert in Mono, bricht überall um. Fehlende Werte als Gedankenstrich, nie als leere Zelle.
+### Fact cells
+`dl` as a grid of fixed cells below a hairline: label uppercase grey, value in mono, wraps anywhere. Missing values as a dash, never as an empty cell.
 
-### Beschriftungsband (Signatur)
-Das Etikett: weiß für Gerätenamen, schwarz für die Wortmarke, gelb für den Token. Verlinkte Bänder heben sich beim Hover um 1px. Ein deaktiviertes Gerät behält sein Band, durchgestrichen (2px) und grau. Umbenennen verwandelt das Band in ein Eingabefeld in Bandform und druckt es danach von links nach rechts neu (480ms, linear). Im Token-Dialog läuft das gelbe Band einmal aus einem schwarzen Schlitz an der Oberkante des Dialogs heraus (700ms) und wird beim Schließen abgeschnitten (260ms). Ohne Bewegungswunsch ist es einfach da. Ein leerer Zustand zeigt ein Band nur als 2px-Kontur ohne Füllung.
+### Label tape (signature)
+The label: white for device names, black for the wordmark, yellow for the token. Linked tapes lift by 1px on hover. A disabled device keeps its tape, struck through (2px) and grey. Renaming turns the tape into an input field in tape shape and then reprints it from left to right (480ms, linear). In the token dialog the yellow tape runs once out of a black slot at the top edge of the dialog (700ms) and is cut off on closing (260ms). If no motion is wanted, it is simply there. An empty state shows a tape only as a 2px outline without fill.
 
-### Audit-Tabelle
-Schlichte Tabelle ohne Pillen: versale graue Köpfe, Haarlinien zwischen Zeilen, Zeit und Dauer in Mono (Dauer rechtsbündig), Ergebnis als fetter Text (Tinte für ok/exit 0, rot für Fehler, grau für abgebrochen/läuft). Lange Befehle auf zwei Zeilen gekürzt mit „ganz zeigen“.
+### Audit table
+Plain table without pills: uppercase grey headers, hairlines between rows, time and duration in mono (duration right-aligned), result as bold text (ink for ok/exit 0, red for errors, grey for killed/running). Long commands clamped to two lines with "Details".
 
 ### Dialog
-Natives `dialog` auf hellem Karton, 12px, bis 36rem breit, 1.75rem Innenrand, Aktionen rechtsbündig.
+Native `dialog` on light cardboard, 12px, up to 36rem wide, 1.75rem padding, actions right-aligned.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** jeden Gerätenamen auf `label-tape` setzen, in der Liste wie im Detail und im Dialog.
-- **Do** neue Fakten als weitere feste Zelle in `DeviceFacts` ergänzen, mit Gedankenstrich als Leerwert.
-- **Do** Rang über 700/800 und Versalien bilden, innerhalb der drei Grade (0.8125, 0.9375, 1.375rem).
-- **Do** kopierbare Werte immer im Kopierfeld zeigen, in JetBrains Mono auf `ground`.
-- **Do** Status als Punkt plus Wort plus Zeitangabe zeigen, nie nur als Farbe.
-- **Do** Bewegung mechanisch und einmalig halten (`cubic-bezier(0.16, 1, 0.3, 1)`, 150ms für Zustände) und `prefers-reduced-motion` respektieren.
+- **Do** set every device name on `label-tape`, in the list as well as in the detail view and the dialog.
+- **Do** add new facts as another fixed cell in `DeviceFacts`, with a dash as the empty value.
+- **Do** build rank through 700/800 and capitals, within the three sizes (0.8125, 0.9375, 1.375rem).
+- **Do** always show copyable values in the copy field, in JetBrains Mono on `ground`.
+- **Do** show status as dot plus word plus time, never as colour alone.
+- **Do** keep motion mechanical and one-off (`cubic-bezier(0.16, 1, 0.3, 1)`, 150ms for states) and respect `prefers-reduced-motion`.
 
 ### Don't:
-- **Don't** Status-Pillen, Kennzahlen-Kacheln oder eine dunkle Seitenleiste einführen; das ist der abgelehnte Admin-Standard.
-- **Don't** `tape-yellow` außerhalb des einmal gezeigten Geheimnisses verwenden.
-- **Don't** Text in einer anderen Farbe als `ink` oder `mute` setzen, außer Fehlerrot und Erfolgsgrün als Status.
-- **Don't** einen vierten Schriftgrad einführen.
-- **Don't** Glanz und Kantenschatten des Bandes auf Buttons, Karten oder Kopierfelder übertragen.
-- **Don't** versale Kleinzeilen als Vorspann über Überschriften setzen; Versalien beschriften Abschnitte, Felder und Spalten, sie stehen nicht dekorativ über einem Titel.
+- **Don't** introduce status pills, metric tiles or a dark sidebar; that is the rejected admin standard.
+- **Don't** use `tape-yellow` outside the secret that is shown once.
+- **Don't** set text in any colour other than `ink` or `mute`, except error red and success green as status.
+- **Don't** introduce a fourth type size.
+- **Don't** transfer the tape's gloss and edge shadow to buttons, cards or copy fields.
+- **Don't** set small uppercase lines as a kicker above headings; capitals label sections, fields and columns, they do not sit decoratively above a title.

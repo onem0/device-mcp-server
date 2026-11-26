@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Check, Copy } from '@lucide/vue'
 
-// pre: mehrzeilige Shell-Befehle unverändert zeigen, notfalls waagerecht scrollen statt mitten im Wort umbrechen.
-// display: Text, der statt value zu sehen ist (z. B. ein Befehl mit verdecktem Token). Kopiert wird immer value.
+// pre: show multi-line shell commands unchanged, scroll horizontally if need be instead of breaking mid-word.
+// display: text that is shown instead of value (e.g. a command with a masked token). What gets copied is always value.
 const props = defineProps<{ value: string; label?: string; pre?: boolean; display?: string }>()
 const emit = defineEmits<{ copied: [] }>()
 const copied = ref(false)
@@ -38,7 +38,7 @@ async function copy() {
   min-width: 0;
   container-type: inline-size;
 }
-/* In schmalen Spalten nur das Symbol, damit der Wert Platz hat. Der Name steht im aria-label. */
+/* In narrow columns only the icon, so the value has room. The name is in the aria-label. */
 @container (max-width: 26rem) {
   .copy__btn-text {
     position: absolute;
@@ -50,7 +50,7 @@ async function copy() {
   .copy__btn {
     padding: 0 0.7rem;
   }
-  /* Schmal lieber umbrechen als abschneiden; die Zeilen bleiben trotzdem je eine Option. */
+  /* When narrow, better to wrap than to cut off; the lines still remain one option each. */
   .copy .copy__value--pre {
     white-space: pre-wrap;
     overflow-wrap: anywhere;
@@ -72,7 +72,7 @@ async function copy() {
   overflow-wrap: anywhere;
   user-select: all;
 }
-/* Verdeckter Wert: Markieren würde nur die Platzhalter kopieren, deshalb geht es hier allein über den Button. */
+/* Masked value: selecting would only copy the placeholders, so here it works through the button alone. */
 .copy__value--masked {
   user-select: none;
 }

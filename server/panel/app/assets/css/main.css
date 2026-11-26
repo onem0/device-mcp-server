@@ -1,4 +1,4 @@
-/* device-mcp Panel: Werkbank mit Beschriftungsband. */
+/* device-mcp panel: workbench with label tape. */
 
 :root {
   --ground: #eceee9;
@@ -20,7 +20,7 @@
   --sans: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
-  /* Drei Schriftgrade. Rang über Gewicht und Versalien. */
+  /* Three type sizes. Hierarchy through weight and capitals. */
   --fs-s: 0.8125rem;
   --fs-m: 0.9375rem;
   --fs-l: 1.375rem;
@@ -88,7 +88,7 @@ code,
   font-size: var(--fs-s);
 }
 
-/* Kleine Versalien-Überschrift: Rang über Gewicht und Versalien, nicht über Größe. */
+/* Small all-caps heading: hierarchy through weight and capitals, not through size. */
 .caps {
   font-size: var(--fs-s);
   font-weight: 700;
@@ -100,7 +100,7 @@ code,
   color: var(--mute);
 }
 
-/* --- Beschriftungsband ------------------------------------------------ */
+/* --- Label tape ------------------------------------------------------- */
 
 .tape {
   display: inline-flex;
@@ -146,14 +146,14 @@ code,
   padding-inline: 0.75rem;
 }
 
-/* Entwertet, nicht entfernt. */
+/* Voided, not removed. */
 .tape--struck {
   color: var(--mute);
   text-decoration: line-through;
   text-decoration-thickness: 2px;
 }
 
-/* --- Bedienelemente --------------------------------------------------- */
+/* --- Controls --------------------------------------------------------- */
 
 .btn {
   display: inline-flex;
@@ -200,7 +200,7 @@ code,
   background: #962817;
 }
 
-/* Textaktion ohne Rahmen, z. B. in den Gerätekarten. */
+/* Text action without a border, e.g. in the device cards. */
 .action {
   display: inline-flex;
   align-items: center;
@@ -282,7 +282,7 @@ code,
   font-weight: 600;
 }
 
-/* --- Flächen ------------------------------------------------------------ */
+/* --- Surfaces ----------------------------------------------------------- */
 
 .card {
   background: var(--card);
@@ -291,7 +291,7 @@ code,
   box-shadow: var(--shadow-card);
 }
 
-/* --- Dialoge ------------------------------------------------------------ */
+/* --- Dialogs ------------------------------------------------------------ */
 
 dialog.sheet {
   width: min(36rem, calc(100vw - 2rem));
@@ -305,7 +305,7 @@ dialog.sheet {
   overflow: visible;
 }
 
-/* Über dem Token-Dialog steht das gelbe Band, dafür oben immer Platz lassen. */
+/* The yellow tape sits above the token dialog, so always leave room at the top. */
 dialog.sheet.sheet--tape {
   top: 4.5rem;
   max-height: calc(100dvh - 5.5rem);

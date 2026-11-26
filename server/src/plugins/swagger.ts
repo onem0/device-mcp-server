@@ -5,7 +5,7 @@ import fp from 'fastify-plugin'
 import { isProduction } from '../env.js'
 import { VERSION } from '../version.js'
 
-// OpenAPI für die Panel-API unter /v1. Die Oberfläche nur lokal, damit die Struktur nicht öffentlich herumliegt.
+// OpenAPI for the panel API under /v1. The UI only locally, so the structure is not lying around in public.
 export default fp(
   async (fastify) => {
     await fastify.register(swagger, {
@@ -13,7 +13,7 @@ export default fp(
         info: { title: 'device-mcp panel API', version: VERSION },
         servers: [],
       },
-      // Routen-Dateien registrieren url: '/', im Vertrag sollen die Pfade aber ohne Schrägstrich am Ende stehen.
+      // Route files register url: '/', but in the contract the paths should have no trailing slash.
       transform: (input) => {
         const { schema, url } = jsonSchemaTransform(input)
         return { schema, url: url.length > 1 ? url.replace(/\/$/, '') : url }

@@ -7,23 +7,23 @@ related_targets: []
 
 # Surface: device-mcp Panel
 
-Scope: das ganze Web-Panel (Login, Geräteübersicht, Gerät anlegen, Gerätedetail mit Audit-Log, Verbindung). Modus: Operate.
-Aufgabe: Gerät anlegen und den einmaligen Install-Befehl sicher kopieren; Online-Status und „zuletzt gesehen“ ablesen; nachvollziehen, was Claude pro Gerät ausgeführt hat. Meist am Desktop, 1–5 Geräte. No-Go des Betreibers: generischer Admin-Look.
+Scope: the whole web panel (login, device overview, adding a device, device detail with audit log, connection). Mode: Operate.
+Task: add a device and reliably copy the one-time install command; read the online status and "last seen"; trace what Claude ran per device. Mostly on the desktop, 1–5 devices. The operator's no-go: generic admin look.
 
 ## Direction contract
 
-THESIS: Jedes Gerät trägt sein Etikett: Der Gerätename steht auf laminiertem Beschriftungsband, wie es im Homelab auf Raspis und Switches klebt. Verweigert wird das Standard-Admin aus Slate-Seitenleiste, Kennzahlen-Kacheln und Pillen-Tabelle.
+THESIS: Every device wears its label: the device name sits on laminated label tape, the way it sticks to Raspis and switches in a homelab. What is refused is the standard admin made of a slate sidebar, metric tiles and a pill table.
 
-OWN-WORLD: Matte Werkbank-Fläche (#eceee9) mit hellen Karten aus Karton; weißes Band mit schwarzen, schmal geschnittenen fetten Versalien (Archivo, Breite 68 %) für Gerätenamen, schwarzes Band für die Wortmarke, gelbes Band (#f4d21f) nur für das einmalige Geheimnis. Schrift nur in Bandschwarz und einem Grau, Grün für online, Rot für Fehler. Archivo überall, JetBrains Mono nur für Befehle, Pfade, Tokens und Messwerte. Drei Schriftgrade, Rang über Gewicht und Versalien. Fakten in festen Zellen.
+OWN-WORLD: Matt workbench surface (#eceee9) with light cards made of cardboard; white tape with black, narrow-cut bold capitals (Archivo, width 68%) for device names, black tape for the wordmark, yellow tape (#f4d21f) only for the one-time secret. Type only in tape black and one grey, green for online, red for errors. Archivo everywhere, JetBrains Mono only for commands, paths, tokens and measured values. Three type sizes, rank through weight and capitals. Facts in fixed cells.
 
-STORY: Der Betreiber sieht sofort, welche Geräte online sind und wann jedes zuletzt da war, legt ein Gerät mit einem Namen und einem kopierten Befehl an, sieht es live online gehen und kann jeden Befehl von Claude mit Exit-Code und Dauer nachlesen.
+STORY: The operator sees at once which devices are online and when each was last there, adds a device with a name and a copied command, watches it come online live and can look up every command from Claude with exit code and duration.
 
-FIRST VIEWPORT: Kopfzeile 72 px: schwarzes Band „device-mcp“ links, daneben Navigation Geräte/Verbindung, Abmelden rechts. Darunter zwei Spalten: links Überschrift „Geräte · n“ mit Primärbutton „Gerät hinzufügen“, darunter je Gerät eine Karte mit Namensband, Statuspunkt und Text, zuletzt gesehen, Aktionen rechts, vier Faktenzellen (Benutzer@Host, System, Architektur/Kernel, Daemon). Rechts 400 px die Verbindungskarte mit MCP-URL, Header und claude-mcp-add-Befehl, jeweils kopierbar.
+FIRST VIEWPORT: Header 72 px: black "device-mcp" tape on the left, next to it the navigation Devices/Connection, Log out on the right. Below it two columns: on the left the heading "Devices · n" with the primary button "Add device", below it one card per device with name tape, status dot and text, last seen, actions on the right, four fact cells (user@host, system, architecture/kernel, daemon). On the right, 400 px, the connection card with MCP URL, header and claude mcp add command, each copyable.
 
-FORM: Beschriftungsband, Position 5 von 7 meiner geordneten Liste, seed:92089b05307692e4. Signatur: Der einmalige Token läuft als gelbes Band aus der Oberkante des Dialogs heraus wie aus einem Etikettendrucker, einmal; beim Schließen wird es abgeschnitten und ist nie wieder abrufbar. Deaktivierte Geräte behalten ihr Band, durchgestrichen. Umbenennen druckt das Band an Ort und Stelle neu.
+FORM: Label tape, position 5 of 7 on my ordered list, seed:92089b05307692e4. Signature: the one-time token runs out of the top edge of the dialog as yellow tape, as if from a label printer, once; on closing it is cut off and can never be retrieved again. Disabled devices keep their tape, struck through. Renaming reprints the tape in place.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
-## Offene Punkte
+## Open points
 
-- Kein Dark Mode: Werkbank bei Tageslicht am Schreibtisch, bewusst hell.
+- No dark mode: workbench in daylight at the desk, deliberately light.

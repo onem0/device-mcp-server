@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { Device } from '~/utils/types'
 
-// Feste Zellen: Auf jeder Karte steht derselbe Fakt an derselben Stelle.
+// Fixed cells: on every card the same fact sits in the same place.
 const props = defineProps<{ device: Device; detailed?: boolean }>()
 const { info } = useServerInfo()
 
-// Steht unter der Daemon-Version, solange der Server eine neuere ausliefert.
+// Shown below the daemon version as long as the server ships a newer one.
 const updateNote = computed(() => {
   const status = props.device.updateStatus
   const target = status?.target ?? info.value?.daemonVersion

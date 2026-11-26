@@ -21,7 +21,7 @@ export async function getDevice(id: string) {
   return device
 }
 
-// Für die MCP-Tools: Claude nennt ein Gerät beim Namen (ohne Groß-/Kleinschreibung) oder per ID.
+// For the MCP tools: Claude refers to a device by name (case-insensitive) or by ID.
 export async function findDeviceByRef(ref: string) {
   const value = ref.trim()
   if (UUID_RE.test(value)) {

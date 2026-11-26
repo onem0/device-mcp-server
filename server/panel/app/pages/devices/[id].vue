@@ -24,7 +24,7 @@ async function loadDevice() {
   }
 }
 
-// Beim Nachladen im Hintergrund die schon sichtbaren Einträge auffrischen (höchstens 200).
+// When reloading in the background, refresh the entries already visible (at most 200).
 async function loadAudit() {
   try {
     const limit = Math.min(200, Math.max(PAGE, entries.value.length))

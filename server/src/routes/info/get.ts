@@ -5,7 +5,7 @@ import { latestDaemonVersion } from '../../services/daemon-release.js'
 import { publicBaseUrl, uninstallCommand, updateCommand } from '../../services/install.js'
 import { VERSION } from '../../version.js'
 
-// Verbindungsdaten für die Anleitung im Panel. Der MCP-Token selbst wird nie ausgeliefert.
+// Connection details for the instructions in the panel. The MCP token itself is never sent out.
 const route: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'GET',
@@ -19,7 +19,7 @@ const route: FastifyPluginAsyncZod = async (fastify) => {
           mcpUrl: z.string(),
           updateCommand: z.string(),
           uninstallCommand: z.string(),
-          // Version der Daemon-Binaries, die dieser Server ausliefert. null, wenn keine gebaut wurden.
+          // Version of the daemon binaries this server ships. null if none were built.
           daemonVersion: z.string().nullable(),
           heartbeatTimeoutSeconds: z.number().int(),
         }),

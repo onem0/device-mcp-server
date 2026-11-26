@@ -2,8 +2,8 @@
 import { Download, Loader } from '@lucide/vue'
 import type { Device } from '~/utils/types'
 
-// Alles rund um die Daemon-Version eines Geräts: Update anbieten, Fortschritt zeigen, Fehler nennen.
-// Erscheint nur, wenn es etwas zu tun oder zu sagen gibt.
+// Everything about a device's daemon version: offer the update, show progress, name errors.
+// Only appears when there is something to do or to say.
 const props = defineProps<{ device: Device; busy?: boolean }>()
 const emit = defineEmits<{ update: [] }>()
 const { info } = useServerInfo()

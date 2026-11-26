@@ -33,7 +33,7 @@ const WAIT_DEFAULT_S = 120
 const WAIT_MAX_S = 600
 const WAIT_TAIL_LINES = 50
 const FILE_RPC_TIMEOUT_MS = 60_000
-// Großzügig unter dem Body-Limit von /mcp (siehe endpoints/mcp.ts).
+// Comfortably below the body limit of /mcp (see endpoints/mcp.ts).
 const WRITE_MAX_CHARS = 10 * 1024 * 1024
 const EDIT_MAX_CHARS = 1024 * 1024
 const BASE64_DEFAULT_BYTES = 256 * 1024
@@ -49,14 +49,14 @@ class ToolError extends Error {}
 const text = (value: string): CallToolResult => ({ content: [{ type: 'text', text: value }] })
 const fail = (value: string): CallToolResult => ({ content: [{ type: 'text', text: value }], isError: true })
 
-// Pro Aufruf: welches Gerät, was ins Audit-Log kommt.
+// Per call: which device, what goes into the audit log.
 interface Ctx {
   tool: string
   device: Device | null
   summary: string
   exitCode: number | null
   status: string | null
-  // run_command schreibt einen eigenen Eintrag, den später das Job-Ende ergänzt.
+  // run_command writes its own entry, which the job end completes later.
   skipAudit: boolean
 }
 
@@ -69,7 +69,7 @@ function daemonVersion(device: Device) {
   return hub.connection(device.id)?.info.version ?? device.daemonVersion
 }
 
-// Erwartbare Fehler gehen als Tool-Fehler an Claude, alles andere als Protokollfehler.
+// Expected errors go to Claude as tool errors, everything else as protocol errors.
 function expectedErrorMessage(err: unknown, ctx: Ctx) {
   if (err instanceof DaemonError && err.code === 'UNKNOWN_METHOD' && ctx.device) {
     return tooOldMessage(ctx.device.name, daemonVersion(ctx.device), VERSION, ctx.tool, env.PUBLIC_URL)
@@ -91,7 +91,7 @@ async function record(ctx: Ctx, args: unknown, started: number, result: CallTool
   }).catch((err) => console.error('Audit entry failed', err))
 }
 
-// Jeder Tool-Aufruf landet im Audit-Log, auch fehlgeschlagene.
+// Every tool call ends up in the audit log, including failed ones.
 function tool<A>(name: string, fn: (args: A, ctx: Ctx) => Promise<CallToolResult>) {
   return async (args: A): Promise<CallToolResult> => {
     const ctx: Ctx = { tool: name, device: null, summary: '', exitCode: null, status: null, skipAudit: false }
@@ -137,7 +137,7 @@ async function resolveOnlineDevice(ref: string, ctx: Ctx): Promise<Device> {
   return device
 }
 
-// Neue Methoden gibt es erst ab einer bestimmten Daemon-Version. Vorher prüfen statt "unbekannte Methode".
+// New methods only exist from a certain daemon version on. Check beforehand instead of "unknown method".
 function requireFeature(device: Device, feature: keyof typeof DAEMON_FEATURES, toolName: string) {
   const version = daemonVersion(device)
   const min = DAEMON_FEATURES[feature]
@@ -180,7 +180,7 @@ export function createMcpServer() {
     {
       title: 'List devices',
       description: 'Lists all devices with online status, operating system, user and time of the last connection.',
-      // Leeres Schema statt keinem: Sonst übergibt das SDK sein Request-Objekt (samt HTTP-Headern) als erstes Argument.
+      // An empty schema instead of none: otherwise the SDK passes its request object (HTTP headers included) as the first argument.
       inputSchema: {},
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
@@ -274,7 +274,7 @@ export function createMcpServer() {
         out = null
       }
       const summary = out?.job ?? { ...rowToSummary((await getJob(device.id, jobId))!), ...end }
-      // Ein Exit-Code ungleich 0 ist ein normales Ergebnis. Fehler sind nur Jobs, die gar nicht liefen.
+      // A non-zero exit code is a normal result. Only jobs that never ran at all are errors.
       const result = text(formatRunResult(summary, out))
       return summary.status === 'failed' || summary.status === 'lost' ? { ...result, isError: true } : result
     }),
@@ -368,7 +368,7 @@ export function createMcpServer() {
       const waitS = timeout ?? WAIT_DEFAULT_S
       const started = Date.now()
 
-      // Erst den Warter anmelden, dann nachsehen: So geht ein Job-Ende dazwischen nicht verloren.
+      // Register the waiter first, then look: that way a job end in between is not lost.
       const wait = hub.waitForJobEnd(job_id, waitS * 1000)
       let job: JobSummary
       try {

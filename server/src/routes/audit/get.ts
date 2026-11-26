@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 import { auditEntry, toAuditEntry } from '../../schemas/devices.js'
 import { listAudit } from '../../services/audit.js'
 
-// Protokoll über alle Geräte, neueste zuerst. Mit device nur die Einträge dieses Geräts.
+// Audit log across all devices, newest first. With device, only that device's entries.
 const route: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'GET',

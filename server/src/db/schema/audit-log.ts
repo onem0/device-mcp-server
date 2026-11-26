@@ -2,19 +2,19 @@ import { index, integer, jsonb, pgTable, text, uuid } from 'drizzle-orm/pg-core'
 import { createdAt, id } from './columns.js'
 import { devices } from './devices.js'
 
-// Ein Eintrag pro MCP-Tool-Aufruf. device_id ist leer bei Aufrufen ohne Gerät (list_devices) oder mit unbekanntem Gerät.
+// One entry per MCP tool call. device_id is empty for calls without a device (list_devices) or with an unknown device.
 export const auditLog = pgTable(
   'audit_log',
   {
     id: id(),
     deviceId: uuid('device_id').references(() => devices.id, { onDelete: 'cascade' }),
     tool: text('tool').notNull(),
-    // Kurzfassung für die Tabelle, z. B. der Befehl oder der Pfad.
+    // Short form for the table, e.g. the command or the path.
     command: text('command').notNull(),
-    // Argumente des Aufrufs, lange Strings gekürzt, Dateiinhalte nur als Länge.
+    // Arguments of the call, long strings truncated, file contents only as a length.
     args: jsonb('args'),
     jobId: text('job_id'),
-    // running, ok, error oder der Endstatus des Jobs (exited, killed, timeout, failed, lost).
+    // running, ok, error or the final status of the job (exited, killed, timeout, failed, lost).
     status: text('status').notNull(),
     exitCode: integer('exit_code'),
     durationMs: integer('duration_ms'),

@@ -7,15 +7,15 @@ export const devices = pgTable(
   {
     id: id(),
     name: text('name').notNull(),
-    // SHA-256 des Geräte-Tokens. Der Token selbst wird nur einmal im Panel angezeigt.
+    // SHA-256 of the device token. The token itself is shown only once in the panel.
     tokenHash: text('token_hash').notNull(),
     enabled: boolean('enabled').notNull().default(true),
-    // Nur lesen: run_command, write_file, edit_file sowie Session-Start und -Eingaben sind gesperrt.
+    // Read-only: run_command, write_file, edit_file as well as session start and input are blocked.
     readOnly: boolean('read_only').notNull().default(false),
-    // Der Server stößt ein Daemon-Update selbst an, sobald das Gerät mit einer älteren Version verbunden ist.
-    // Aus: Updates nur per Klick im Panel.
+    // The server triggers a daemon update itself as soon as the device is connected with an older version.
+    // Off: updates only by a click in the panel.
     autoUpdate: boolean('auto_update').notNull().default(false),
-    // Meldet der Daemon bei jeder Verbindung.
+    // Reported by the daemon on every connection.
     hostname: text('hostname'),
     os: text('os'),
     kernel: text('kernel'),

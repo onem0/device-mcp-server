@@ -7,10 +7,10 @@ import { ApiError } from '../../../services/errors.js'
 import { createSession } from '../../../services/sessions.js'
 import { safeEqual } from '../../../services/tokens.js'
 
-// Unabhängig von der IP: Ab 30 Fehlversuchen in 15 Minuten laufen Passwortprüfungen nur noch nacheinander,
-// höchstens eine pro Sekunde. Das deckelt verteiltes Raten insgesamt, auch mit gefälschten IPs oder vielen
-// parallelen Anfragen. Das richtige Passwort kommt durch, sobald es an der Reihe ist; nur wenn die Schlange
-// voll ist, gibt es vorübergehend 429. MCP und Daemons sind davon nicht betroffen.
+// Independent of the IP: from 30 failed attempts in 15 minutes on, password checks only run one after another,
+// at most one per second. That caps distributed guessing overall, even with spoofed IPs or many
+// parallel requests. The correct password gets through as soon as its turn comes; only when the queue
+// is full is there a temporary 429. MCP and daemons are not affected by this.
 const FAIL_WINDOW_MS = 15 * 60_000
 const SERIALIZE_AFTER = 30
 const SPACING_MS = 1_000
@@ -41,7 +41,7 @@ const route: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'POST',
     url: '/',
-    // Pro IP höchstens 10 Versuche in 15 Minuten, erfolgreiche mitgezählt.
+    // At most 10 attempts per IP in 15 minutes, successful ones included.
     config: { rateLimit: { max: 10, timeWindow: '15 minutes' } },
     schema: {
       tags: ['Auth'],

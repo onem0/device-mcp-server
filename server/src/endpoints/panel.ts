@@ -6,7 +6,7 @@ import { env } from '../env.js'
 
 const API_PREFIXES = ['/v1/', '/mcp', '/daemon/', '/download/']
 
-// Liefert das gebaute Nuxt-Panel (nuxt generate, ssr: false) und fällt für Client-Routen auf die SPA zurück.
+// Serves the built Nuxt panel (nuxt generate, ssr: false) and falls back to the SPA for client routes.
 export default fp(async (fastify) => {
   fastify.addHook('onSend', async (_request, reply, payload) => {
     reply.header('x-content-type-options', 'nosniff')

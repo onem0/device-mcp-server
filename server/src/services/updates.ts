@@ -5,16 +5,16 @@ import { daemonUpdateState } from './guards.js'
 import { hub } from './hub.js'
 import type { UpdateResult } from './protocol.js'
 
-// Stand eines Daemon-Updates, das dieser Server angestoßen hat. Nur im Speicher: Nach einem Neustart des
-// Servers verbinden sich die Geräte neu, und ihre gemeldete Version sagt, was aus dem Update geworden ist.
-// running: Der Daemon lädt und prüft. restarting: Das neue Binary liegt auf dem Gerät, der Neustart steht aus.
+// State of a daemon update that this server triggered. In memory only: after a restart of the
+// server the devices reconnect, and their reported version tells what became of the update.
+// running: the daemon downloads and verifies. restarting: the new binary is on the device, the restart is pending.
 export interface UpdateStatus {
   state: 'running' | 'restarting' | 'failed'
   target: string | null
   message: string | null
 }
 
-// Der Download kann auf einer langsamen Leitung dauern; der Daemon selbst bricht nach 10 Minuten ab.
+// The download can take a while on a slow connection; the daemon itself gives up after 10 minutes.
 const UPDATE_TIMEOUT_MS = 11 * 60_000
 
 const statuses = new Map<string, UpdateStatus>()
@@ -30,8 +30,8 @@ function restartMessage(result: Extract<UpdateResult, { status: 'installed' }>) 
   return 'Installed. The daemon is restarting.'
 }
 
-// Stößt das Update an und kehrt sofort zurück. Das Panel liest den Stand über die Geräteliste mit.
-// force: Klick im Panel. Ohne force (Auto-Update) wartet der Daemon nach einem Fehlschlag eine Stunde.
+// Triggers the update and returns immediately. The panel follows the state via the device list.
+// force: click in the panel. Without force (auto-update) the daemon waits an hour after a failure.
 export function startUpdate(device: Pick<Device, 'id' | 'name'>, opts: { force: boolean }) {
   const previous = statuses.get(device.id)
   if (previous?.state === 'running') return
@@ -47,8 +47,8 @@ export function startUpdate(device: Pick<Device, 'id' | 'name'>, opts: { force: 
       log?.info({ device: device.name, version: result.version, restart: result.restart }, 'Daemon update installed')
     },
     (err: Error & { code?: string }) => {
-      // Auto-Update in der Wartezeit nach einem Fehlschlag: kein neuer Fehler, der letzte bleibt stehen.
-      // BUSY: Auf dem Gerät läuft schon ein Update aus einer früheren Verbindung.
+      // Auto-update in the wait period after a failure: no new error, the last one stays.
+      // BUSY: an update from an earlier connection is already running on the device.
       if (err.code === 'UPDATE_BACKOFF' || err.code === 'BUSY') {
         if (previous?.state === 'failed') statuses.set(device.id, previous)
         else statuses.delete(device.id)
@@ -60,7 +60,7 @@ export function startUpdate(device: Pick<Device, 'id' | 'name'>, opts: { force: 
   )
 }
 
-// Auto-Update sofort nachholen, wenn es für ein verbundenes, veraltetes Gerät eingeschaltet wird.
+// Catch up on the auto-update right away when it is turned on for a connected, outdated device.
 export function autoUpdateIfDue(device: Device, version: string | null | undefined) {
   if (!device.autoUpdate || !hub.isOnline(device.id)) return
   if (daemonUpdateState(version, latestDaemonVersion()) === 'available') startUpdate(device, { force: false })
@@ -68,17 +68,17 @@ export function autoUpdateIfDue(device: Device, version: string | null | undefin
 
 export function watchUpdates(logger: FastifyBaseLogger) {
   log = logger
-  // Nach jedem Verbindungsaufbau: Stand aufräumen und, wenn eingeschaltet, das Auto-Update anstoßen.
-  // Ein neuer Server bringt meist einen neuen Daemon mit, und nach einem Deploy verbinden sich alle Geräte neu.
+  // After every connection: clean up the state and, if turned on, trigger the auto-update.
+  // A new server usually brings a new daemon along, and after a deploy all devices reconnect.
   hub.onConnect = (device, info) => {
     const state = daemonUpdateState(info.version, latestDaemonVersion())
     if (state === null) statuses.delete(device.id)
-    // Der Daemon lief weiter (z. B. nur die Leitung war weg): Ein angefangenes Update ist dort nicht verloren,
-    // der Server weiß aber nichts mehr davon.
+    // The daemon kept running (e.g. only the connection was gone): a started update is not lost there,
+    // but the server no longer knows anything about it.
     else if (statuses.get(device.id)?.state === 'running') statuses.delete(device.id)
     autoUpdateIfDue(device, info.version)
   }
 }
 
-// Gerät gelöscht.
+// Device deleted.
 export const forgetUpdate = (deviceId: string) => statuses.delete(deviceId)

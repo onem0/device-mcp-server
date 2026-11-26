@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# device-mcp: Daemon entfernen (Linux und macOS).
+# device-mcp: remove the daemon (Linux and macOS).
 #
 #   device-mcp-uninstall
 #   curl -fsSL <server>/uninstall.sh | bash
 #
-# Entfernt Service, Binary, Konfiguration und Job-Logs. ~/.claude-tools bleibt stehen,
-# dort liegen die Scripts, die Claude gebaut hat. Unter Linux bleibt Linger aktiv (kann auch andere Dienste betreffen).
+# Removes service, binary, configuration and job logs. ~/.claude-tools stays in place,
+# it holds the scripts Claude has built. On Linux, linger stays enabled (it may affect other services too).
 set -euo pipefail
 
 CONFIG_HOME="$HOME/.config"
@@ -29,7 +29,7 @@ elif command -v systemctl >/dev/null; then
   systemctl --user reset-failed device-mcp.service 2>/dev/null || true
 fi
 
-# Sessions, die Claude über session_start angelegt hat (Präfix mcp-). Eigene tmux-Sessions bleiben.
+# Sessions that Claude created via session_start (prefix mcp-). Your own tmux sessions stay.
 if command -v tmux >/dev/null; then
   for s in $(tmux list-sessions -F '#{session_name}' 2>/dev/null | grep '^mcp-' || true); do
     step "Ending tmux session $s"
@@ -39,7 +39,7 @@ fi
 
 step "Removing binary, config and job logs"
 rm -f "$HOME/.local/bin/device-mcp" "$HOME/.local/bin/device-mcp-uninstall"
-# Reste eines abgebrochenen Downloads oder Auto-Updates.
+# Leftovers of an aborted download or auto-update.
 rm -f "$HOME/.local/bin"/.device-mcp.*
 rm -rf "$CONFIG_HOME/device-mcp" "$STATE_HOME/device-mcp"
 

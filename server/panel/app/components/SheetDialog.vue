@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Hülle um <dialog> mit showModal. Schließen per Esc fragt erst beim Elternteil nach (guard).
+// Wrapper around <dialog> with showModal. Closing via Esc asks the parent first (guard).
 const props = defineProps<{ open: boolean; label: string; guard?: () => boolean }>()
 const emit = defineEmits<{ close: [] }>()
 const dialog = ref<HTMLDialogElement | null>(null)
