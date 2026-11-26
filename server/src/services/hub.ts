@@ -1,7 +1,7 @@
 import type { FastifyBaseLogger } from 'fastify'
 import type { WebSocket } from 'ws'
 import { env } from '../env.js'
-import { findDeviceById, findDeviceByToken, saveDeviceInfo, touchLastSeen } from './devices.js'
+import { findDeviceById, findDeviceByToken, saveDeviceInfo, touchLastSeen, type Device } from './devices.js'
 import { runningJobs, saveJobResult } from './jobs.js'
 import { CloseCode, PROTOCOL_VERSION, type DaemonInfo, type DaemonMessage, type JobSummary, type ServerMessage } from './protocol.js'
 
@@ -52,6 +52,8 @@ export class DeviceHub {
   private startingJobs = new Set<string>()
   private sweeper: NodeJS.Timeout | null = null
   private log: FastifyBaseLogger | null = null
+  // Nach jedem erfolgreichen hello, mit dem aktuellen Stand des Geräts aus der Datenbank.
+  onConnect: ((device: Device, info: DaemonInfo) => void) | null = null
 
   get heartbeatIntervalMs() {
     return env.HEARTBEAT_INTERVAL_SECONDS * 1000
@@ -217,6 +219,11 @@ export class DeviceHub {
     this.log?.info({ device: device.name, ip, version: msg.info.version }, 'Device connected')
 
     await this.reconcile(device.id, Array.isArray(msg.jobs) ? msg.jobs : [])
+    try {
+      this.onConnect?.(fresh, msg.info)
+    } catch (err) {
+      this.log?.error({ err }, 'onConnect failed')
+    }
     return conn
   }
 

@@ -6,7 +6,7 @@
 # Das Script holt den Daemon von dem Server, von dem es selbst kommt, und verbindet ihn mit genau diesem Server.
 # Erneut ausführen aktualisiert Binary und Service. Ohne DEVICE_MCP_TOKEN bleibt der Token aus der bestehenden Config.
 # Der Daemon läuft als der Benutzer, der dieses Script ausführt, nicht als root.
-# Danach hält er sich selbst aktuell. Abschalten: DEVICE_MCP_AUTO_UPDATE=0 beim Installieren.
+# Spätere Updates stößt der Server an: per Klick im Panel oder, wenn dort eingeschaltet, automatisch.
 #
 # Muss auch mit der bash 3.2 von macOS laufen.
 set -euo pipefail
@@ -78,16 +78,6 @@ case "$TOKEN" in
   *[!A-Za-z0-9_-]*) fail "The token contains invalid characters. Copy it again from the panel." ;;
 esac
 
-# Auto-Update ist an, außer DEVICE_MCP_AUTO_UPDATE=0 oder die bestehende Config schaltet es ab.
-AUTO_UPDATE="${DEVICE_MCP_AUTO_UPDATE:-}"
-if [ -z "$AUTO_UPDATE" ] && [ -f "$CONFIG" ] && grep -q '"autoUpdate"[[:space:]]*:[[:space:]]*false' "$CONFIG"; then
-  AUTO_UPDATE=0
-fi
-case "$AUTO_UPDATE" in
-  0|false|no|off) AUTO_UPDATE=false ;;
-  *) AUTO_UPDATE=true ;;
-esac
-
 if [ "$OS" = linux ]; then
   # systemctl --user braucht die Laufzeitumgebung der Benutzersitzung, auch per SSH oder su.
   export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
@@ -121,7 +111,7 @@ mkdir -p "$CONFIG_DIR"
 chmod 700 "$CONFIG_DIR"
 (
   umask 077
-  printf '{\n  "serverUrl": "%s",\n  "token": "%s",\n  "autoUpdate": %s\n}\n' "$SERVER_URL" "$TOKEN" "$AUTO_UPDATE" > "$CONFIG"
+  printf '{\n  "serverUrl": "%s",\n  "token": "%s"\n}\n' "$SERVER_URL" "$TOKEN" > "$CONFIG"
 )
 chmod 600 "$CONFIG"
 
@@ -183,7 +173,7 @@ Type=simple
 ExecStart=%h/.local/bin/device-mcp
 WorkingDirectory=%h
 EnvironmentFile=-%h/.config/device-mcp/env
-# Daran erkennt der Daemon, dass er nach einem Auto-Update einfach enden darf: systemd startet das neue Binary.
+# Daran erkennt der Daemon, dass er nach einem Update einfach enden darf: systemd startet das neue Binary.
 Environment=DEVICE_MCP_SUPERVISED=1
 Restart=always
 RestartSec=5
@@ -328,11 +318,8 @@ fi
 echo "  Uninstall: device-mcp-uninstall   (or: curl -fsSL $SERVER_URL/uninstall.sh | bash)"
 echo
 
-if [ "$AUTO_UPDATE" = true ]; then
-  echo "The daemon keeps itself up to date: when the server ships a newer one, it installs it and restarts once no job is running."
-else
-  echo "Auto-update is off. Update by running this script again, turn it back on with DEVICE_MCP_AUTO_UPDATE=1."
-fi
+echo "Updates: when the server ships a newer daemon, the panel shows an Update button for this device."
+echo "Turn on auto-update there if the device should always follow the server."
 if [ "$OS" = darwin ]; then
   echo "On macOS the daemon runs while you are logged in. If Claude gets 'Operation not permitted' in Desktop, Documents or"
   echo "Downloads, allow $BIN under System Settings > Privacy & Security > Full Disk Access."

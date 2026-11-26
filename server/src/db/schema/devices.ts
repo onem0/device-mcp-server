@@ -12,6 +12,9 @@ export const devices = pgTable(
     enabled: boolean('enabled').notNull().default(true),
     // Nur lesen: run_command, write_file, edit_file sowie Session-Start und -Eingaben sind gesperrt.
     readOnly: boolean('read_only').notNull().default(false),
+    // Der Server stößt ein Daemon-Update selbst an, sobald das Gerät mit einer älteren Version verbunden ist.
+    // Aus: Updates nur per Klick im Panel.
+    autoUpdate: boolean('auto_update').notNull().default(false),
     // Meldet der Daemon bei jeder Verbindung.
     hostname: text('hostname'),
     os: text('os'),

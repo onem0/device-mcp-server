@@ -104,7 +104,7 @@ function close() {
       <CopyField label="Run on the device (as a normal user)" :value="secret.payload.installCommand" :display="maskedCommand" @copied="copied = true" />
       <p class="hint">
         Copy puts the full command with the real token on your clipboard; the token itself is never shown.
-        <template v-if="secret.mode === 'create'">It works on Linux with systemd and on macOS: the script fetches the daemon from this server, connects it here and sets it up as a service that keeps itself up to date.</template>
+        <template v-if="secret.mode === 'create'">It works on Linux with systemd and on macOS: the script fetches the daemon from this server, connects it here and sets it up as a service.</template>
       </p>
 
       <div class="token__live" :class="{ 'is-on': connected }" role="status" aria-live="polite">

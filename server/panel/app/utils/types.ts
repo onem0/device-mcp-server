@@ -13,8 +13,10 @@ export interface Device {
   username: string | null
   homeDir: string | null
   daemonVersion: string | null
-  // pending: updates itself to the server's daemon version. manual: too old for that, run the install script again.
-  daemonUpdate: 'pending' | 'manual' | null
+  // available: older than the server's daemon and updatable from the panel. manual: too old for that, run the install script again.
+  daemonUpdate: 'available' | 'manual' | null
+  autoUpdate: boolean
+  updateStatus: { state: 'running' | 'restarting' | 'failed'; target: string | null; message: string | null } | null
   createdAt: string
 }
 

@@ -50,9 +50,12 @@ const { info, error, claudeCodeCommand, installTemplate } = useServerInfo()
       <section class="card setup__block" aria-labelledby="s-update">
         <h2 id="s-update" class="setup__title">Daemon updates</h2>
         <p>
-          Daemons update themselves. After the server was redeployed they reconnect, see the daemon version this server ships<template v-if="info.daemonVersion"> (currently <code>{{ info.daemonVersion }}</code>)</template>, download it from here, verify its checksum and restart as soon as no job is running. They also check every six hours.
+          When this server ships a newer daemon than a device runs<template v-if="info.daemonVersion"> (it currently ships <code>{{ info.daemonVersion }}</code>)</template>, the device gets an <strong>Update</strong> button. One click, and the daemon downloads the new version from this server, verifies its checksum and restarts as soon as no job is running.
         </p>
-        <p>Daemons older than <code>0.3.0</code> cannot do that yet. Run this on the device once; it keeps the token. The same command also turns auto-update off or on again with <code>DEVICE_MCP_AUTO_UPDATE=0</code> or <code>=1</code> in front of <code>bash</code>.</p>
+        <p>
+          <strong>Auto-update</strong> is a switch per device and off by default. Turned on, the server starts the update by itself whenever the device connects with an older daemon, which is right after every deploy.
+        </p>
+        <p>Daemons older than <code>0.4.0</code> cannot be updated from the panel. Run this on the device once; it keeps the token.</p>
         <CopyField label="On the device" :value="info.updateCommand" />
       </section>
 

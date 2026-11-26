@@ -98,6 +98,7 @@ macOS schützt Schreibtisch, Dokumente und Downloads: Meldet Claude dort „Oper
 - **Umbenennen:** sofort wirksam, Claude nutzt danach den neuen Namen.
 - **Deaktivieren:** trennt die Verbindung sofort, Claude erreicht das Gerät nicht mehr. Nach dem Aktivieren verbindet sich der Daemon innerhalb einer Minute wieder (oder sofort mit `systemctl --user restart device-mcp`).
 - **Token neu:** Der alte Token gilt sofort nicht mehr. Den neuen Install-Befehl auf dem Gerät ausführen, das tauscht nur die Konfiguration.
+- **Auto-update:** Schalter pro Gerät, standardmäßig aus. An: Der Server aktualisiert den Daemon selbst, sobald sich das Gerät mit einer älteren Version verbindet. Aus: nur per Klick auf „Update“ (siehe „Daemon updaten“).
 - **Nur lesen:** Claude kann auf dem Gerät weiter lesen (Dateien, Jobs, Session-Bildschirme), aber keine Befehle ausführen, nichts schreiben oder ändern und nichts in Sessions tippen. `kill_job` und `session_kill` bleiben erlaubt, damit sich Laufendes stoppen lässt. Wirkt sofort, ohne Neuverbindung.
 - **Löschen:** entfernt das Gerät mit Jobs und Audit-Log.
 - **Protokoll:** jeder MCP-Aufruf mit Zeitpunkt, Gerät, Tool, gekürzten Argumenten, Ergebnis, Exit-Code und Dauer. Über alle Geräte auf der Seite „Protokoll“ (mit Gerätefilter), pro Gerät auf dessen Seite. Lange Argumente sind auf 200 Zeichen gekürzt, Dateiinhalte stehen nur als Länge drin.
@@ -124,18 +125,21 @@ Der Uninstaller entfernt Service, Binary, Konfiguration, Job-Logs und die `mcp-`
 
 ### Daemon updaten
 
-Ab Version 0.3.0 aktualisiert sich der Daemon selbst. Der Server liefert unter `/download/manifest.json` die Version und die SHA-256-Prüfsummen seiner Daemon-Binaries aus. Der Daemon fragt das nach jedem Verbindungsaufbau ab (also kurz nach jedem Deploy, denn dabei startet der Server neu) und zusätzlich alle sechs Stunden. Ist die Version dort neuer als seine eigene, dann
+Der Server liefert unter `/download/manifest.json` die Version und die SHA-256-Prüfsummen seiner Daemon-Binaries aus. Läuft auf einem Gerät ein älterer Daemon, steht im Panel unter „Daemon“ neben der Version „… available“, und die Gerätekarte bekommt den Button **Update**. Von sich aus sucht der Daemon nicht nach Updates: Der Server stößt sie an.
 
-1. lädt er sein Binary vom Server, entpackt es und prüft Größe und Prüfsumme,
+- **Per Klick (Standard):** „Update“ im Panel. Das Gerät muss dafür online sein.
+- **Auto-Update (pro Gerät, standardmäßig aus):** Mit der Aktion „Auto-update“ einschalten. Dann stößt der Server das Update selbst an, sobald sich das Gerät mit einem älteren Daemon verbindet, also kurz nach jedem Deploy, und sofort beim Einschalten.
+
+In beiden Fällen läuft auf dem Gerät dasselbe ab. Der Daemon
+
+1. lädt sein Binary von diesem Server, entpackt es und prüft Größe und Prüfsumme,
 2. startet das neue Binary probeweise mit `--version`,
 3. ersetzt sich selbst (`rename`, atomar) und
 4. beendet sich, sobald kein Job mehr läuft. systemd bzw. launchd startet dann das neue Binary. tmux-Sessions laufen dabei weiter.
 
-Schlägt ein Schritt fehl, bleibt die alte Version in Betrieb, und dieselbe Version wird frühestens nach einer Stunde erneut versucht. Im Panel steht unter „Daemon“ neben der Version „Updates itself to …“, solange ein Update aussteht. Ein Downgrade gibt es nicht: Liefert der Server eine ältere Version aus, bleibt der Daemon, wie er ist.
+Das Panel zeigt den Stand an der Gerätekarte: „Updating …“, danach „Installed …“ (mit dem Hinweis, falls noch auf einen laufenden Job gewartet wird), bei einem Fehler den Grund und „Try again“. Schlägt ein Schritt fehl, bleibt die alte Version in Betrieb. Auto-Update versucht dieselbe Version dann frühestens nach einer Stunde erneut, ein Klick sofort. Ein Downgrade gibt es nicht. Aktualisiert wird nur das Binary; ändert sich einmal die Service-Definition, das Install-Script erneut ausführen.
 
-Abschalten pro Gerät: `"autoUpdate": false` in `~/.config/device-mcp/config.json`, oder beim Installieren `curl … | DEVICE_MCP_AUTO_UPDATE=0 bash` (mit `=1` wieder an). Aktualisiert wird nur das Binary. Ändert sich einmal die Service-Definition, das Install-Script erneut ausführen.
-
-**Daemons vor 0.3.0** können das noch nicht und brauchen das Update ein letztes Mal von Hand; das Panel zeigt bei ihnen „Needs a manual update“ mit dem Befehl. Ruft Claude ein Tool auf, das ein Daemon noch nicht kennt, kommt „Daemon-Version zu alt“ mit dem passenden Hinweis.
+**Daemons vor 0.4.0** kennen das noch nicht und brauchen das Update ein letztes Mal von Hand; das Panel zeigt bei ihnen „Needs a manual update“ mit dem Befehl. Ruft Claude ein Tool auf, das ein Daemon noch nicht kennt, kommt „Daemon-Version zu alt“ mit dem passenden Hinweis.
 
 Auf dem Gerät (per SSH):
 
@@ -154,7 +158,7 @@ Der Befehl kehrt sofort zurück. Nach etwa 20 Sekunden ist das Gerät mit der ne
 | Pfad auf dem Gerät | Inhalt |
 |---|---|
 | `~/.local/bin/device-mcp` | Daemon |
-| `~/.config/device-mcp/config.json` | Server-URL, Geräte-Token und `autoUpdate` (chmod 600) |
+| `~/.config/device-mcp/config.json` | Server-URL und Geräte-Token (chmod 600) |
 | `~/.config/device-mcp/env` | Linux: PATH aus deiner Shell beim Installieren, damit Claude dieselben Programme findet (unter macOS steht er in der plist) |
 | `~/.config/systemd/user/device-mcp.service` | Linux: systemd-Unit |
 | `~/Library/LaunchAgents/dev.onemo.device-mcp.plist` | macOS: LaunchAgent |
@@ -220,7 +224,7 @@ Jobs überleben Verbindungsabbrüche: Der Daemon schreibt die Ausgabe auf die Pl
 - „Nur lesen“ pro Gerät sperrt `run_command`, `write_file`, `edit_file`, `session_start` und `session_send` auf dem Server, bevor etwas zum Gerät geht.
 - Jeder MCP-Aufruf landet im Audit-Log, auch abgelehnte. Tokens landen weder dort noch im Server-Log: Der Logger schwärzt `authorization`- und `cookie`-Header, und der Request-Kontext des SDK wird aus den protokollierten Argumenten herausgefiltert.
 - Der Daemon baut die Verbindung selbst auf, auf den Geräten ist kein Port offen.
-- Auto-Update: Der Daemon lädt neue Versionen nur von dem Server, mit dem er verbunden ist, über dieselbe TLS-Verbindung wie alles andere. Die Prüfsumme im Manifest schützt vor abgebrochenen oder beschädigten Downloads, nicht vor einem übernommenen Server; der kann ohnehin Befehle auf den Geräten ausführen. Installer, Manifest und Binaries sind öffentlich abrufbar und enthalten keine Geheimnisse.
+- Daemon-Updates: Sie starten nur, wenn im Panel jemand „Update“ klickt oder für das Gerät Auto-Update eingeschaltet ist. Der Daemon lädt neue Versionen nur von dem Server, mit dem er verbunden ist, über dieselbe TLS-Verbindung wie alles andere. Die Prüfsumme im Manifest schützt vor abgebrochenen oder beschädigten Downloads, nicht vor einem übernommenen Server; der kann ohnehin Befehle auf den Geräten ausführen. Installer, Manifest und Binaries sind öffentlich abrufbar und enthalten keine Geheimnisse.
 
 ## Lokal entwickeln und testen
 
@@ -272,7 +276,7 @@ Schema ändern: Datei in `server/src/db/schema/` anpassen, dann `pnpm --filter s
 | Symptom | Ursache und Abhilfe |
 |---|---|
 | Gerät bleibt „wartet auf den Daemon“ | `journalctl --user -u device-mcp -n 50` auf dem Gerät (macOS: `tail -n 50 ~/Library/Logs/device-mcp.log`). „Token abgelehnt“: Token neu erzeugen und den Befehl erneut ausführen. |
-| Daemon bleibt auf einer alten Version | Im Log nach „Update“ suchen. Ein laufender Job hält den Neustart auf; nach einem Fehler steht der Grund in `~/.local/state/device-mcp/update.json`, der nächste Versuch kommt nach einer Stunde oder sofort mit dem Install-Script. |
+| Daemon bleibt auf einer alten Version | Ohne Auto-Update braucht es den Klick auf „Update“ im Panel. Ein laufender Job hält den Neustart auf. Nach einem Fehler steht der Grund an der Gerätekarte und in `~/.local/state/device-mcp/update.json`. |
 | macOS: „Operation not permitted“ | Festplattenvollzugriff für `~/.local/bin/device-mcp` erlauben (siehe „Gerät hinzufügen“). |
 | `systemctl --user` geht nicht | Per SSH anmelden statt mit `su`, oder `export XDG_RUNTIME_DIR=/run/user/$(id -u)`. |
 | Daemon startet nach Reboot nicht | `loginctl show-user $USER -p Linger` muss `yes` zeigen, sonst `sudo loginctl enable-linger $USER`. |

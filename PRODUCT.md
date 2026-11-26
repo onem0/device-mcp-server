@@ -28,7 +28,7 @@ Ein Werkzeug für genau einen Menschen und seine eigenen Maschinen, selbst gehos
 
 - Login nur mit einem Passwort aus der `.env`, Session-Cookie, Rate-Limit.
 - Geräte-Token und MCP-Token sind Geheimnisse: Der Geräte-Token ist genau einmal kopierbar (verdeckt, nie im Klartext zu sehen), der MCP-Token nie im Panel.
-- Daemon für Linux (systemd-User-Service) und macOS (launchd-Agent), x64 und arm64. Ab 0.3.0 aktualisiert er sich selbst vom Server.
+- Daemon für Linux (systemd-User-Service) und macOS (launchd-Agent), x64 und arm64. Updates stößt der Server an: per Klick auf „Update“ im Panel oder, pro Gerät einschaltbar, automatisch (ab Daemon 0.4.0).
 - Alle Strings im Programm auf Englisch (Panel, Tool-Beschreibungen und -Ausgaben, Fehlermeldungen, Logs, Install-Scripts). Code-Kommentare und READMEs auf Deutsch.
 - Stack: Nuxt-SPA (`ssr: false`), von Fastify ausgeliefert, Panel-API unter `/v1`.
 

@@ -54,6 +54,33 @@ export function useDeviceOps(hooks: { changed: () => unknown; removed?: (device:
     }
   }
 
+  async function toggleAutoUpdate(device: Device) {
+    busyId.value = device.id
+    actionError.value = null
+    try {
+      await api<Device>(`/devices/${device.id}`, { method: 'PATCH', body: { autoUpdate: !device.autoUpdate } })
+      await hooks.changed()
+    } catch (err) {
+      actionError.value = failureText(err)
+    } finally {
+      busyId.value = null
+    }
+  }
+
+  // Stößt das Daemon-Update an. Der Fortschritt kommt über updateStatus beim nächsten Abruf der Geräte.
+  async function update(device: Device) {
+    busyId.value = device.id
+    actionError.value = null
+    try {
+      await api<Device>(`/devices/${device.id}/update`, { method: 'POST' })
+      await hooks.changed()
+    } catch (err) {
+      actionError.value = failureText(err)
+    } finally {
+      busyId.value = null
+    }
+  }
+
   function ask(kind: 'remove' | 'regenerate', device: Device) {
     Object.assign(confirm, { open: true, kind, device, busy: false, error: null })
   }
@@ -83,5 +110,5 @@ export function useDeviceOps(hooks: { changed: () => unknown; removed?: (device:
 
   const showSecret = (payload: DeviceWithToken, mode: 'create' | 'regenerate') => (secret.value = { payload, mode })
 
-  return { busyId, editingId, renameError, actionError, confirm, secret, startRename, rename, toggle, toggleReadOnly, ask, confirmAction, showSecret }
+  return { busyId, editingId, renameError, actionError, confirm, secret, startRename, rename, toggle, toggleReadOnly, toggleAutoUpdate, update, ask, confirmAction, showSecret }
 }

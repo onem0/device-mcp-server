@@ -3,6 +3,7 @@ import { idParams, ok } from '../../../schemas/common.js'
 import { deleteDevice } from '../../../services/devices.js'
 import { hub } from '../../../services/hub.js'
 import { CloseCode } from '../../../services/protocol.js'
+import { forgetUpdate } from '../../../services/updates.js'
 
 // Löscht das Gerät samt Jobs und Audit-Log. Der Daemon auf dem Gerät bleibt installiert, kommt aber nicht mehr rein.
 const route: FastifyPluginAsyncZod = async (fastify) => {
@@ -13,6 +14,7 @@ const route: FastifyPluginAsyncZod = async (fastify) => {
     handler: async (request) => {
       await deleteDevice(request.params.id)
       hub.disconnect(request.params.id, CloseCode.InvalidToken, 'device deleted')
+      forgetUpdate(request.params.id)
       return { ok: true as const }
     },
   })

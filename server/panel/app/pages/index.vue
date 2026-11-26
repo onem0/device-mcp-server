@@ -72,6 +72,8 @@ function onCreated(payload: DeviceWithToken) {
         @cancel="ops.editingId.value = null"
         @toggle="ops.toggle(device)"
         @read-only="ops.toggleReadOnly(device)"
+        @auto-update="ops.toggleAutoUpdate(device)"
+        @update="ops.update(device)"
         @regenerate="ops.ask('regenerate', device)"
         @remove="ops.ask('remove', device)"
       />

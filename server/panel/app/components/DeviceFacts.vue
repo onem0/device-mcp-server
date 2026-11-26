@@ -7,8 +7,11 @@ const { info } = useServerInfo()
 
 // Steht unter der Daemon-Version, solange der Server eine neuere ausliefert.
 const updateNote = computed(() => {
-  const target = info.value?.daemonVersion
-  if (props.device.daemonUpdate === 'pending') return target ? `Updates itself to ${target}` : 'Updates itself'
+  const status = props.device.updateStatus
+  const target = status?.target ?? info.value?.daemonVersion
+  if (status?.state === 'running') return target ? `Updating to ${target}` : 'Updating'
+  if (status?.state === 'restarting') return target ? `${target} installed, restart pending` : 'Restart pending'
+  if (props.device.daemonUpdate === 'available') return target ? `${target} available` : 'Update available'
   if (props.device.daemonUpdate === 'manual') return target ? `Needs a manual update to ${target}` : 'Needs a manual update'
   return null
 })

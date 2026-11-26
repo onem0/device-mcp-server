@@ -4,6 +4,7 @@ import { latestDaemonVersion } from '../services/daemon-release.js'
 import type { Device } from '../services/devices.js'
 import { daemonUpdateState } from '../services/guards.js'
 import { hub } from '../services/hub.js'
+import { updateStatus } from '../services/updates.js'
 import { iso, isoOrNull } from './common.js'
 
 // Claude spricht Geräte beim Namen an, deshalb ohne Leerzeichen.
@@ -29,8 +30,11 @@ export const device = z.object({
   username: z.string().nullable(),
   homeDir: z.string().nullable(),
   daemonVersion: z.string().nullable(),
-  // pending: aktualisiert sich selbst auf die Version des Servers. manual: zu alt dafür, Install-Script erneut ausführen.
-  daemonUpdate: z.enum(['pending', 'manual']).nullable(),
+  // available: älter als der Daemon des Servers, aus dem Panel aktualisierbar. manual: zu alt dafür, Install-Script erneut ausführen.
+  daemonUpdate: z.enum(['available', 'manual']).nullable(),
+  autoUpdate: z.boolean(),
+  // Ein Update, das der Server angestoßen hat und das noch läuft, auf den Neustart wartet oder fehlgeschlagen ist.
+  updateStatus: z.object({ state: z.enum(['running', 'restarting', 'failed']), target: z.string().nullable(), message: z.string().nullable() }).nullable(),
   createdAt: z.string(),
 })
 
@@ -73,6 +77,8 @@ export function toDevice(d: Device): z.infer<typeof device> {
     homeDir: d.homeDir,
     daemonVersion: d.daemonVersion,
     daemonUpdate: daemonUpdateState(d.daemonVersion, latestDaemonVersion()),
+    autoUpdate: d.autoUpdate,
+    updateStatus: updateStatus(d.id),
     createdAt: iso(d.createdAt),
   }
 }

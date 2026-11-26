@@ -124,6 +124,11 @@ export interface SessionScreen {
   command: string
 }
 
+// Antwort des Daemons auf "update" (ab 0.4.0). installed: Das neue Binary liegt auf dem Gerät.
+export type UpdateResult =
+  | { status: 'current'; version: string }
+  | { status: 'installed'; version: string; restart: 'now' | 'when_idle' | 'manual'; runningJobs: number }
+
 export interface WriteFileResult {
   path: string
   bytesWritten: number

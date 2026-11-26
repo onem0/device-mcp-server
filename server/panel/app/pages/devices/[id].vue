@@ -76,11 +76,13 @@ const ops = useDeviceOps({ changed: loadDevice, removed: () => navigateTo('/') }
             @rename="ops.startRename(device)"
             @toggle="ops.toggle(device)"
             @read-only="ops.toggleReadOnly(device)"
+            @auto-update="ops.toggleAutoUpdate(device)"
             @regenerate="ops.ask('regenerate', device)"
             @remove="ops.ask('remove', device)"
           />
         </div>
         <DeviceFacts :device="device" detailed />
+        <DeviceUpdate class="detail__update" :device="device" :busy="ops.busyId.value === device.id" @update="ops.update(device)" />
       </header>
 
       <section class="card detail__audit" aria-labelledby="audit-title">
@@ -126,6 +128,9 @@ const ops = useDeviceOps({ changed: loadDevice, removed: () => navigateTo('/') }
 }
 .detail__actions {
   margin-left: auto;
+}
+.detail__update {
+  margin-bottom: 1.1rem;
 }
 .detail__audit {
   display: grid;

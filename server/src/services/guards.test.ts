@@ -27,19 +27,21 @@ describe('daemon version', () => {
     assert.match(msg, /systemd-run/)
   })
 
-  test('self-updating daemons are told to wait instead', () => {
-    const msg = tooOldMessage('pi', '0.3.0', '0.4.0', 'new_tool', 'https://device.onemo.dev')
-    assert.match(msg, /updates itself/)
+  test('daemons that can be updated from the panel are pointed there', () => {
+    const msg = tooOldMessage('pi', '0.4.0', '0.5.0', 'new_tool', 'https://device.onemo.dev')
+    assert.match(msg, /click "Update"/)
+    assert.match(msg, /auto-update/)
     assert.doesNotMatch(msg, /systemd-run/)
   })
 
-  test('update state: pending from 0.3.0 on, manual before, none when current or unknown', () => {
-    assert.equal(daemonUpdateState('0.2.1', '0.3.0'), 'manual')
-    assert.equal(daemonUpdateState('0.3.0', '0.3.1'), 'pending')
-    assert.equal(daemonUpdateState('0.3.1', '0.3.1'), null)
-    assert.equal(daemonUpdateState('0.4.0', '0.3.1'), null)
-    assert.equal(daemonUpdateState(null, '0.3.1'), null)
-    assert.equal(daemonUpdateState('0.3.0', null), null)
+  test('update state: available from 0.4.0 on, manual before, none when current or unknown', () => {
+    assert.equal(daemonUpdateState('0.2.1', '0.4.0'), 'manual')
+    assert.equal(daemonUpdateState('0.3.0', '0.4.0'), 'manual')
+    assert.equal(daemonUpdateState('0.4.0', '0.4.1'), 'available')
+    assert.equal(daemonUpdateState('0.4.1', '0.4.1'), null)
+    assert.equal(daemonUpdateState('0.5.0', '0.4.1'), null)
+    assert.equal(daemonUpdateState(null, '0.4.1'), null)
+    assert.equal(daemonUpdateState('0.4.0', null), null)
   })
 })
 
