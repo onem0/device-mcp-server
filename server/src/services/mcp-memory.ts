@@ -28,7 +28,7 @@ export function registerMemoryTools(server: McpServer) {
         'Searches the user\'s shared memory in device-mcp (the same for claude.ai, the Claude app and Claude Code): where files, projects, configs and services live on a device, ' +
         'how things are run, what the user asked you to remember, their preferences. Call it when the user refers to something they told you before or asks what you know or remember, ' +
         'and before you search a device for something. With device: that device\'s notes plus the global ones, and the paths read or changed most often there ' +
-        '(from the audit log, last 30 days). query: words that must all occur in title, content, path or tags; without query all notes in the scope are listed.',
+        '(from the audit log, last 30 days). query: words to look for in title, content, path and tags; a note matching any of them counts, the ones matching most come first. Without query all notes in the scope are listed.',
       inputSchema: {
         query: z.string().max(500).optional().describe('Words to look for, e.g. "nginx config" or "backup script".'),
         device: deviceParam.optional().describe('Device name or ID: its notes plus the global ones. Without: all notes.'),

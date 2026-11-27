@@ -37,17 +37,20 @@ const flatten = (rows: { memory: MemoryRow; deviceName: string | null }[]): Memo
 
 export async function searchMemories(opts: { query?: string; scope: MemoryScope; tag?: string; limit?: number; onlyDevice?: string }) {
   const words = queryWords(opts.query)
-  const conditions: (SQL | undefined)[] = [scopeWhere(opts.scope), ...words.map(wordMatch)]
+  // Any word is enough to match: Claude often searches with several synonyms or in another language than the note.
+  // Notes that match more of the words come first.
+  const conditions: (SQL | undefined)[] = [scopeWhere(opts.scope), words.length ? or(...words.map(wordMatch)) : undefined]
   if (opts.onlyDevice) conditions.push(eq(memories.deviceId, opts.onlyDevice))
   const tag = normalizeTags(opts.tag ? [opts.tag] : undefined)?.[0]
   if (tag) conditions.push(sql`${tag} = any(${memories.tags})`)
   const where = and(...conditions)
-  // Title hits first, then pinned, then the most recently changed.
-  const titleHits = words.length ? sql<number>`(${sql.join(words.map((w) => sql`(${memories.title} ilike ${`%${escapeLike(w)}%`})::int`), sql` + `)})` : sql<number>`0`
+  const sum = (parts: SQL[]) => (parts.length ? sql<number>`(${sql.join(parts, sql` + `)})` : sql<number>`0`)
+  const wordHits = sum(words.map((w) => sql`(${wordMatch(w)})::int`))
+  const titleHits = sum(words.map((w) => sql`(${memories.title} ilike ${`%${escapeLike(w)}%`})::int`))
   const [rows, [total]] = await Promise.all([
     withDevice()
       .where(where)
-      .orderBy(desc(titleHits), desc(memories.pinned), desc(memories.updatedAt))
+      .orderBy(desc(wordHits), desc(titleHits), desc(memories.pinned), desc(memories.updatedAt))
       .limit(opts.limit ?? 20),
     db.select({ n: count() }).from(memories).where(where),
   ])
@@ -155,7 +158,9 @@ export interface FrequentPath {
 
 // Paths Claude read or changed most often on a device recently, from the audit log. Filled without anyone saving notes.
 export async function frequentPaths(deviceId: string, opts: { days?: number; limit?: number; words?: string[] } = {}): Promise<FrequentPath[]> {
-  const filters = (opts.words ?? []).map((w) => sql`and args->>'path' ilike ${`%${escapeLike(w)}%`}`)
+  // Like the note search: a path matching any of the words counts.
+  const words = opts.words ?? []
+  const filter = words.length ? sql`and (${sql.join(words.map((w) => sql`args->>'path' ilike ${`%${escapeLike(w)}%`}`), sql` or `)})` : sql``
   const result = await db.execute<{ path: string; uses: string; last_used_at: Date }>(sql`
     select args->>'path' as path, count(*) as uses, max(created_at) as last_used_at
     from audit_log
@@ -167,7 +172,7 @@ export async function frequentPaths(deviceId: string, opts: { days?: number; lim
       and status <> 'error'
       and created_at > now() - make_interval(days => ${opts.days ?? 30})
       and args ? 'path'
-      ${sql.join(filters, sql` `)}
+      ${filter}
     group by 1
     order by count(*) desc, max(created_at) desc
     limit ${opts.limit ?? 10}`)
