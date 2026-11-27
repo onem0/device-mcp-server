@@ -44,13 +44,15 @@ export async function searchMemories(opts: { query?: string; scope: MemoryScope;
   const tag = normalizeTags(opts.tag ? [opts.tag] : undefined)?.[0]
   if (tag) conditions.push(sql`${tag} = any(${memories.tags})`)
   const where = and(...conditions)
-  const sum = (parts: SQL[]) => (parts.length ? sql<number>`(${sql.join(parts, sql` + `)})` : sql<number>`0`)
-  const wordHits = sum(words.map((w) => sql`(${wordMatch(w)})::int`))
-  const titleHits = sum(words.map((w) => sql`(${memories.title} ilike ${`%${escapeLike(w)}%`})::int`))
+  const sum = (parts: SQL[]) => sql<number>`(${sql.join(parts, sql` + `)})`
+  // Without words there is nothing to rank by. (A constant like ORDER BY 0 would be read as a column position.)
+  const ranking = words.length
+    ? [desc(sum(words.map((w) => sql`(${wordMatch(w)})::int`))), desc(sum(words.map((w) => sql`(${memories.title} ilike ${`%${escapeLike(w)}%`})::int`)))]
+    : []
   const [rows, [total]] = await Promise.all([
     withDevice()
       .where(where)
-      .orderBy(desc(wordHits), desc(titleHits), desc(memories.pinned), desc(memories.updatedAt))
+      .orderBy(...ranking, desc(memories.pinned), desc(memories.updatedAt))
       .limit(opts.limit ?? 20),
     db.select({ n: count() }).from(memories).where(where),
   ])
