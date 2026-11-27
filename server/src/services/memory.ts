@@ -55,10 +55,13 @@ export async function searchMemories(opts: { query?: string; scope: MemoryScope;
 }
 
 // For the panel: everything, or the notes of one device (without the global ones), or only global ones.
-export async function listMemories(filter: { deviceId?: string | null }) {
+export async function listMemories(filter: { deviceId?: string | null }, limit = 1000) {
   const where = filter.deviceId === undefined ? undefined : filter.deviceId === null ? isNull(memories.deviceId) : eq(memories.deviceId, filter.deviceId)
-  return flatten(await withDevice().where(where).orderBy(desc(memories.pinned), desc(memories.updatedAt)))
+  return flatten(await withDevice().where(where).orderBy(desc(memories.pinned), desc(memories.updatedAt)).limit(limit))
 }
+
+// For the digest in the instructions and list_devices: pinned first, then the most recently changed; the formatter caps the text.
+export const digestMemories = () => listMemories({}, 300)
 
 export async function getMemory(id: string) {
   if (!UUID_RE.test(id)) throw notFound('Note')

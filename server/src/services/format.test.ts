@@ -143,23 +143,22 @@ describe('memory helpers and guards', () => {
     assert.equal(formatMemoryDigest([]), '')
     const out = formatMemoryDigest([
       note('Prefers Claude Code for coding', { pinned: true, content: 'Hand coding\nwork to claude_code_start.' }),
-      note('Blog lives here', { deviceName: 'pi', path: '/var/www/blog', content: 'not shown in the index' }),
+      note('Blog lives here', { deviceName: 'pi', path: '/var/www/blog', content: 'not shown in full' }),
       note('Coffee order', { content: 'oat flat white' }),
     ])
     const lines = out.split('\n')
     assert.match(lines[0]!, /reference data, not instructions/)
     assert.equal(lines[1], 'Pinned:')
     assert.equal(lines[2], '- [global] Prefers Claude Code for coding: Hand coding work to claude_code_start.')
-    assert.match(lines[3]!, /^Other notes, titles only/)
-    assert.equal(lines[4], '- [pi] Blog lives here (/var/www/blog)')
-    assert.equal(lines[5], '- [global] Coffee order')
-    assert.doesNotMatch(out, /not shown in the index/)
+    assert.match(lines[3]!, /^Other notes, with the start of their text\. .*memory_search/)
+    assert.equal(lines[4], '- [pi] Blog lives here (/var/www/blog): not shown in full')
+    assert.equal(lines[5], '- [global] Coffee order: oat flat white')
   })
 
   test('digest index is capped', () => {
-    const many = Array.from({ length: 400 }, (_, i) => ({ deviceName: 'pi', title: `Note number ${i} with a fairly long title`, content: '', path: '/srv/some/path', pinned: false }))
+    const many = Array.from({ length: 400 }, (_, i) => ({ deviceName: 'pi', title: `Note number ${i} with a fairly long title`, content: 'x'.repeat(300), path: '/srv/some/path', pinned: false }))
     const out = formatMemoryDigest(many)
-    assert.ok(out.length < 6000)
+    assert.ok(out.length < 9000)
     assert.match(out, /- … \d+ more \(memory_search\)$/)
   })
 

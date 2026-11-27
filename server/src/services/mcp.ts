@@ -10,7 +10,7 @@ import { createJob, getJob, recentJobs, rowToSummary, saveJobResult } from './jo
 import { deviceParam, fail, jobIdParam, requireFeature, resolveDevice, resolveOnlineDevice, rpcFailedMessage, text, tool } from './mcp-common.js'
 import { registerClaudeTools } from './mcp-claude.js'
 import { registerMemoryTools } from './mcp-memory.js'
-import { listMemories, memoryCounts } from './memory.js'
+import { digestMemories, memoryCounts } from './memory.js'
 import { formatMemoryDigest } from './memory-text.js'
 import type { EditFileResult, JobSummary, OutputChunk, ReadFileResult, SessionInfo, SessionScreen, SessionStartResult, WriteFileResult } from './protocol.js'
 import { newJobId } from './tokens.js'
@@ -39,7 +39,7 @@ const BASE_INSTRUCTIONS = [
 export async function buildInstructions() {
   let digest = ''
   try {
-    digest = formatMemoryDigest(await listMemories({}))
+    digest = formatMemoryDigest(await digestMemories())
   } catch (err) {
     console.error('Loading notes failed', err)
   }
@@ -108,7 +108,7 @@ export async function createMcpServer() {
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
     tool('list_devices', async (_args, ctx) => {
-      const [all, counts, notes] = await Promise.all([listDevices(), memoryCounts(), listMemories({})])
+      const [all, counts, notes] = await Promise.all([listDevices(), memoryCounts(), digestMemories()])
       ctx.summary = `${all.length} devices`
       if (!all.length) return text('No devices yet. Add a device in the web panel and install the daemon on it.')
       const global = counts.get(null) ?? 0

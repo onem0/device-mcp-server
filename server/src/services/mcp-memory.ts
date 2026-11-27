@@ -92,7 +92,10 @@ export function registerMemoryTools(server: McpServer) {
         id: memoryId.optional(),
         device: deviceParam
           .optional()
-          .describe('The device the note is about. Without it a new note is global (about the user or across devices); with id, leaving it out keeps the note where it is.'),
+          .describe(
+            'The device the note is about, by its name from list_devices (e.g. when the user says "on the Pi"). Set it whenever the note concerns one device. ' +
+              'Without it a new note is global (about the user or across devices); with id, leaving it out keeps the note where it is.',
+          ),
         title: z.string().min(1).max(MEMORY_LIMITS.title).optional().describe('Short title. Required for a new note.'),
         content: z.string().max(MEMORY_LIMITS.content).optional().describe('The note itself, Markdown is fine.'),
         path: z.string().max(MEMORY_LIMITS.path).optional().describe('File or folder the note is about. Empty string removes it.'),

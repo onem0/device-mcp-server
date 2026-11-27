@@ -32,7 +32,8 @@ export interface DigestNote {
 }
 
 const PINNED_MAX_CHARS = 6000
-const INDEX_MAX_CHARS = 5000
+const INDEX_MAX_CHARS = 8000
+const INDEX_SNIPPET_CHARS = 100
 const flat = (value: string, max: number) => {
   const s = value.replace(/\s+/g, ' ').trim()
   return s.length > max ? `${s.slice(0, max)}…` : s
@@ -67,10 +68,14 @@ export function formatMemoryDigest(notes: DigestNote[]) {
   }
 
   if (rest.length) {
-    out.push(`Other notes, titles only (memory_search with words from the title or the device shows the content):`)
+    out.push(
+      'Other notes, with the start of their text. When one is relevant to what the user asks, read it in full with memory_search ' +
+        '(words from its title) before you answer; do not guess what the rest says:',
+    )
     let used = 0
     for (const [i, n] of rest.entries()) {
-      const line = `- ${scope(n)} ${flat(n.title, 120)}${n.path ? ` (${flat(n.path, 120)})` : ''}`
+      const snippet = n.content.trim() ? `: ${flat(n.content, INDEX_SNIPPET_CHARS)}` : ''
+      const line = `- ${scope(n)} ${flat(n.title, 120)}${n.path ? ` (${flat(n.path, 120)})` : ''}${snippet}`
       if (used + line.length > INDEX_MAX_CHARS) {
         out.push(`- … ${rest.length - i} more (memory_search)`)
         break
