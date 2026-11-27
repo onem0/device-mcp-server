@@ -31,7 +31,7 @@ export default async function mcp(fastify: FastifyInstance) {
     handler: async (request, reply) => {
       if (request.method !== 'POST') return reply.code(405).header('allow', 'POST').send()
 
-      const server = createMcpServer()
+      const server = await createMcpServer()
       const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined })
       reply.hijack()
       reply.raw.on('close', () => {

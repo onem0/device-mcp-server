@@ -297,6 +297,9 @@ Plain table without pills: uppercase grey headers, hairlines between rows, time 
 ### Dialog
 Native `dialog` on light cardboard, 12px, up to 36rem wide, 1.75rem padding, actions right-aligned.
 
+### Memory notes
+The Memory page groups notes by scope: "Global" as a caps label, every device under its small white name tape (linked to the device, struck through when disabled), each with the count in grey caps. A group's notes sit in one light-cardboard card, separated by hairlines, never a card per note. A note row: title in 700 body (a Lucide pin in front when pinned), the path in mono, the text in body up to 75ch and clamped to four lines with "Show all", a grey small meta line (tags as mono `#tag`, who saved it and when, how often Claude found it). Actions are the usual text actions (Edit, Pin/Unpin, Delete), icons only below 720px. Editing happens in place: the row turns into the form (title and scope side by side, path and tags in mono, note as a textarea, Pinned as a checkbox with its hint), Cmd/Ctrl+Enter saves, Esc cancels. A new note opens the same form in a card above the groups. Deleting asks in the danger dialog. No tag pills.
+
 ## Do's and Don'ts
 
 ### Do:

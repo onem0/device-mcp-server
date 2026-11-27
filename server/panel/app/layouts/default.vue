@@ -22,6 +22,7 @@ async function logout() {
       <NuxtLink to="/" class="top__mark" aria-label="device-mcp, go to the device overview"><LabelTape tone="black" small>device-mcp</LabelTape></NuxtLink>
       <nav class="top__nav" aria-label="Main navigation">
         <NuxtLink to="/" :class="{ 'is-on': route.path === '/' || route.path.startsWith('/devices') }">Devices</NuxtLink>
+        <NuxtLink to="/memory" active-class="is-on">Memory</NuxtLink>
         <NuxtLink to="/audit" active-class="is-on">Audit log</NuxtLink>
         <NuxtLink to="/connect" active-class="is-on">Connection</NuxtLink>
       </nav>
@@ -61,6 +62,7 @@ async function logout() {
   color: var(--mute);
   font-weight: 700;
   text-decoration: none;
+  white-space: nowrap;
   box-shadow: inset 0 -2px 0 transparent;
 }
 .top__nav a:hover {
@@ -87,7 +89,10 @@ async function logout() {
   .top__nav {
     order: 3;
     flex-basis: 100%;
+    gap: 1.25rem;
     height: 2.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
   .shell__main {
     padding-top: 1.5rem;

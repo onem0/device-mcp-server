@@ -21,6 +21,7 @@ services:
       TRUST_PROXY: ${TRUST_PROXY:-1}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       DAEMON_RELEASE_URL: ${DAEMON_RELEASE_URL:-}
+      CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN:-}
     expose:
       - "3000"
     depends_on:

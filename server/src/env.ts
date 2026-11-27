@@ -47,6 +47,9 @@ const schema = z.object({
     z.url({ error: 'DAEMON_RELEASE_URL must be a URL, e.g. https://github.com/onem0/device-mcp-client/releases.' }).transform((v) => v.replace(/\/+$/, '')),
     'https://github.com/onem0/device-mcp-client/releases',
   ),
+  // Optional: a long-lived Claude Code token (claude setup-token). Passed to every claude_code_start, so devices do not
+  // need their own Claude Code login.
+  CLAUDE_CODE_OAUTH_TOKEN: optional(z.string().min(20, 'CLAUDE_CODE_OAUTH_TOKEN looks too short.')),
   PANEL_DIST_DIR: withDefault(z.string(), path.resolve(import.meta.dirname, '../panel/.output/public')),
 })
 

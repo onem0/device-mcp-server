@@ -97,6 +97,7 @@ macOS protects Desktop, Documents and Downloads: if Claude reports "Operation no
 - **Read-only:** Claude can still read on the device (files, jobs, session screens) but cannot run commands, write or change anything, or type into sessions. `kill_job` and `session_kill` stay allowed so that running things can be stopped. Takes effect immediately, without a reconnect.
 - **Delete:** removes the device along with its jobs and audit log.
 - **Audit log:** every MCP call with time, device, tool, shortened arguments, result, exit code and duration. Across all devices on the "Audit log" page (with a device filter), per device on its own page. Long arguments are cut to 200 characters; file contents appear only as a length.
+- **Memory:** the notes Claude keeps across conversations, grouped by device, with a filter. Write, edit, pin and delete them in place (see "Memory" below).
 
 ### On the device
 
@@ -183,11 +184,11 @@ claude mcp add --transport http --scope user device-mcp https://device.onemo.dev
 
 ## MCP tools
 
-All tools except `list_devices` take `device` (name or ID).
+All device tools take `device` (name or ID); `list_devices` and the memory tools work without one.
 
 | Tool | Notes | Annotation |
 |---|---|---|
-| `list_devices` | Name, online/offline, OS, architecture, user, last seen | readOnly |
+| `list_devices` | Name, online/offline, OS, architecture, user, Claude Code version, number of notes, last seen; plus the pinned notes | readOnly |
 | `run_command` | `command`, optional `cwd`, `timeout` (seconds), `background`. Runs via `bash -c` as your user, without a TTY. Foreground: default 120 s, at most 600 s; the output shows the first and last 200 lines and how much is missing in between. `background=true` returns a `job_id` immediately. | destructive |
 | `job_status` | Status, exit code, runtime, amount of output. Without `job_id`: the last 20 jobs | readOnly |
 | `job_output` | `offset`/`limit` (lines) or `tail`, also while the job is running | readOnly |
@@ -197,12 +198,31 @@ All tools except `list_devices` take `device` (name or ID).
 | `write_file` | `mode` overwrite or append, creates missing folders, `encoding` utf8 or base64, at most 10 MB | destructive |
 | `edit_file` | Replaces `old_string` with `new_string`; error with the match count on 0 or (without `replace_all`) several matches. Writes atomically (temp file + rename), keeps permissions and LF/CRLF, follows symlinks. Responds with a few lines of context | destructive |
 | `session_start` | Starts a tmux session `mcp-<name>` (default: login shell) with `cwd`, `command`, `cols`, `rows`. Survives daemon restarts. Watch on the device with `tmux attach -t mcp-<name>` | destructive |
-| `session_send` | `text` is typed literally, then `keys` (Enter, C-c, Up, Tab …). Waits `wait_ms` (default 500) and returns the screen right away | destructive |
-| `session_read` | Screen as plain text (`capture-pane -p -J`), without colour codes, trailing empty lines cut off; `scrollback_lines` for history. With the exit code if the command has ended | readOnly |
-| `session_list` | The `mcp-` sessions with program, size and status | readOnly |
-| `session_kill` | Ends the session along with its programs | destructive |
+| `session_send` | `text` is typed literally (long text in parts), then `keys` (Enter, C-c, Up, Tab …). Waits `wait_ms` (default 500) and returns the screen right away. Like expect: `wait_for` (regex) waits up to `timeout` s until the pattern appears in the output produced after this input. `paste=true` inserts the text as one bracketed paste (editors, REPLs) | destructive |
+| `session_wait` | Waits up to `timeout` s (default 60, at most 600) until a `pattern` is on the screen, the shell is in front again after a command (`until_shell`), or the screen has been quiet for `quiet_ms`; always when the program ends | readOnly |
+| `session_read` | Screen as plain text (`capture-pane -p -J`), without colour codes, trailing empty lines cut off, with cursor position and whether a full-screen program is in front; `scrollback_lines` for history. `highlight=true` wraps highlighted text (menu selection, reverse video, coloured background) in ⟦…⟧. With the exit code if the command has ended | readOnly |
+| `session_list` | The `mcp-` sessions with program, size and status; `all=true` also lists the user's own tmux sessions | readOnly |
+| `session_kill` | Ends an `mcp-` session along with its programs (never the user's own) | destructive |
+| `claude_code_start` | Hands a task to Claude Code on the device: `claude -p` as a background job in `cwd`, prompt via stdin, output as stream-json. Waits up to `wait` s (default 60) for the result. `session_id` continues an earlier conversation; `model`, `effort`, `permission_mode` (default `bypassPermissions`, also `acceptEdits`, `plan`), `timeout` | destructive |
+| `claude_code_status` | Status, result (final answer, turns, duration, cost at API prices) and the activity as short lines (text, tool calls, failed tools). `wait` up to 600 s, `since` for only new activity. Without `job_id`: the recent runs. Stop a run with `kill_job` | readOnly |
+| `memory_search` | Notes that last across conversations: `query` (all words must match title, content, path or tags), optional `device` (its notes plus the global ones) and `tag`. With a device it also lists the paths read or changed most often there in the last 30 days (from the audit log) | readOnly |
+| `memory_save` | Creates or updates a note (`id`, or the same `title` in the same scope): `title`, `content`, `path`, `tags`, `pinned`, `device` (without: global) | – |
+| `memory_delete` | Deletes a note by `id` | destructive |
 
-New as of daemon 0.2.0: `edit_file`, the session tools and `read_file` with base64; `job_wait` also works with older daemons. For sessions the device needs tmux (`sudo apt install tmux`); if it is missing, the tool says so. So that sessions survive a daemon restart, the daemon starts tmux via `systemd-run --user --scope` outside its own cgroup.
+New as of daemon 0.2.0: `edit_file`, the session tools and `read_file` with base64; `job_wait` also works with older daemons. New as of daemon 0.6.0: Claude Code (`claude_code_start`, `claude_code_status`), `session_wait`, and in the session tools `wait_for`, `paste`, `highlight`, cursor position and the user's own tmux sessions. The memory tools work with any daemon. For sessions the device needs tmux (`sudo apt install tmux`); if it is missing, the tool says so. So that sessions survive a daemon restart, the daemon starts tmux via `systemd-run --user --scope` outside its own cgroup.
+
+### Claude Code on the devices
+
+When the user asks Claude (for example in claude.ai) for coding work on a device, the server instructions tell it to hand the work to Claude Code on that device with `claude_code_start` instead of writing the files itself, and to follow up in the same conversation with `session_id`. Quick lookups and single commands stay with `run_command` and `read_file`.
+
+- Install Claude Code on the device (`curl -fsSL https://claude.ai/install.sh | bash`) and log in once by running `claude` there. The daemon finds `claude` in its PATH or in the usual install locations (`~/.local/bin`, `~/.claude/local`, Homebrew, npm, nvm, bun, volta) and reports the version; `list_devices` shows it. A daemon started before the installation reports it after its next reconnect; `claude_code_start` checks again anyway.
+- Alternatively create a long-lived token once with `claude setup-token` and set it as `CLAUDE_CODE_OAUTH_TOKEN` on the server: every run gets it, so devices need no login of their own. It never appears in the audit log.
+- Runs are headless and nobody can answer questions in between, so they start with `--permission-mode bypassPermissions` by default (Claude Code may edit and run commands without asking, which is no more than `run_command` allows anyway). Claude Code refuses that mode as root; then use `acceptEdits` or `plan`. Read-only devices block `claude_code_start`.
+- Every run is a job: it survives connection drops, appears in the audit log and in `job_status`, and `kill_job` stops it with all its child processes. The conversation stays on the device: `cd <project> && claude --resume <session_id>` continues it interactively.
+
+### Memory
+
+The server keeps notes for Claude across conversations, global or per device, in its own database (table `memories`). Claude is told to look there before it searches a device and to save what it finds out (where something lives, how a service runs, the user's preferences). Pinned notes go to Claude with the server instructions on every connection and in `list_devices`. The panel's **Memory** page lists all notes by device, and you can write, edit, pin and delete them there. Do not store secrets in notes; store where they are kept.
 
 The server instructions point Claude to `~/.claude-tools/README.md`: read it first, put new helper scripts there and list them in it.
 
@@ -216,7 +236,8 @@ Jobs survive connection drops: the daemon writes the output to disk and reports 
 - Panel sessions are extended on use but end after `SESSION_MAX_DAYS` at the latest. A new `PANEL_PASSWORD` logs out all sessions.
 - "New token", Disable and Delete disconnect the device immediately, even if it is connecting at that very moment.
 - The daemon runs as a normal user. What Claude may do is exactly what that user may do. If the user has passwordless sudo (as on the Pi), access to `/mcp` means root on the device.
-- "Read-only" per device blocks `run_command`, `write_file`, `edit_file`, `session_start` and `session_send` on the server before anything goes to the device.
+- "Read-only" per device blocks `run_command`, `write_file`, `edit_file`, `session_start`, `session_send` and `claude_code_start` on the server before anything goes to the device.
+- `session_send` can type into the user's own tmux sessions too (by their exact name). `session_kill` only ends `mcp-` sessions.
 - Every MCP call ends up in the audit log, including rejected ones. Tokens end up neither there nor in the server log: the logger redacts `authorization` and `cookie` headers, and the SDK's request context is filtered out of the logged arguments.
 - The daemon opens the connection itself; no port is open on the devices.
 - Daemon updates: they start only when someone clicks "Update" in the panel or auto-update is turned on for the device. The binaries come from the public GitHub releases of the daemon repo, built there by a GitHub Action from the tagged source; this server neither builds nor stores them. The checksum in the release's manifest protects against aborted or corrupted downloads. Whoever controls the daemon repo's releases controls what devices install on an update, so use a fork you control (`DAEMON_RELEASE_URL`) if you do not want to depend on the upstream repo. Daemons before 0.5.0 still ask their server for updates; for them the server passes the GitHub release through under `/download/`.

@@ -1,4 +1,4 @@
-import type { JobSummary, OutputChunk } from './protocol.js'
+import type { ClaudeEvent, ClaudeEventsResult, JobSummary, OutputChunk, SessionScreen, SessionWaitInfo } from './protocol.js'
 
 export function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`
@@ -95,4 +95,140 @@ export function formatOutputChunk(out: OutputChunk) {
   const more = out.toLine < out.totalLines ? `\n\n[Continue with offset=${out.toLine}]` : ''
   const cut = out.truncatedChars ? '\n[Very long lines or too much text were truncated.]' : ''
   return `${head}\n---\n${out.text}${more}${cut}`
+}
+
+// --- tmux sessions -----------------------------------------------------------------------------------------------
+
+function describeWait(w: SessionWaitInfo) {
+  const after = formatDuration(w.waitedMs)
+  switch (w.reason) {
+    case 'pattern':
+      return `Matched "${w.match ?? ''}" after ${after}${w.outputMatched ? ' (in the new output)' : ' (on the screen)'}.`
+    case 'quiet':
+      return `The screen stayed unchanged; waited ${after}.`
+    case 'shell':
+      return `The command finished, the shell is in front again (after ${after}).`
+    case 'exited':
+      return `The program in the session ended (after ${after}).`
+    case 'timeout':
+      return `Timed out after ${after} without the condition being met. Call again to keep waiting.`
+  }
+}
+
+export function formatScreen(screen: SessionScreen) {
+  const state = screen.dead
+    ? `finished${screen.exitStatus !== null ? ` with exit code ${screen.exitStatus}` : ''}`
+    : `running${screen.command ? ` (${screen.command})` : ''}`
+  const head = [`Session ${screen.name}${screen.own ? " (the user's own)" : ''}`, state, lines(screen.lines)]
+  if (screen.cursor && !screen.dead) head.push(`cursor at row ${screen.cursor.row}, column ${screen.cursor.col}`)
+  if (screen.alternateScreen) head.push('full-screen program')
+  const out = [head.join(' · ')]
+  if (screen.wait) out.unshift(describeWait(screen.wait))
+  if (screen.highlighted) out.push('Highlighted text (selection, reverse video, coloured background) is marked ⟦like this⟧.')
+  return `${out.join('\n')}\n---\n${screen.text || '(screen empty)'}`
+}
+
+// --- Claude Code -------------------------------------------------------------------------------------------------
+
+const EVENT_MARK: Record<ClaudeEvent['kind'], string> = { init: '◦', text: '›', tool: '→', error: '✗', output: '!', note: '◦' }
+
+export function formatClaudeEvents(events: ClaudeEvent[], resultText?: string) {
+  let list = events
+  const last = list.at(-1)
+  // The final answer comes again as the result: do not show it twice.
+  if (resultText && last?.kind === 'text' && resultText.trim().startsWith(last.text.trim().slice(0, 500))) list = list.slice(0, -1)
+  return list
+    .map((e) => {
+      const [first = '', ...rest] = e.text.split('\n')
+      return [`${EVENT_MARK[e.kind]} ${e.sub ? '(subagent) ' : ''}${first}`, ...rest.map((l) => `  ${l}`)].join('\n')
+    })
+    .join('\n')
+}
+
+export function formatCost(usd: number | null) {
+  if (usd === null) return null
+  return usd < 0.01 ? '< $0.01 at API prices' : `≈ $${usd.toFixed(2)} at API prices`
+}
+
+export interface ClaudeRunView {
+  device: string
+  jobId: string
+  sessionId: string
+  cwd: string | null
+  job: JobSummary
+  events: ClaudeEventsResult | null
+  // Activity was requested from this line on (since); otherwise it is the tail of the log.
+  since?: number
+  note?: string
+}
+
+export function formatClaudeRun(v: ClaudeRunView) {
+  const running = v.job.status === 'running'
+  const result = v.events?.result ?? null
+  const out = [`Claude Code on "${v.device}" · ${describeStatus(v.job)}`, `job_id: ${v.jobId} · session_id: ${v.sessionId}`]
+  if (v.cwd) out.push(`cwd: ${v.cwd}`)
+  if (v.note) out.push(v.note)
+
+  if (result) {
+    const meta = [
+      !result.isError && result.subtype === 'success' ? 'success' : result.subtype === 'success' ? 'error' : `error: ${result.subtype}`,
+      result.numTurns !== null ? `${result.numTurns} turns` : null,
+      result.durationMs !== null ? formatDuration(result.durationMs) : null,
+      formatCost(result.costUsd),
+    ].filter(Boolean)
+    out.push('', `Result (${meta.join(' · ')}):`, result.text || '(no text)')
+    if (result.isError && /not logged in|\/login|invalid api key|authenticat|oauth token/i.test(result.text)) {
+      out.push(
+        'Claude Code is not logged in on this device. Ask the user to run "claude" there once and log in, ' +
+          'or to create a token with "claude setup-token" and set it as CLAUDE_CODE_OAUTH_TOKEN on the device-mcp server.',
+      )
+    }
+    if (result.permissionDenials.length) {
+      const counts = new Map<string, number>()
+      for (const name of result.permissionDenials) counts.set(name, (counts.get(name) ?? 0) + 1)
+      out.push(
+        `Blocked by the permission mode: ${[...counts].map(([n, c]) => (c > 1 ? `${n} ×${c}` : n)).join(', ')}. ` +
+          'With permission_mode=bypassPermissions Claude Code may do this without asking.',
+      )
+    }
+  } else if (v.job.status === 'killed' || v.job.status === 'timeout') {
+    out.push('', `The run was stopped (${v.job.status === 'timeout' ? 'timeout' : 'kill_job'}) before Claude Code finished. Files it changed until then stay changed.`)
+  } else if (!running) {
+    out.push(
+      '',
+      'Claude Code ended without a result. Its own messages are in the activity below. Common causes: it is not logged in on the device ' +
+        '(run "claude" there once, or set CLAUDE_CODE_OAUTH_TOKEN on the server), or the conversation for session_id was not found in this cwd.',
+    )
+  }
+
+  const ev = v.events
+  if (ev) {
+    const shown = formatClaudeEvents(ev.events, result?.text)
+    if (shown) {
+      const range =
+        ev.fromLine > 0
+          ? ` (log lines ${num(ev.fromLine + 1)}–${num(ev.toLine)} of ${num(ev.totalLines)}${v.since === undefined ? '; since=0 shows everything from the start' : ''})`
+          : ''
+      out.push('', `--- Activity${range} ---`, shown)
+    } else if (running) {
+      out.push('', v.since ? '(no new activity since the last call)' : '(no activity yet)')
+    }
+    if (ev.hasMore) out.push(`[More activity follows: since=${ev.toLine}]`)
+  } else {
+    out.push('', '(activity not available: the device is offline or the daemon no longer has the log)')
+  }
+
+  out.push('')
+  if (running) {
+    out.push(
+      `Still running. Next: claude_code_status with job_id=${v.jobId}${ev ? `, since=${ev.toLine}` : ''} and wait=300 waits for the end and shows only new activity. ` +
+        `Stop it with kill_job job_id=${v.jobId}.`,
+    )
+  } else {
+    out.push(
+      `Continue this conversation: claude_code_start with session_id=${v.sessionId}${v.cwd ? ' (same cwd)' : ''}. ` +
+        `The user can pick it up on the device too: ${v.cwd ? `cd ${v.cwd} && ` : ''}claude --resume ${v.sessionId}`,
+    )
+  }
+  return out.join('\n')
 }

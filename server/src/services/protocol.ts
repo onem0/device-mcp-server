@@ -24,6 +24,8 @@ export interface DaemonInfo {
   username: string
   homeDir: string
   version: string
+  // Version of Claude Code found when the daemon started, null if there is none (since 0.6.0).
+  claudeCode?: string | null
 }
 
 export interface JobSummary {
@@ -105,6 +107,9 @@ export interface SessionInfo {
   width: number
   height: number
   attached: boolean
+  // Since 0.6.0: number of windows, and whether it is one of the user's own sessions (no mcp- prefix).
+  windows?: number
+  own?: boolean
 }
 
 export interface SessionStartResult {
@@ -122,6 +127,63 @@ export interface SessionScreen {
   dead: boolean
   exitStatus: number | null
   command: string
+  // Since 0.6.0. cursor: 1-based on the visible screen. alternateScreen: a full-screen program (editor, TUI) is in front.
+  cursor?: { row: number; col: number }
+  alternateScreen?: boolean
+  own?: boolean
+  // Highlighted text (selection, reverse video) is wrapped in ⟦…⟧.
+  highlighted?: boolean
+  // Only for session_wait and session_send with wait_for.
+  wait?: SessionWaitInfo
+}
+
+export interface SessionWaitInfo {
+  reason: 'pattern' | 'quiet' | 'shell' | 'exited' | 'timeout'
+  waitedMs: number
+  match: string | null
+  // true: wait_for was matched against new output only; false: against the screen.
+  outputMatched: boolean
+}
+
+// Claude Code (since 0.6.0).
+export interface ClaudeInfo {
+  path: string | null
+  version: string | null
+}
+
+export interface ClaudeStartResult {
+  job: JobSummary
+  claude: ClaudeInfo
+  sessionId: string
+}
+
+export interface ClaudeEvent {
+  kind: 'init' | 'text' | 'tool' | 'error' | 'output' | 'note'
+  text: string
+  // From a subagent.
+  sub?: boolean
+}
+
+export interface ClaudeResult {
+  subtype: string
+  isError: boolean
+  text: string
+  numTurns: number | null
+  durationMs: number | null
+  costUsd: number | null
+  permissionDenials: string[]
+  sessionId: string | null
+}
+
+export interface ClaudeEventsResult {
+  job: JobSummary
+  events: ClaudeEvent[]
+  // Lines of the stream-json log: continue with offset = toLine.
+  fromLine: number
+  toLine: number
+  totalLines: number
+  hasMore: boolean
+  result: ClaudeResult | null
 }
 
 // The daemon's response to "update" (since 0.4.0). installed: the new binary is on the device.

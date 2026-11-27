@@ -5,13 +5,17 @@ export const DAEMON_FEATURES = {
   edit_file: '0.2.0',
   read_file_base64: '0.2.0',
   sessions: '0.2.0',
+  // claude_start, claude_events, claude_info
+  claude_code: '0.6.0',
+  // session_wait, and in the other session methods: own sessions, highlight, paste, wait_for, list all
+  session_wait: '0.6.0',
 } as const
 
 // From this version on the daemon knows the "update" method: the server can update it from the panel.
 export const REMOTE_UPDATE_SINCE = '0.4.0'
 
 // These tools are blocked on devices set to "read-only".
-export const WRITE_TOOLS = new Set(['run_command', 'write_file', 'edit_file', 'session_start', 'session_send'])
+export const WRITE_TOOLS = new Set(['run_command', 'write_file', 'edit_file', 'session_start', 'session_send', 'claude_code_start'])
 
 export function compareVersions(a: string, b: string) {
   const pa = a.split(/[.-]/).map((x) => Number.parseInt(x, 10) || 0)
@@ -54,6 +58,8 @@ const MAX_STRING = 200
 const INTERNAL_KEYS = new Set(['requestInfo', 'authInfo', 'signal', 'sendNotification', 'sendRequest', 'requestId', '_meta', 'headers', 'authorization'])
 // Contents that go into the audit log only as their length.
 const CONTENT_KEYS = new Set(['content'])
+// Never in the log at all.
+const SECRET_KEYS = new Set(['oauthToken', 'oauth_token'])
 
 function trimString(value: string) {
   return value.length > MAX_STRING ? `${value.slice(0, MAX_STRING)}… (+${value.length - MAX_STRING} chars)` : value
@@ -64,7 +70,7 @@ export function sanitizeArgs(args: unknown): Record<string, unknown> {
   if (!args || typeof args !== 'object') return {}
   const out: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(args as Record<string, unknown>)) {
-    if (INTERNAL_KEYS.has(key)) continue
+    if (INTERNAL_KEYS.has(key) || SECRET_KEYS.has(key)) continue
     if (CONTENT_KEYS.has(key) && typeof value === 'string') out[key] = `<${value.length} chars>`
     else if (typeof value === 'string') out[key] = trimString(value)
     else if (Array.isArray(value)) out[key] = value.slice(0, 50).map((v) => (typeof v === 'string' ? trimString(v) : v))

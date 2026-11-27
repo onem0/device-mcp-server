@@ -41,6 +41,33 @@ export interface AuditEntry {
   error: string | null
 }
 
+// A note in the memory. deviceId null: global, about the user or across devices.
+export interface Memory {
+  id: string
+  deviceId: string | null
+  deviceName: string | null
+  title: string
+  content: string
+  path: string | null
+  tags: string[]
+  pinned: boolean
+  // Who wrote the last version.
+  source: 'claude' | 'panel' | string
+  useCount: number
+  lastUsedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface MemoryDraft {
+  deviceId: string | null
+  title: string
+  content: string
+  path: string | null
+  tags: string[]
+  pinned: boolean
+}
+
 export interface ServerInfo {
   version: string
   baseUrl: string

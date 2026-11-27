@@ -1,30 +1,64 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod/v4'
-import { env } from '../env.js'
 import { VERSION } from '../version.js'
-import { latestDaemonVersion } from './daemon-release.js'
 import { finishAudit, logAudit } from './audit.js'
-import { findDeviceByRef, listDevices, type Device } from './devices.js'
-import { describeStatus, formatAgo, formatBytes, formatJob, formatOutputChunk, formatRunResult, lineRange, lines, num } from './format.js'
-import { DAEMON_FEATURES, WRITE_TOOLS, daemonTooOld, sanitizeArgs, short, tooOldMessage } from './guards.js'
-import { DaemonError, DeviceOfflineError, hub } from './hub.js'
+import { listDevices, type Device } from './devices.js'
+import { describeStatus, formatAgo, formatBytes, formatJob, formatOutputChunk, formatRunResult, formatScreen, lineRange, num } from './format.js'
+import { sanitizeArgs, short } from './guards.js'
+import { DaemonError, hub } from './hub.js'
 import { createJob, getJob, recentJobs, rowToSummary, saveJobResult } from './jobs.js'
-import type {
-  EditFileResult,
-  JobSummary,
-  OutputChunk,
-  ReadFileResult,
-  SessionInfo,
-  SessionScreen,
-  SessionStartResult,
-  WriteFileResult,
-} from './protocol.js'
+import { deviceParam, fail, jobIdParam, requireFeature, resolveDevice, resolveOnlineDevice, rpcFailedMessage, text, tool } from './mcp-common.js'
+import { registerClaudeTools } from './mcp-claude.js'
+import { registerMemoryTools } from './mcp-memory.js'
+import { memoryCounts, pinnedMemories, type Memory } from './memory.js'
+import type { EditFileResult, JobSummary, OutputChunk, ReadFileResult, SessionInfo, SessionScreen, SessionStartResult, WriteFileResult } from './protocol.js'
 import { newJobId } from './tokens.js'
 
-export const INSTRUCTIONS =
+const BASE_INSTRUCTIONS = [
+  "device-mcp reaches the user's own devices (Linux servers, Raspberry Pis, Macs). list_devices shows them, whether they are online and whether Claude Code is installed there.",
+  'Memory: device-mcp keeps notes across conversations. Before you search a device for a file, project, config or service, call memory_search (with the device): ' +
+    'the answer may already be there, together with the paths used most often on that device. When you find out where something lives, how something is run, ' +
+    'or learn a lasting preference of the user, save it with memory_save: one fact per note, a clear title, the path if there is one. Keep notes true: update or delete wrong ones. ' +
+    'Pin only what matters in nearly every conversation; pinned notes are listed below and in list_devices.',
+  'Claude Code: for coding work on a device (writing or changing code in a project, fixing bugs, refactoring, features, anything that touches several files or needs builds and tests), ' +
+    'do not write the code yourself with write_file or edit_file. Hand it to Claude Code on that device with claude_code_start (cwd = the project directory) and follow it with claude_code_status. ' +
+    'Give it a complete, self-contained prompt: goal, relevant context from this conversation, constraints, how to verify. Report its result to the user, and continue the same conversation ' +
+    'with session_id for follow-ups. Quick lookups, single commands and small config edits stay with run_command, read_file and edit_file.',
+  'Interactive programs (prompts, REPLs, ssh, editors, full-screen TUIs): use the tmux sessions. session_send types and can wait for output (wait_for), session_wait waits for the screen ' +
+    '(a pattern, quiet, the shell back in front), session_read with highlight=true shows which item is selected in menus. The user\'s own tmux sessions can be read and typed into by their name.',
   'Every device has ~/.claude-tools/ with a README.md. Before you build something new, read the README on the device. ' +
-  'Put new helper scripts there and add them to the README with their purpose and how to call them.'
+    'Put new helper scripts there and add them to the README with their purpose and how to call them.',
+]
+
+const PINNED_MAX_CHARS = 6000
+
+function describePinned(notes: Memory[]) {
+  if (!notes.length) return ''
+  const out: string[] = []
+  let used = 0
+  for (const n of notes) {
+    const line = `- [${n.deviceName ?? 'global'}] ${n.title}${n.path ? ` (${n.path})` : ''}: ${short(n.content, 400)}`
+    if (used + line.length > PINNED_MAX_CHARS) {
+      out.push(`- … ${notes.length - out.length} more pinned notes (memory_search)`)
+      break
+    }
+    out.push(line)
+    used += line.length
+  }
+  return out.join('\n')
+}
+
+// Built per request: pinned notes go along with the instructions.
+export async function buildInstructions() {
+  let pinned: Memory[] = []
+  try {
+    pinned = await pinnedMemories(40)
+  } catch (err) {
+    console.error('Loading pinned notes failed', err)
+  }
+  const notes = describePinned(pinned)
+  return [...BASE_INSTRUCTIONS, notes ? `Pinned notes:\n${notes}` : ''].filter(Boolean).join('\n\n')
+}
 
 const FOREGROUND_DEFAULT_S = 120
 const FOREGROUND_MAX_S = 600
@@ -40,156 +74,68 @@ const EDIT_MAX_CHARS = 1024 * 1024
 const BASE64_DEFAULT_BYTES = 256 * 1024
 const BASE64_MAX_BYTES = 1024 * 1024
 const SESSION_RPC_TIMEOUT_MS = 20_000
+const SESSION_WAIT_DEFAULT_S = 60
+const SESSION_WAIT_MAX_S = 600
 
-const deviceParam = z.string().min(1).max(200).describe('Device name or device ID from list_devices.')
-const jobIdParam = z.string().min(1).max(64).describe('job_id from run_command.')
-const sessionParam = z.string().min(1).max(60).describe('Session name from session_start or session_list, with or without the mcp- prefix.')
+const sessionParam = z
+  .string()
+  .min(1)
+  .max(120)
+  .describe(
+    'Session from session_start or session_list: its name with or without the mcp- prefix, or the exact name of one of the user\'s own tmux sessions, ' +
+      'optionally with :window or :window.pane (e.g. "main:2").',
+  )
 
-class ToolError extends Error {}
-
-const text = (value: string): CallToolResult => ({ content: [{ type: 'text', text: value }] })
-const fail = (value: string): CallToolResult => ({ content: [{ type: 'text', text: value }], isError: true })
-
-// Per call: which device, what goes into the audit log.
-interface Ctx {
-  tool: string
-  device: Device | null
-  summary: string
-  exitCode: number | null
-  status: string | null
-  // run_command writes its own entry, which the job end completes later.
-  skipAudit: boolean
-}
-
-const firstText = (result: CallToolResult) => {
-  const item = result.content.find((c) => c.type === 'text')
-  return item && 'text' in item ? item.text : ''
-}
-
-function daemonVersion(device: Device) {
-  return hub.connection(device.id)?.info.version ?? device.daemonVersion
-}
-
-// Expected errors go to Claude as tool errors, everything else as protocol errors.
-function expectedErrorMessage(err: unknown, ctx: Ctx) {
-  if (err instanceof DaemonError && err.code === 'UNKNOWN_METHOD' && ctx.device) {
-    return tooOldMessage(ctx.device.name, daemonVersion(ctx.device), latestDaemonVersion() ?? VERSION, ctx.tool, env.PUBLIC_URL)
-  }
-  if (err instanceof ToolError || err instanceof DaemonError || err instanceof DeviceOfflineError) return err.message
-  return null
-}
-
-async function record(ctx: Ctx, args: unknown, started: number, result: CallToolResult) {
-  await logAudit({
-    deviceId: ctx.device?.id ?? null,
-    tool: ctx.tool,
-    command: ctx.summary || ctx.tool,
-    args: sanitizeArgs(args),
-    status: result.isError ? 'error' : (ctx.status ?? 'ok'),
-    exitCode: ctx.exitCode,
-    durationMs: Date.now() - started,
-    error: result.isError ? firstText(result) : null,
-  }).catch((err) => console.error('Audit entry failed', err))
-}
-
-// Every tool call ends up in the audit log, including failed ones.
-function tool<A>(name: string, fn: (args: A, ctx: Ctx) => Promise<CallToolResult>) {
-  return async (args: A): Promise<CallToolResult> => {
-    const ctx: Ctx = { tool: name, device: null, summary: '', exitCode: null, status: null, skipAudit: false }
-    const started = Date.now()
-    let result: CallToolResult
-    try {
-      result = await fn(args, ctx)
-    } catch (err) {
-      const message = expectedErrorMessage(err, ctx)
-      if (message === null) {
-        await record(ctx, args, started, fail(err instanceof Error ? err.message : String(err)))
-        throw err
-      }
-      result = fail(message)
-    }
-    if (!ctx.skipAudit) await record(ctx, args, started, result)
-    return result
-  }
-}
-
-async function resolveDevice(ref: string, ctx: Ctx): Promise<Device> {
-  const device = await findDeviceByRef(ref)
-  if (device) {
-    ctx.device = device
-    return device
-  }
-  const names = (await listDevices()).map((d) => d.name)
-  throw new ToolError(names.length ? `No device "${ref}". Available: ${names.join(', ')}.` : `No device "${ref}". No device has been added yet.`)
-}
-
-async function resolveOnlineDevice(ref: string, ctx: Ctx): Promise<Device> {
-  const device = await resolveDevice(ref, ctx)
-  if (!device.enabled) throw new ToolError(`The device "${device.name}" is disabled in the panel.`)
-  if (WRITE_TOOLS.has(ctx.tool) && device.readOnly) {
-    throw new ToolError(
-      `The device "${device.name}" is set to read-only in the panel, ${ctx.tool} is blocked there. ` +
-        'Reading still works (read_file, job_status, job_output, job_wait, session_read, session_list), and so do kill_job and session_kill.',
-    )
-  }
-  if (!hub.isOnline(device.id)) {
-    throw new ToolError(`The device "${device.name}" is offline, last seen ${formatAgo(device.lastSeenAt)}.`)
-  }
-  return device
-}
-
-// New methods only exist from a certain daemon version on. Check beforehand instead of "unknown method".
-function requireFeature(device: Device, feature: keyof typeof DAEMON_FEATURES, toolName: string) {
-  const version = daemonVersion(device)
-  const min = DAEMON_FEATURES[feature]
-  if (daemonTooOld(version, min)) throw new ToolError(tooOldMessage(device.name, version, min, toolName, env.PUBLIC_URL))
-}
-
-const describeDevice = (d: Device) => {
+const describeDevice = (d: Device, notes: number) => {
   const conn = hub.connection(d.id)
   const state = !d.enabled ? 'disabled' : conn ? 'online' : 'offline'
   const seen = conn ? conn.lastSeen : d.lastSeenAt
   const system = [d.os, d.arch].filter(Boolean).join(', ') || 'system unknown (never connected)'
   const who = d.username && d.hostname ? `${d.username}@${d.hostname}` : (d.hostname ?? '')
+  // Only daemons from 0.6.0 on report it.
+  const claude = conn && conn.info.claudeCode !== undefined ? (conn.info.claudeCode ?? 'not installed (checked when the daemon connected)') : null
   return [
     `- ${d.name} · ${state}${d.readOnly ? ' · read-only' : ''}`,
     `  id: ${d.id}`,
     `  System: ${system}${d.kernel ? `, kernel ${d.kernel}` : ''}`,
     who ? `  User: ${who}${d.homeDir ? `, home ${d.homeDir}` : ''}` : null,
+    claude ? `  Claude Code: ${claude}` : null,
+    `  Notes: ${notes}${notes ? ' (memory_search with this device)' : ''}`,
     `  Last seen: ${conn ? 'connected now' : formatAgo(seen)}`,
   ]
     .filter(Boolean)
     .join('\n')
 }
 
-function rpcFailedMessage(err: unknown) {
-  return err instanceof Error ? err.message : String(err)
-}
-
-function formatScreen(screen: SessionScreen) {
-  const state = screen.dead
-    ? `finished${screen.exitStatus !== null ? ` with exit code ${screen.exitStatus}` : ''}`
-    : `running${screen.command ? ` (${screen.command})` : ''}`
-  return `Session ${screen.name} · ${state} · ${lines(screen.lines)}\n---\n${screen.text || '(screen empty)'}`
-}
-
-export function createMcpServer() {
-  const server = new McpServer({ name: 'device-mcp', version: VERSION }, { instructions: INSTRUCTIONS })
+export async function createMcpServer() {
+  const server = new McpServer({ name: 'device-mcp', version: VERSION }, { instructions: await buildInstructions() })
 
   server.registerTool(
     'list_devices',
     {
       title: 'List devices',
-      description: 'Lists all devices with online status, operating system, user and time of the last connection.',
+      description:
+        'Lists all devices with online status, operating system, user, whether Claude Code is installed, the number of saved notes and the time of the last connection. ' +
+        'Also shows the pinned notes (memory).',
       // An empty schema instead of none: otherwise the SDK passes its request object (HTTP headers included) as the first argument.
       inputSchema: {},
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
     tool('list_devices', async (_args, ctx) => {
-      const all = await listDevices()
+      const [all, counts, pinned] = await Promise.all([listDevices(), memoryCounts(), pinnedMemories(40)])
       ctx.summary = `${all.length} devices`
       if (!all.length) return text('No devices yet. Add a device in the web panel and install the daemon on it.')
-      return text(all.map(describeDevice).join('\n\n'))
+      const global = counts.get(null) ?? 0
+      const notes = describePinned(pinned)
+      return text(
+        [
+          all.map((d) => describeDevice(d, counts.get(d.id) ?? 0)).join('\n\n'),
+          `Global notes: ${global}${global ? ' (memory_search)' : ''}`,
+          notes ? `Pinned notes:\n${notes}` : '',
+        ]
+          .filter(Boolean)
+          .join('\n\n'),
+      )
     }),
   )
 
@@ -594,28 +540,79 @@ export function createMcpServer() {
       description:
         'Sends input to a session: text is typed literally, then keys are pressed, e.g. ["Enter"], ["C-c"], ["Up", "Enter"], ["Tab"], ["Escape"]. ' +
         'So for a command use text="ls -la" and keys=["Enter"]. Then it waits wait_ms (default 500, at most 10000) and returns the current screen; ' +
-        'wait_ms=0 only sends. Allowed keys: Enter, Tab, BTab, Escape, BSpace, Space, Up, Down, Left, Right, Home, End, PageUp, PageDown, ' +
-        'Insert, Delete, F1–F12, single characters, each also with C- (Ctrl), M- (Alt) or S- (Shift).',
+        'wait_ms=0 only sends. Like expect: wait_for=<regex> instead waits until that pattern appears in the output produced after this input ' +
+        '(up to timeout seconds), e.g. wait_for "\\[y/N\\]" for the next question of an installer or "\\$ $" for the shell prompt. ' +
+        'Note that the shell echoes typed text, so the pattern should not match the input itself. ' +
+        'paste=true inserts text as one paste (bracketed paste), better for code into editors and REPLs. ' +
+        'Allowed keys: Enter, Tab, BTab, Escape, BSpace, Space, Up, Down, Left, Right, Home, End, PageUp, PageDown, ' +
+        'Insert, Delete, F1–F12, single characters, each also with C- (Ctrl), M- (Alt) or S- (Shift). ' +
+        "Works for the user's own tmux sessions too (by their name).",
       inputSchema: {
         device: deviceParam,
         session: sessionParam,
         text: z.string().max(100_000).optional().describe('Text that is typed literally.'),
         keys: z.array(z.string().min(1).max(20)).max(50).optional().describe('Keys after the text, e.g. ["Enter"] or ["C-c"].'),
+        paste: z.boolean().optional().describe('true: insert text as one paste instead of typing it.'),
         wait_ms: z.number().int().min(0).max(10_000).optional().describe('Wait this long afterwards and return the screen, default 500. 0 = do not wait.'),
+        wait_for: z.string().min(1).max(1000).optional().describe('Regular expression (JavaScript syntax, multiline): wait until it appears in the new output.'),
+        ignore_case: z.boolean().optional().describe('wait_for ignores upper and lower case.'),
+        timeout: z.number().int().min(1).max(SESSION_WAIT_MAX_S).optional().describe(`With wait_for: wait at most this many seconds, default ${SESSION_WAIT_DEFAULT_S}.`),
+        highlight: z.boolean().optional().describe('Mark highlighted text on the returned screen with ⟦…⟧ (see session_read).'),
       },
       annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: true },
     },
-    tool('session_send', async ({ device: ref, session, text: input, keys, wait_ms }, ctx) => {
-      ctx.summary = `${session}: ${[input ? `"${short(input, 120)}"` : '', ...(keys ?? [])].filter(Boolean).join(' ')}`
+    tool('session_send', async ({ device: ref, session, text: input, keys, paste, wait_ms, wait_for, ignore_case, timeout, highlight }, ctx) => {
+      ctx.summary = `${session}: ${[input ? `"${short(input, 120)}"` : '', ...(keys ?? []), wait_for ? `→ wait for /${short(wait_for, 60)}/` : ''].filter(Boolean).join(' ')}`
       const device = await resolveOnlineDevice(ref, ctx)
       requireFeature(device, 'sessions', 'session_send')
+      if (paste || wait_for || highlight) requireFeature(device, 'session_wait', 'session_send with paste, wait_for or highlight')
+      const waitS = timeout ?? SESSION_WAIT_DEFAULT_S
       const res = await hub.request<SessionScreen | { name: string; screen: null }>(
         device.id,
         'session_send',
-        { session, text: input, keys, wait_ms },
-        SESSION_RPC_TIMEOUT_MS,
+        { session, text: input, keys, paste, wait_ms, wait_for, ignore_case, timeout_ms: wait_for ? waitS * 1000 : undefined, highlight },
+        wait_for ? (waitS + 30) * 1000 : SESSION_RPC_TIMEOUT_MS,
       )
-      if (!('text' in res)) return text(`Sent to ${res.name}. Read the screen with session_read.`)
+      if (!('text' in res)) return text(`Sent to ${res.name}. Read the screen with session_read or wait with session_wait.`)
+      if (res.dead) ctx.exitCode = res.exitStatus
+      return text(formatScreen(res))
+    }),
+  )
+
+  server.registerTool(
+    'session_wait',
+    {
+      title: 'Wait for session',
+      description:
+        'Waits until the screen of a session reaches a state, then returns it. Conditions (the first one met ends the wait): ' +
+        'pattern = a regular expression is visible on the screen (also if it already was before the call); ' +
+        'until_shell = the command typed into the shell has finished and the shell is in front again (for builds, installs, tests started in a session); ' +
+        'quiet_ms = the screen has not changed for that long (default 1500 ms if no other condition is given). ' +
+        `It always returns when the program in the session ends or after timeout seconds (default ${SESSION_WAIT_DEFAULT_S}, at most ${SESSION_WAIT_MAX_S}). ` +
+        'To wait for new output right after typing, session_send with wait_for is more precise.',
+      inputSchema: {
+        device: deviceParam,
+        session: sessionParam,
+        pattern: z.string().min(1).max(1000).optional().describe('Regular expression (JavaScript syntax, multiline) that must be visible on the screen.'),
+        ignore_case: z.boolean().optional().describe('pattern ignores upper and lower case.'),
+        until_shell: z.boolean().optional().describe('true: until the shell is the foreground program again.'),
+        quiet_ms: z.number().int().min(100).max(SESSION_WAIT_MAX_S * 1000).optional().describe('Until the screen has not changed for this many milliseconds.'),
+        timeout: z.number().int().min(1).max(SESSION_WAIT_MAX_S).optional().describe(`Wait at most this many seconds, default ${SESSION_WAIT_DEFAULT_S}.`),
+        highlight: z.boolean().optional().describe('Mark highlighted text on the returned screen with ⟦…⟧ (see session_read).'),
+      },
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    tool('session_wait', async ({ device: ref, session, pattern, ignore_case, until_shell, quiet_ms, timeout, highlight }, ctx) => {
+      const waitS = timeout ?? SESSION_WAIT_DEFAULT_S
+      ctx.summary = `${session}: ${[pattern ? `/${short(pattern, 60)}/` : '', until_shell ? 'until shell' : '', quiet_ms ? `quiet ${quiet_ms} ms` : ''].filter(Boolean).join(', ') || 'until quiet'} (up to ${waitS} s)`
+      const device = await resolveOnlineDevice(ref, ctx)
+      requireFeature(device, 'session_wait', 'session_wait')
+      const res = await hub.request<SessionScreen>(
+        device.id,
+        'session_wait',
+        { session, pattern, ignore_case, until_shell, quiet_ms, timeout_ms: waitS * 1000, highlight },
+        (waitS + 30) * 1000,
+      )
       if (res.dead) ctx.exitCode = res.exitStatus
       return text(formatScreen(res))
     }),
@@ -626,21 +623,26 @@ export function createMcpServer() {
     {
       title: 'Read session',
       description:
-        'Reads the screen of a session as plain text, without colour codes, empty lines at the end removed. ' +
-        'scrollback_lines also returns that many older lines from the history (at most 10000). If the command in the session has finished, ' +
-        'the exit code and the last output including history come along.',
+        'Reads the screen of a session as plain text, without colour codes, empty lines at the end removed, with the cursor position and whether a ' +
+        'full-screen program (editor, TUI) is in front. scrollback_lines also returns that many older lines from the history (at most 10000). ' +
+        'If the command in the session has finished, the exit code and the last output including history come along. ' +
+        'highlight=true wraps highlighted text in ⟦…⟧: the selected item of a menu or list (whiptail, dialog, fzf, htop, lazygit, raspi-config), ' +
+        'reverse video, a coloured background, which plain text cannot show. ' +
+        "Works for the user's own tmux sessions too (by their name, optionally name:window.pane).",
       inputSchema: {
         device: deviceParam,
         session: sessionParam,
         scrollback_lines: z.number().int().min(0).max(10_000).optional().describe('Additional lines from the history, default 0.'),
+        highlight: z.boolean().optional().describe('true: mark highlighted text with ⟦…⟧.'),
       },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
-    tool('session_read', async ({ device: ref, session, scrollback_lines }, ctx) => {
+    tool('session_read', async ({ device: ref, session, scrollback_lines, highlight }, ctx) => {
       ctx.summary = session
       const device = await resolveOnlineDevice(ref, ctx)
       requireFeature(device, 'sessions', 'session_read')
-      const res = await hub.request<SessionScreen>(device.id, 'session_read', { session, scrollback_lines }, SESSION_RPC_TIMEOUT_MS)
+      if (highlight) requireFeature(device, 'session_wait', 'session_read with highlight')
+      const res = await hub.request<SessionScreen>(device.id, 'session_read', { session, scrollback_lines, highlight }, SESSION_RPC_TIMEOUT_MS)
       if (res.dead) ctx.exitCode = res.exitStatus
       return text(formatScreen(res))
     }),
@@ -650,21 +652,25 @@ export function createMcpServer() {
     'session_list',
     {
       title: 'List sessions',
-      description: 'Lists the mcp sessions on the device with the running program, size, start time and whether someone is watching via tmux attach.',
-      inputSchema: { device: deviceParam },
+      description:
+        'Lists the mcp sessions on the device with the running program, size, start time and whether someone is watching via tmux attach. ' +
+        "all=true also lists the user's own tmux sessions (they can be read and typed into by their name, but not killed).",
+      inputSchema: { device: deviceParam, all: z.boolean().optional().describe("true: also the user's own tmux sessions.") },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
-    tool('session_list', async ({ device: ref }, ctx) => {
-      ctx.summary = 'sessions'
+    tool('session_list', async ({ device: ref, all }, ctx) => {
+      ctx.summary = all ? 'all sessions' : 'sessions'
       const device = await resolveOnlineDevice(ref, ctx)
       requireFeature(device, 'sessions', 'session_list')
-      const list = await hub.request<SessionInfo[]>(device.id, 'session_list', {}, SESSION_RPC_TIMEOUT_MS)
-      if (!list.length) return text('No mcp session is running on the device.')
+      if (all) requireFeature(device, 'session_wait', 'session_list with all=true')
+      const list = await hub.request<SessionInfo[]>(device.id, 'session_list', { all: all === true }, SESSION_RPC_TIMEOUT_MS)
+      if (!list.length) return text(all ? 'No tmux session is running on the device.' : 'No mcp session is running on the device. all=true also shows the user\'s own sessions.')
       return text(
         list
           .map((s) => {
             const state = s.dead ? `finished${s.exitStatus !== null ? ` (exit ${s.exitStatus})` : ''}` : `running: ${s.command || '?'}`
-            return `- ${s.name} · ${state} · ${s.width}×${s.height} · started ${formatAgo(new Date(s.created))}${s.attached ? ' · someone is watching' : ''}`
+            const extra = [s.own ? "the user's own" : null, s.windows && s.windows > 1 ? `${s.windows} windows` : null].filter(Boolean)
+            return `- ${s.name}${extra.length ? ` (${extra.join(', ')})` : ''} · ${state} · ${s.width}×${s.height} · started ${formatAgo(new Date(s.created))}${s.attached ? ' · someone is watching' : ''}`
           })
           .join('\n'),
       )
@@ -675,7 +681,7 @@ export function createMcpServer() {
     'session_kill',
     {
       title: 'Kill session',
-      description: 'Ends a session including all programs in it.',
+      description: "Ends an mcp session including all programs in it. The user's own tmux sessions are not killed.",
       inputSchema: { device: deviceParam, session: sessionParam },
       annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: false },
     },
@@ -688,5 +694,7 @@ export function createMcpServer() {
     }),
   )
 
+  registerClaudeTools(server)
+  registerMemoryTools(server)
   return server
 }
