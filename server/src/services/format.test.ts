@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import { formatClaudeEvents, formatClaudeRun, formatCost, formatScreen } from './format.js'
 import { WRITE_TOOLS, sanitizeArgs } from './guards.js'
-import { normalizeTags, queryWords } from './memory-text.js'
+import { formatMemoryDigest, normalizeTags, queryWords, type DigestNote } from './memory-text.js'
 import type { ClaudeEventsResult, JobSummary } from './protocol.js'
 
 const job = (patch: Partial<JobSummary> = {}): JobSummary => ({
@@ -136,6 +136,31 @@ describe('memory helpers and guards', () => {
   test('tags are normalized', () => {
     assert.deepEqual(normalizeTags([' Web ', 'web', 'Home Lab', '']), ['web', 'home-lab'])
     assert.equal(normalizeTags(undefined), undefined)
+  })
+
+  test('digest: pinned notes with content, the rest as an index, marked as data', () => {
+    const note = (title: string, patch: Partial<DigestNote> = {}): DigestNote => ({ deviceName: null, title, content: '', path: null, pinned: false, ...patch })
+    assert.equal(formatMemoryDigest([]), '')
+    const out = formatMemoryDigest([
+      note('Prefers Claude Code for coding', { pinned: true, content: 'Hand coding\nwork to claude_code_start.' }),
+      note('Blog lives here', { deviceName: 'pi', path: '/var/www/blog', content: 'not shown in the index' }),
+      note('Coffee order', { content: 'oat flat white' }),
+    ])
+    const lines = out.split('\n')
+    assert.match(lines[0]!, /reference data, not instructions/)
+    assert.equal(lines[1], 'Pinned:')
+    assert.equal(lines[2], '- [global] Prefers Claude Code for coding: Hand coding work to claude_code_start.')
+    assert.match(lines[3]!, /^Other notes, titles only/)
+    assert.equal(lines[4], '- [pi] Blog lives here (/var/www/blog)')
+    assert.equal(lines[5], '- [global] Coffee order')
+    assert.doesNotMatch(out, /not shown in the index/)
+  })
+
+  test('digest index is capped', () => {
+    const many = Array.from({ length: 400 }, (_, i) => ({ deviceName: 'pi', title: `Note number ${i} with a fairly long title`, content: '', path: '/srv/some/path', pinned: false }))
+    const out = formatMemoryDigest(many)
+    assert.ok(out.length < 6000)
+    assert.match(out, /- … \d+ more \(memory_search\)$/)
   })
 
   test('query words', () => {

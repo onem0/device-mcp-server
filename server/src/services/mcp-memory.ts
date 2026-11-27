@@ -25,8 +25,9 @@ export function registerMemoryTools(server: McpServer) {
     {
       title: 'Search memory',
       description:
-        'Searches the notes device-mcp keeps across conversations: where files, projects, configs and services live on a device, how things are run, the user\'s preferences. ' +
-        'Call it before you search a device for something. With device: that device\'s notes plus the global ones, and the paths read or changed most often there ' +
+        'Searches the user\'s shared memory in device-mcp (the same for claude.ai, the Claude app and Claude Code): where files, projects, configs and services live on a device, ' +
+        'how things are run, what the user asked you to remember, their preferences. Call it when the user refers to something they told you before or asks what you know or remember, ' +
+        'and before you search a device for something. With device: that device\'s notes plus the global ones, and the paths read or changed most often there ' +
         '(from the audit log, last 30 days). query: words that must all occur in title, content, path or tags; without query all notes in the scope are listed.',
       inputSchema: {
         query: z.string().max(500).optional().describe('Words to look for, e.g. "nginx config" or "backup script".'),
@@ -78,8 +79,11 @@ export function registerMemoryTools(server: McpServer) {
     {
       title: 'Save to memory',
       description:
-        'Saves a note that later conversations find with memory_search: where something lives on a device (set path), how a service is started or deployed, ' +
-        'a quirk of a device, a preference of the user. One fact or topic per note, with a title that says what it is about (e.g. "Nginx config of the blog"). ' +
+        'Saves a note in the user\'s shared memory in device-mcp. It lasts across conversations and every Claude that uses this server sees it ' +
+        '(claude.ai, the Claude app, Claude Code on any computer). Use it whenever the user asks you to remember, note or save something ' +
+        '("merk dir", "speicher das", "remember that …") about their devices, projects, setup or preferences. If you also have a memory of your own, ' +
+        'save it here as well: the other one is not available in the user\'s other clients. Also save what you find out yourself: where something lives on a device (set path), ' +
+        'how a service is started or deployed, a quirk of a device. One fact or topic per note, with a title that says what it is about (e.g. "Nginx config of the blog"). ' +
         'With id the note is updated. Without id, a note with the same title in the same scope is updated, otherwise a new one is created. ' +
         'pinned=true: the note goes to Claude at the start of every conversation (keep that for few, important notes). ' +
         'Never save secrets (passwords, tokens, keys); save where they are kept instead. Save facts the user told you or you checked yourself, ' +

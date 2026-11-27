@@ -138,9 +138,6 @@ export async function deleteMemory(id: string) {
   return memory
 }
 
-export const pinnedMemories = async (limit = 30) =>
-  flatten(await withDevice().where(eq(memories.pinned, true)).orderBy(asc(sql`coalesce(${devices.name}, '')`), desc(memories.updatedAt)).limit(limit))
-
 // Number of notes per device; key null = global.
 export async function memoryCounts() {
   const rows = await db.select({ deviceId: memories.deviceId, n: count() }).from(memories).groupBy(memories.deviceId)
